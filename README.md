@@ -1,6 +1,6 @@
 # Sapphire-EnhancedDesktop
 
-现代化的 Windows 桌面 取代软件
+现代化的 Windows 桌面取代/桌面增强软件
 
 # 项目概述
 
