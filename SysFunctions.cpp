@@ -1,7 +1,9 @@
+#include <complex>
 #include<windows.h>
 #include"mainwindow.h"
 #include "qapplication.h"
 #include "qpainter.h"
+#include "qpainterpath.h"
 #include"windows.h"
 #include "shlobj.h"
 #include"mousehook.h"
@@ -17,6 +19,9 @@
 #include <QMetaType>
 #include <QtCore>
 #include<QMessageBox>
+#include<windows.h>
+#include<uxtheme.h>
+
 MainWindow* pmw;;
 MouseHook* pmh;
 
@@ -29,11 +34,30 @@ QTextCodec* gbk = QTextCodec::codecForName("GBK");
 #include <QTextStream>
 #include <QDateTime>
 #include <QMutex>
+#include <dwmapi.h>
 static QMutex mutex;
 
 #define AUTO_RUN_KEY	"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 //设置/取消自启动
 //isStart: true(开机启动)    false(开机不启动)
+
+QColor GetWindowsThemeColor()
+{
+    DWORD crColorization;
+    BOOL fOpaqueBlend;
+    QColor res;
+    HRESULT result = DwmGetColorizationColor(&crColorization, &fOpaqueBlend);
+    if (result == S_OK)
+    {
+        BYTE r, g, b;
+        r = (crColorization >> 16) % 256;
+        g = (crColorization >> 8) % 256;
+        b = crColorization % 256;
+        res = QColor(r, g, b);
+    }
+    return res;
+}
+
 
 void setMyAppAutoRun(bool isStart)
 {
@@ -143,22 +167,27 @@ void paintRect(QWidget* aim,QColor color){
     }
 }
 
+double rectLen(int w,int h){
+    return sqrt(w*w+h*h);
+}
+
 void paintLight(QWidget* aim,QColor color){
     bool another = true;
     bool choosen = false;
     if(aim->inherits("ED_Unit")) {
-        another = ((ED_Unit*)aim)->showRect;
+        another = ((ED_Unit*)aim)->showLight;
         choosen = ((ED_Unit*)aim)->onmouse;
     }
-    if(aim->inherits("ED_Unit")) another = ((ED_Unit*)aim)->showLight;
+
+
     if(ShowLight&(another)){
         auto pos =aim->mapFromGlobal(aim->cursor().pos());
         QRadialGradient* radialGradient;
-        if(enable_light_track){
-            radialGradient = new QRadialGradient(aim->width()/2 , aim->height()/2, qMax(aim->width(),aim->height()),pos.x() ,pos.y());
+        if(enable_light_track&&choosen){
+            radialGradient = new QRadialGradient(aim->width()/2 , aim->height()/2, rectLen(aim->width(),aim->height())/2,pos.x() ,pos.y());
         }
         else{
-            radialGradient = new QRadialGradient(aim->width()/2 , aim->height()/2, qMax(aim->width(),aim->height()),0, aim->height());
+            radialGradient = new QRadialGradient(aim->width()/2 , aim->height()/2, rectLen(aim->width(),aim->height())/2,0, aim->height());
         }
         //创建了一个QRadialGradient对象实例，参数分别为中心坐标，半径长度和焦点坐标,如果需要对称那么中心坐标和焦点坐标要一致
         QPainter painter(aim);
@@ -175,8 +204,21 @@ void paintLight(QWidget* aim,QColor color){
 
 void paintSide(QWidget* aim,QColor color){
     bool another = true;
-    if(aim->inherits("ED_Unit")) another = ((ED_Unit*)aim)->showSide;
-    if(ShowSide&another){
+    if(aim->inherits("ED_Unit")){
+
+        another = ((ED_Unit*)aim)->showSide;
+        // 恢复默认混合模式，绘制边框，如果没有则不用
+        if(ShowSide&&another){
+            QPainter painter(aim);
+            QPainterPath path;
+            //这里圆角区域需要根据dpi、size调整
+            path.addRoundedRect(QRectF(aim->rect()).adjusted(1.5, 1.5, -1.5, -1.5), unit_radius, unit_radius);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.setPen(QPen(QColor(0xCA64EA), 1.0));
+            painter.drawPath(path);
+        }
+    }
+    else if(ShowSide){
         QPainter p(aim);
         p.setPen(color); //设置画笔记颜色
         p.drawRect(0, 0, aim->width() -1, aim->height() -1); //绘制边框
@@ -540,50 +582,58 @@ QString  getDesktopPath()
     return QString(szDir);
 }
 
+#define Write(TYPE,DIS,NAME)                            \
+styleIni->setValue(#DIS"/"#NAME, QString::number(NAME));\
+
 void writeStyleIni(){
     qDebug()<<"Write";
     //Qt中使用QSettings类读写ini文件
     //QSettings构造函数的第一个参数是ini文件的路径,第二个参数表示针对ini文件,第三个参数可以缺省
     QSettings *styleIni = new QSettings("style.ini", QSettings::IniFormat);
     //向ini文件中写入内容,setValue函数的两个参数是键值对
-    styleIni->setValue("color/sleep_alpha", sleep_alpha);
-    styleIni->setValue("color/active_alpha", active_alpha);
-    styleIni->setValue("color/sleep_alpha_deep", sleep_alpha_deep);
-    styleIni->setValue("color/active_alpha_deep", active_alpha_deep);
 
-    styleIni->setValue("color/sleep_color_ratio", QString::number(sleep_color_ratio));
-    styleIni->setValue("color/active_color_ratio", QString::number(active_color_ratio));
+    Write(Int,color,sleep_alpha);
+    Write(Int,color,active_alpha);
 
+    Write(Int,color,sleep_alpha_deep);
+    Write(Int,color,active_alpha_deep);
 
-    styleIni->setValue("effect/light_alpha_start", light_alpha_start);
-    styleIni->setValue("effect/light_alpha_end", light_alpha_end);
+    Write(Float,color,sleep_color_ratio);
+    Write(Float,color,active_color_ratio);
 
-    styleIni->setValue("effect/icon_shadow_alpha", icon_shadow_alpha);
-    styleIni->setValue("effect/icon_shadow_blur_radius", icon_shadow_blur_radius);
+    Write(Int,effect,light_alpha_start);
+    Write(Int,effect,light_alpha_end);
 
-    styleIni->setValue("effect/unit_shadow_alpha", unit_shadow_alpha);
-    styleIni->setValue("effect/unit_shadow_blur_radius", unit_shadow_blur_radius);
+    Write(Int,effect,icon_shadow_alpha);
+    Write(Int,effect,icon_shadow_blur_radius);
 
+    Write(Int,effect,unit_shadow_alpha);
+    Write(Int,effect,unit_shadow_blur_radius);
 
-    styleIni->setValue("render/unit_radius", unit_radius);
+    Write(Int,render,unit_radius);
 
-    styleIni->setValue("render/ShowRect",ShowRect);
-    styleIni->setValue("render/ShowSide", ShowSide);
-    styleIni->setValue("render/ShowLight", ShowLight);
+    Write(Bool,render,ShowRect);
+    Write(Bool,render,ShowSide);
+    Write(Bool,render,ShowLight);
 
-    styleIni->setValue("render/enable_background_transparent", enable_background_transparent);
-    styleIni->setValue("render/enable_background_blur", enable_background_blur);
-    styleIni->setValue("render/enable_light_track", enable_light_track);
+    Write(Bool,render,enable_background_transparent);
+    Write(Bool,render,enable_background_blur);
+    Write(Bool,render,enable_light_track);
 
-    styleIni->setValue("render/enable_intime_repaint", enable_intime_repaint);
+    Write(Bool,render,enable_intime_repaint);
 
-    styleIni->setValue("preference/enable_image_fill", enable_image_fill);
-    styleIni->setValue("preference/muilt_icon_default_type", muilt_icon_default_type);
+    Write(Bool,preference,enable_image_fill);
+    Write(Bool,preference,muilt_icon_default_type);
 
-    styleIni->setValue("preference/scale_fix_ratio", scale_fix_ratio);
+    Write(Double,preference,scale_fix_ratio);
+
     //写入完成后删除指针
     delete styleIni;
 }
+
+
+#define Read(TYPE,DIS,NAME)                                   \
+NAME = styleIni->value( #DIS"/"#NAME ).to##TYPE();  \
 
 void readStyleIni(){
 
@@ -591,42 +641,40 @@ void readStyleIni(){
     if(fi.exists()){
         QSettings *styleIni = new QSettings("style.ini", QSettings::IniFormat);
 
-        sleep_alpha = styleIni->value("color/sleep_alpha").toInt();
-        active_alpha = styleIni->value("color/active_alpha").toInt();
+        Read(Int,color,sleep_alpha);
+        Read(Int,color,active_alpha);
 
-        sleep_alpha_deep = styleIni->value("color/sleep_alpha_deep").toInt();
-        active_alpha_deep = styleIni->value("color/active_alpha_deep").toInt();
+        Read(Int,color,sleep_alpha_deep);
+        Read(Int,color,active_alpha_deep);
 
-        sleep_color_ratio = styleIni->value("color/sleep_color_ratio").toFloat();
-        active_color_ratio = styleIni->value("color/active_color_ratio").toFloat();
+        Read(Float,color,sleep_color_ratio);
+        Read(Float,color,active_color_ratio);
 
+        Read(Int,effect,light_alpha_start);
+        Read(Int,effect,light_alpha_end);
 
-        light_alpha_start = styleIni->value("effect/light_alpha_start").toInt();
-        light_alpha_end = styleIni->value("effect/light_alpha_end").toInt();
+        Read(Int,effect,icon_shadow_alpha);
+        Read(Int,effect,icon_shadow_blur_radius);
 
-        icon_shadow_alpha = styleIni->value("effect/icon_shadow_alpha").toInt();
-        icon_shadow_blur_radius = styleIni->value("effect/icon_shadow_blur_radius").toInt();
+        Read(Int,effect,unit_shadow_alpha);
+        Read(Int,effect,unit_shadow_blur_radius);
 
-        unit_shadow_alpha = styleIni->value("effect/unit_shadow_alpha").toInt();
-        unit_shadow_blur_radius = styleIni->value("effect/unit_shadow_blur_radius" ).toInt();
+        Read(Int,render,unit_radius);
 
+        Read(Bool,render,ShowRect);
+        Read(Bool,render,ShowSide);
+        Read(Bool,render,ShowLight);
 
-        unit_radius = styleIni->value("render/unit_radius", unit_radius).toInt();
+        Read(Bool,render,enable_background_transparent);
+        Read(Bool,render,enable_background_blur);
+        Read(Bool,render,enable_light_track);
 
-        ShowRect = styleIni->value("render/ShowRect").toBool();
-        ShowSide = styleIni->value("render/ShowSide").toBool();
-        ShowLight = styleIni->value("render/ShowLight").toBool();
+        Read(Bool,render,enable_intime_repaint);
 
-        enable_background_transparent = styleIni->value("render/enable_background_transparent").toBool();
-        enable_background_blur = styleIni->value("render/enable_background_blur").toBool();
-        enable_light_track = styleIni->value("render/enable_light_track").toBool();
+        Read(Bool,preference,enable_image_fill);
+        Read(Bool,preference,muilt_icon_default_type);
 
-        enable_intime_repaint = styleIni->value("render/enable_intime_repaint").toBool();
-
-        enable_image_fill = styleIni->value("preference/enable_image_fill").toBool();
-        muilt_icon_default_type = styleIni->value("preference/muilt_icon_default_type").toInt();
-
-        scale_fix_ratio = styleIni->value("preference/scale_fix_ratio").toDouble();
+        Read(Double,preference,scale_fix_ratio);
 
         delete styleIni;
     }
@@ -636,7 +684,7 @@ void readStyleIni(){
 }
 
 void writeJson(){
-    QJsonObject rootObj =  pmw->edlayout->to_json();
+    QJsonObject rootObj =  pmw->inside->to_json();
     QJsonDocument document;
     document.setObject(rootObj);
 
@@ -671,6 +719,6 @@ void readJson(){
     }
 
     QJsonObject jsonObject = document.object();
-    pmw->edlayout->load_json(jsonObject);
+    pmw->inside->load_json(jsonObject);
 
 }

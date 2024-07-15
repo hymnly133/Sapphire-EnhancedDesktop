@@ -84,13 +84,14 @@ ED_EditBox::ED_EditBox(QWidget *parent)
 
     QSlider* scale_Slider = new QSlider(this);
     scale_Slider->setRange(0, 100);
+    scale_Slider->setValue(100);
     connect(scale_Slider, &QSlider::valueChanged, this, [](int val) {
         pmw->setScale(1.0*val/100);
     });
     settings->addWidget(scale_Slider);
 
     QSlider* radius_Slider = new QSlider(this);
-    radius_Slider->setRange(0, 50);
+    radius_Slider->setRange(0, 80);
     radius_Slider->setValue(unit_radius);
     connect(radius_Slider, &QSlider::valueChanged, this, [](int val) {
         unit_radius = val;

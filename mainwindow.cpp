@@ -7,6 +7,7 @@
 #include "ed_hidetextblock.h"
 #include "qgraphicseffect.h"
 #include "qpainter.h"
+#include "roundshower.h"
 #include "ui_mainwindow.h"
 #include "SysFunctions.h"
 #include <QMouseEvent>
@@ -29,14 +30,14 @@ void MainWindow::setupActions()
     QAction *act1 = new QAction("改变可见");
     this->addAction(act1);
     connect(act1, &QAction::triggered, this, [=]()
-            { edlayout->setVisible(!edlayout->Visible()); });
+            { inside->setVisible(!inside->Visible()); });
 
-    QAction *act2 = new QAction("改变复杂度");
+    QAction *act2 = new QAction("切换精简");
     this->addAction(act2);
 
     connect(act2, &QAction::triggered, this, [=]()
             {
-                for(ED_Unit* content:*(edlayout->contents)){
+                for(ED_Unit* content:*(inside->contents)){
                     content->changeSimpleMode();
                 } });
 
@@ -44,15 +45,14 @@ void MainWindow::setupActions()
     this->addAction(act3);
     connect(act3, &QAction::triggered, this, [=]()
     {
-
-        QStringList filePaths =QFileDialog::getOpenFileNames(this, QStringLiteral("选择文件"));;
-
+        QFileDialog* fd = new QFileDialog();
+        QStringList filePaths =QFileDialog::getOpenFileNames(this, QStringLiteral("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
         foreach (const QString& filePath, filePaths) {
             QFileInfo qinfo(filePath);
             QList<FileInfo>infos = getFormFileInfo(qinfo);
             foreach (const FileInfo& info, infos) {
                 auto tem = new ED_Block(this, info.icon.pixmap(256), info.name, info.filePath, 1, 1);
-                edlayout->InitAUnit(tem);
+                inside->InitAUnit(tem);
 
                 repaintAround(tem);
             }
@@ -69,13 +69,9 @@ void MainWindow::setupActions()
     QAction *act5 = new QAction("获取背景");
     this->addAction(act5);
     connect(act5, &QAction::triggered, this, [=]()
-            {
-                setVisible(false);
-                QThread::msleep(200);
-                QScreen *screen = QGuiApplication::primaryScreen();
-                bgshower->captrued = screen->grabWindow(0);
-                bgshower->cap = true;
-                setVisible(true); });
+    {
+        capture();
+    });
 
     QAction *act6 = new QAction("新建小型格子");
     this->addAction(act6);
@@ -114,11 +110,11 @@ void MainWindow::setupUnits()
     bgshower->move(0, 0);
     bgshower->setVisible(true);
     bgshower->lower();
-
+    inside = new ED_Layout(this, 20, 12, 5, 10, 10);
+    inside->isMain = true;
     setBlur(enable_background_blur);
 
-    edlayout = new ED_Layout(this, 20, 12, 5, 10, 10);
-    edlayout->isMain = true;
+
     // qDebug()<<edlayout->W_Container()<<edlayout->H_Container();
 
     QFileInfo fi("content.json");
@@ -134,7 +130,7 @@ void MainWindow::setupUnits()
     bg = QPixmap(":/images/background");
 
     setVisible(true);
-    edlayout->Update_Region();
+    inside->Update_Region();
     update();
     // bgshower->update();
 }
@@ -167,12 +163,24 @@ MainWindow::MainWindow(QWidget *parent)
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updatePer01second())); // slotCountMessage是我们需要执行的响应函数
     timer->start(50);                                                   // 每隔0.1s
+    // setEnabled(true);
+    // show();
+    // repaint();
+
+    roundShower* rs = new roundShower(this);
+    // rs->setFixedSize(200,200);
+    rs->move(0,0);
+    rs->setVisible(true);
+    rs->raise();
+
+    ed_update();
+    updateBG();
 }
 
 void MainWindow::InitAUnit(ED_Unit *aim)
 {
     // connect(aim, &ED_Unit::sendSelf, this, &MainWindow::getObject);
-    edlayout->InitAUnit(aim);
+    inside->InitAUnit(aim);
 }
 
 MainWindow::~MainWindow()
@@ -182,7 +190,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::setScale(double scale)
 {
-    foreach(ED_Unit *content , *(edlayout->contents))
+    foreach(ED_Unit *content , *(inside->contents))
     {
         content->setScale(scale);
     }
@@ -190,7 +198,7 @@ void MainWindow::setScale(double scale)
 
 void MainWindow::ed_update()
 {
-    foreach(ED_Unit *content , *(edlayout->contents))
+    foreach(ED_Unit *content , *(inside->contents))
     {
         content->ed_update();
     }
@@ -258,12 +266,29 @@ void MainWindow::InitDesktop()
     auto eb = new ED_EditBox(this);
     InitAUnit(eb);
 
-    weatherwidget = new Weather(this, 4, 2);
-    InitAUnit(weatherwidget);
-    htkt = new Hitokoto(this, 2, 1);
-    InitAUnit(htkt);
 }
 
+void MainWindow::capture()
+{
+    inside->setVisible(false,true);
+    repaint();
+    QThread::msleep(100);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    bgshower->captrued = screen->grabWindow(0);
+    bgshower->cap = true;
+    inside->setVisible(true,true);
+}
+
+void MainWindow::updateBG()
+{
+    if(enable_background_transparent){
+        if(!bgshower->cap)
+        capture();
+    }
+    else{
+        bgshower->captrued = bg;
+    }
+}
 
 void MainWindow::updatePer01second()
 {
@@ -287,7 +312,7 @@ void MainWindow::paintEvent(QPaintEvent *ev)
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 {
-    edlayout->setVisible(!edlayout->Visible());
+    inside->setVisible(!inside->Visible());
     pdt->activateWindow();
     Q_UNUSED(ev);
 }
@@ -329,16 +354,16 @@ void MainWindow::setTransparent(bool val)
         bgshower->setVisible(!val);
         bgshower->captrued = bg;
     }
+    updateBG();
     // qDebug()<<transparent<<val;
 }
 
 void MainWindow::setBlur(bool val)
 {
     enable_background_blur = val;
-
     bgshower->setEnabled(val);
     bgshower->setVisible(val);
     bgshower->lower();
-
+    updateBG();
     // qDebug()<<transparent<<val;
 }

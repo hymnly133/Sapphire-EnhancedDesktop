@@ -49,6 +49,6 @@ void writeJson();
 void readJson();
 void setMyAppAutoRun(bool isStart);
 ED_Unit* from_json(QJsonObject data);
-
+QColor GetWindowsThemeColor();
 
 #endif // SYSFUNCTIONS_H

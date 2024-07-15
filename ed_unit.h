@@ -2,6 +2,7 @@
 #define ED_UNIT_H
 #include "qgraphicseffect.h"
 #include "qpropertyanimation.h"
+#include "roundshower.h"
 #include "style.h"
 #include <QWidget>
 #include<qlabel.h>
@@ -61,7 +62,7 @@ public:
     int indX = -1;
     int indY = -1;
 
-
+    roundShower* rs;
     QGraphicsDropShadowEffect* shadow_main_color;
 
     explicit ED_Unit();

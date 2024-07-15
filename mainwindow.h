@@ -27,7 +27,7 @@ public:
     ED_BGShower* bgshower = nullptr;
     bool moving = false;
 
-    ED_Layout* edlayout;
+    ED_Layout* inside;
     QPixmap bg;
     Weather *weatherwidget;
     Hitokoto *htkt;
@@ -37,12 +37,12 @@ public:
     void mouseDoubleClickEvent(QMouseEvent* ev) override;
     void mousePressEvent(QMouseEvent* ev) override;
     QPushButton *selectBackgroundButton;  // 新增：选择背景按钮
-    // DSVideoPlayer *videoPlayer;  // 新增：用于视频播放
     void setTransparent(bool val);
     void setBlur(bool val);
     void ed_update();
-
     void InitDesktop();
+    void capture();
+    void updateBG();
 
 private:
     void setupActions();

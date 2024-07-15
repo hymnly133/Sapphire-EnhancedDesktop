@@ -109,7 +109,7 @@ void ED_Layout::put_ED_Unit(ED_Unit* aim,int xind,int yind){
 
     qDebug()<<"Put Done,Container Pos:"<<pContainer->pos()<<"Aim geometry "<<aim->geometry()<<"Pos: "<<aim->pos();
     if(enable_background_blur) Update_Region();
-    aim->ed_update();
+    // aim->ed_update();
 }
 
 void ED_Layout::Update_Region(){
@@ -252,10 +252,10 @@ QPoint ED_Layout::NearestEmptyBlockInd(ED_Unit* aim,int posx,int posy)
 }
 
 
-void ED_Layout::setVisible(bool val){
+void ED_Layout::setVisible(bool val ,bool force){
     int countt =0;
-    for(ED_Unit* unit:*contents){
-        if(val==true || !unit->alwaysShow){
+    foreach(ED_Unit* unit,*contents){
+        if((val==true || !unit->alwaysShow)||force){
             unit->setVisible(val);
             countt ++;
         }
@@ -272,8 +272,6 @@ void ED_Layout::Update_Positon(){
     for(ED_Unit* aim:*contents){
         aim->setFixedSize(W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX,H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY);
         aim->move(blocks[aim->indX][aim->indY]->posX(),blocks[aim->indX][aim->indY]->posY());
-
-
     }
 }
 

@@ -27,12 +27,17 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
     shadow_main_color->setEnabled(true);
     setGraphicsEffect(shadow_main_color);
 
-    setMainColor(QColor(88,119,144));
+    setMainColor(GetWindowsThemeColor());
 
     colorAlpha = aim_alpha();
 
     alphaAnimation = new QPropertyAnimation(this,"colorAlpha");
     scaleFixAnimation = new QPropertyAnimation(this,"scaleFix");
+    alphaAnimation->setDuration(100);
+    alphaAnimation->setEasingCurve(QEasingCurve::InSine);
+    scaleFixAnimation->setDuration(100);
+    scaleFixAnimation->setEasingCurve(QEasingCurve::InSine);
+    // setMouseTracking(true);
 
     connect(this,&ED_Unit::alpha_changed,this,[=](int val){
         update();
@@ -49,6 +54,8 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
     connect(this,&ED_Unit::mainColor_changed,this,[=](QColor val){
         whenMainColorChange(val);
     });
+
+    rs = new roundShower(this);
 
     setupMenu();
 }
@@ -159,7 +166,7 @@ void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
     mouse_release_action();
     if(moving){
         //首先检查是否拖到文件夹
-        ED_Layout* mwlayout = pmw->edlayout;
+        ED_Layout* mwlayout = pmw->inside;
         QPoint point = mwlayout->NearestBlockInd(pos().x()+width()/2,pos().y()+height()/2);
         if(!(point.x()<0||point.y()<0||point.x()>=mwlayout->row||point.y()>=mwlayout->col))
         {
@@ -195,6 +202,7 @@ void ED_Unit::mouseDoubleClickEvent(QMouseEvent *event)
 void ED_Unit::mouseMoveEvent(QMouseEvent *event)
 {
     mouse_move_action();
+    // update();
 
     if (moving)
     {
@@ -219,14 +227,14 @@ void ED_Unit::updata_animation(){
     alphaAnimation->stop();
     alphaAnimation->setStartValue(colorAlpha);
     alphaAnimation->setEndValue(aim_alpha());
-    alphaAnimation->setDuration(100);
     alphaAnimation->start();
 
 
     scaleFixAnimation->stop();
     scaleFixAnimation->setStartValue(scaleFix);
     scaleFixAnimation->setEndValue(aim_scaleFix());
-    scaleFixAnimation->setDuration(100);
+    // scaleFixAnimation->setEasingCurve(QEasingCurve::InSine);
+    // scaleFixAnimation->setDuration(100);
     scaleFixAnimation->start();
 }
 
@@ -235,13 +243,22 @@ void ED_Unit::enterEvent(QEvent *event){
     mouse_enter_action();
     updata_animation();
     event->accept();
-
+    if(edlayout!=nullptr)
+    if(!edlayout->isMain){
+        edlayout->pContainer->update();
+    }
 }
 void ED_Unit::leaveEvent(QEvent *event){
     onmouse = false  ;
+    qDebug()<<type;
     mouse_leave_action();
     updata_animation();
-
+    if(edlayout!=nullptr)
+    if(!(edlayout->isMain)){
+        edlayout->pContainer->update();
+    }
+    premove = false;
+    moving = false;
 }
 
 void ED_Unit::setBlockSize(int w,int h){
@@ -263,6 +280,7 @@ void ED_Unit::setBlockSize(int w,int h){
 }
 
 void ED_Unit::update_after_resize(){
+    ed_update();
 }
 
 void ED_Unit::setSimpleMode(bool val){
@@ -318,20 +336,22 @@ void ED_Unit::paintEvent(QPaintEvent *event)
 
 void ED_Unit::ed_update(){
 
-    QBitmap bmp(this->size());
+    // QBitmap bmp(this->size());
 
-    bmp.fill();
+    // bmp.fill();
 
-    QPainter p(&bmp);
+    // QPainter p(&bmp);
 
-    p.setPen(Qt::NoPen);
+    // p.setPen(Qt::NoPen);
 
-    p.setBrush(Qt::black);
+    // p.setBrush(Qt::black);
 
-    p.drawRoundedRect(bmp.rect(),unit_radius,unit_radius);
+    // p.drawRoundedRect(bmp.rect(),unit_radius,unit_radius);
 
-    setMask(bmp);
+    // setMask(bmp);
 
+    rs->setFixedSize(size());
+    rs->raise();
     update();
 }
 

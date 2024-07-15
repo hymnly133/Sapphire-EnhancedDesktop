@@ -10,7 +10,7 @@ int active_alpha_deep = 200;
 float sleep_color_ratio = 0.9;
 float active_color_ratio = 0.9;
 
-int light_alpha_start = 100;
+int light_alpha_start = 120;
 int light_alpha_end = 0;
 
 bool ShowRect = true;
@@ -23,7 +23,7 @@ int icon_shadow_blur_radius = 50;
 int unit_shadow_alpha = 120;
 int unit_shadow_blur_radius = 80;
 
-int unit_radius = 20;
+int unit_radius = 30;
 
 bool enable_background_transparent = true;
 bool enable_background_blur = false;

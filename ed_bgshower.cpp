@@ -32,7 +32,7 @@ void ED_BGShower::paintEvent(QPaintEvent * ev){
 }
 
 QRegion ED_BGShower::updateMask(){
-    QRegion tem = pmw->edlayout->region;
+    QRegion tem = pmw->inside->region;
     if(pMovingUnit){
         auto pos = pMovingUnit->mapToGlobal(QPoint(0,0));
         auto geo = pMovingUnit->geometry();

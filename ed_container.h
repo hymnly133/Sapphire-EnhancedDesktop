@@ -16,7 +16,7 @@ public:
     {
 
     }
-    ED_Layout* edlayout;
+    ED_Layout* inside;
     int row,col,space,spaceX,spaceY;
     // virtual void InitLayout();
     void Say();

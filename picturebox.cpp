@@ -72,19 +72,19 @@ void PictureBox::updateDispaly()
     else
         r= qMin(r1,r2);
 
-    displaySize =QSize(image_width * r * m_scale, image_height * r * m_scale);
+    displaySize =QSize(image_width * r * m_scale+1, image_height * r * m_scale+1);
 
     actualSize = displaySize;
     off_x = 0;
     off_y = 0 ;
 
 
-    if(displaySize.width()>window_width){
+    if(displaySize.width()>=window_width){
         actualSize.setWidth(window_width);
         off_x = -(displaySize.width()-window_width)/2;
     }
 
-    if(displaySize.height()>window_height){
+    if(displaySize.height()>=window_height){
         actualSize.setHeight(window_height);
         off_y = -(displaySize.height()-window_height)/2;
     }
