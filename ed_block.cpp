@@ -25,7 +25,7 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
 
     gv = new PictureBox(this, 1.0);
     lb = new QLabel(this);
-    lb->adjustSize();
+    // lb->adjustSize();
 
     // 显示图标
     // double defaultRatio = (double)default_size/image.size().width();
@@ -39,14 +39,14 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
     // vl->setAlignment(Qt::AlignHCenter);
 
     // 添加布局
-    vl->addStretch();
+    // vl->addStretch();
     vl->addWidget(gv);
     vl->setAlignment(gv, Qt::AlignCenter);
     // vl->setAlignment(gv, Qt::AlignVCenter);
 
     vl->addWidget(lb);
     vl->setAlignment(lb, Qt::AlignCenter);
-    vl->addStretch();
+    // vl->addStretch();
 
     // 显示名字
     lb->setAlignment(Qt::AlignCenter);
@@ -114,7 +114,7 @@ void ED_Block::update_after_resize(){
 void ED_Block::mouse_enter_action(){
     ED_Unit::mouse_enter_action();
     mainColor = pixmapMainColor(iconmap, active_color_ratio);
-
+    qDebug()<<rs->size();
     // 文件预览
     QFileInfo fileInfo(filePath); // 去掉 "file:///"
     qDebug() << "File info: " << fileInfo.filePath()<<scale<<gv->m_scale<<gv->displaySize<<gv->actualSize; // 调试信息
@@ -230,7 +230,8 @@ void ED_Block::unzip(QString filepath)
     // 初始化内部组件
 
     // 显示图标
-    iconmap=info.icon.pixmap(256);
+    iconmap=info.icon.pixmap(512);
+    qDebug()<<info.icon;
 
     setMainColor(pixmapMainColor(iconmap,sleep_color_ratio));
 
@@ -239,7 +240,6 @@ void ED_Block::unzip(QString filepath)
     gv->setImage(iconmap);
 
     lb->setText(elidedLineText(lb, 3, name));
-
 
     auto tem = mainColor;
     tem.setAlpha(icon_shadow_alpha);

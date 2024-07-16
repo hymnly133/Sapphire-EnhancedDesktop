@@ -24,6 +24,7 @@ SOURCES += \
     ed_unit.cpp \
     filepreviewwidget.cpp \
     hitokoto.cpp \
+    layershower.cpp \
     main.cpp \
     mainwindow.cpp \
     mousehook.cpp \
@@ -44,6 +45,7 @@ HEADERS += \
     ed_unit.h \
     filepreviewwidget.h \
     hitokoto.h \
+    layershower.h \
     mainwindow.h \
     mousehook.h \
     picturebox.h \

@@ -58,20 +58,13 @@ public:
     QRegion region;
     QWidget* pContainer;
     QVector<ED_Unit*>* contents = new QVector<ED_Unit*>;
+    QVector<ED_Unit*>* contents_AlwaysShow = new QVector<ED_Unit*>;
+    QVector<ED_Unit*>* contents_Show = new QVector<ED_Unit*>;
     little_Block* blocks[50][50];
 
 
     ED_Layout(QWidget *father,int row, int col,int borad_space,int space_x,int space_y);
-/*
- *
- *
- *
- *     ED_Unit中有如下参数，以便调用和识别在布局中的位置和大小
- *     int sizeX;//横向Block大小
- *    int sizeY;//竖向Block大小
-        int LayoutBlockX;//Block XY索引
-        int LayoutBlockY;
-*/
+
     // 从坐标获得最近的Block序号
     QPoint NearestBlockInd(QPoint point);
     QPoint NearestBlockInd(int posx,int posy);

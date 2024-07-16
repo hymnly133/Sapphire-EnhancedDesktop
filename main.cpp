@@ -3,6 +3,7 @@
 #include "ed_container.h"
 #include "ed_dock.h"
 #include "ed_editbox.h"
+#include "layershower.h"
 #include "mainwindow.h"
 #include<windows.h>
 #include <QJsonObject>
@@ -26,7 +27,12 @@ int main(int argc, char *argv[])
     qRegisterMetaType<Hitokoto>();
     qRegisterMetaType<Weather>();
 
-
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    format.setVersion(3, 2);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
 
     #ifndef QT_DEBUG
     qInstallMessageHandler(customMessageHandler);
@@ -46,10 +52,12 @@ int main(int argc, char *argv[])
     }
 
     MainWindow mw ;
+    LayerShower ls;
     //鼠标钩子
     // InitMouseHook();
 
     mw.show();
+    ls.show();
 
     a.exec();
 

@@ -15,6 +15,8 @@ PictureBox::PictureBox(QWidget *parent,double m_scale) : QWidget(parent)
     m_brush = QBrush(Qt::white);
     setScale(m_scale);
     setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    setMinimumSize(10,10);
 }
 
 void PictureBox::setBackground(QBrush brush)
@@ -45,14 +47,18 @@ void PictureBox::paintEvent(QPaintEvent * event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
+    // qDebug()<<scaled.size()<<size()<<off_x;
     painter.setBackground(m_brush);
-    // painter.eraseRect(rect());
     painter.drawPixmap(off_x, off_y, scaled);
     paintSide(this,QColor("red"));
 }
 
 void PictureBox::updateDispaly()
 {
+    // QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    // setSizePolicy(policy);
+    // setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    // setMinimumSize(10,10);
 
     double window_width, window_height;
     double image_width, image_height;
@@ -89,13 +95,9 @@ void PictureBox::updateDispaly()
         off_y = -(displaySize.height()-window_height)/2;
     }
 
-
-    changed = true;
-
     scaled = source.scaled(displaySize
                            , Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
-\
 
 
     setFixedSize(actualSize);

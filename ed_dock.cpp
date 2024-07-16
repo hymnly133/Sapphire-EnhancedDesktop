@@ -5,7 +5,7 @@
 #include"QPainter"
 #include"QJsonObject"
 ED_Dock::ED_Dock(QWidget *parent,int outSizeX,int outSizeY,int inSize)
-    : ED_Container(parent,outSizeX,outSizeY,inSize,1,2,80,10)
+    : ED_Container(parent,outSizeX,outSizeY,inSize,1,10,1,1)
 {
     alwaysShow = true;
     setMainColor(QColor(79,98,124));
@@ -13,13 +13,13 @@ ED_Dock::ED_Dock(QWidget *parent,int outSizeX,int outSizeY,int inSize)
 
 void ED_Dock::InplaceAUnit(ED_Unit* aim){
     aim->setBlockSize(1,1);
-    edlayout->InplaceAUnit(aim);
+    inside->InplaceAUnit(aim);
 }
 
 bool ED_Dock::OKforput(ED_Unit* aim){
     ED_Unit tem(nullptr,1,1);
-    qDebug()<<edlayout->col;
-    return edlayout->OKforput(&tem);
+    qDebug()<<inside->col;
+    return inside->OKforput(&tem);
 }
 
 void ED_Dock::paintEvent(QPaintEvent *event){
@@ -33,10 +33,10 @@ void ED_Dock::paintEvent(QPaintEvent *event){
 
     int count=0;
     for(int i=0;i<row;i++){
-        if(edlayout->Occupied(i,0)){
+        if(inside->Occupied(i,0)){
             count++;
-            auto temm = edlayout->getUnitFromBlock(i,0)->mainColor;
-            float ratio = 1.0*edlayout->blocks[i][0]->CenterX()/width();
+            auto temm = inside->getUnitFromBlock(i,0)->mainColor;
+            float ratio = 1.0*inside->blocks[i][0]->CenterX()/width();
             // qDebug()<<"found" << i<<ratio<<edlayout->blocks[i][0]->CenterX()<<width();
             temm.setAlpha(colorAlpha);
             linearGradient.setColorAt(ratio, temm);

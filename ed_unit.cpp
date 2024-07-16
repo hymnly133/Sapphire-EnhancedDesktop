@@ -56,6 +56,7 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
     });
 
     rs = new roundShower(this);
+    rs->raise();
 
     setupMenu();
 }
@@ -145,6 +146,13 @@ void ED_Unit::setupMenu()
                 removeFromLayout();
                 deleteLater();
             });
+
+    QAction* act7  = new QAction("切换始终显示");
+    this->addAction(act7);
+    connect(act7, &QAction::triggered, this, [=]()
+            {
+        setAlwaysShow(!alwaysShow);
+            });
 }
 
 void ED_Unit::mousePressEvent(QMouseEvent *event)
@@ -156,12 +164,11 @@ void ED_Unit::mousePressEvent(QMouseEvent *event)
         premove = true;
         relativeP = event->pos();
     }
-
+    event->accept();
 }
 
 void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
 {
-
     releaseMouse();
     mouse_release_action();
     if(moving){
@@ -190,6 +197,7 @@ void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
     }
     premove = false;
     // repaintAround(this);
+    event->accept();
 
 }
 
@@ -221,6 +229,7 @@ void ED_Unit::mouseMoveEvent(QMouseEvent *event)
             moving = true;
         }
     }
+    event->accept();
 }
 
 void ED_Unit::updata_animation(){
@@ -233,10 +242,9 @@ void ED_Unit::updata_animation(){
     scaleFixAnimation->stop();
     scaleFixAnimation->setStartValue(scaleFix);
     scaleFixAnimation->setEndValue(aim_scaleFix());
-    // scaleFixAnimation->setEasingCurve(QEasingCurve::InSine);
-    // scaleFixAnimation->setDuration(100);
     scaleFixAnimation->start();
 }
+
 
 void ED_Unit::enterEvent(QEvent *event){
     onmouse = true  ;
@@ -247,6 +255,7 @@ void ED_Unit::enterEvent(QEvent *event){
     if(!edlayout->isMain){
         edlayout->pContainer->update();
     }
+    update();
 }
 void ED_Unit::leaveEvent(QEvent *event){
     onmouse = false  ;
@@ -281,6 +290,7 @@ void ED_Unit::setBlockSize(int w,int h){
 
 void ED_Unit::update_after_resize(){
     ed_update();
+    rs->updateDisplay();
 }
 
 void ED_Unit::setSimpleMode(bool val){
@@ -325,6 +335,40 @@ void ED_Unit::setScaleFix(double val)
     emit scaleFix_changed(val);
 }
 
+void ED_Unit::setAlwaysShow(bool val)
+{
+    alwaysShow = val;
+    if(edlayout!=nullptr){
+        if(val){
+            auto s = std::find(edlayout->contents_Show->begin(), edlayout->contents_Show->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
+            if (s != edlayout->contents_Show->end())//如果找到，就输出这个元素
+            {
+                edlayout->contents_Show->erase(s);
+            }
+            else//如果没找到
+            {
+                qDebug() << "not find!";
+            }
+
+            edlayout->contents_AlwaysShow->push_back(this);
+        }
+        else{
+
+            auto s = std::find(edlayout->contents_AlwaysShow->begin(), edlayout->contents_AlwaysShow->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
+            if (s != edlayout->contents_AlwaysShow->end())//如果找到，就输出这个元素
+            {
+                edlayout->contents_AlwaysShow->erase(s);
+            }
+            else//如果没找到
+            {
+                qDebug() << "not find!";
+            }
+
+            edlayout->contents_Show->push_back(this);
+        }
+    }
+}
+
 void ED_Unit::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -335,22 +379,7 @@ void ED_Unit::paintEvent(QPaintEvent *event)
 
 
 void ED_Unit::ed_update(){
-
-    // QBitmap bmp(this->size());
-
-    // bmp.fill();
-
-    // QPainter p(&bmp);
-
-    // p.setPen(Qt::NoPen);
-
-    // p.setBrush(Qt::black);
-
-    // p.drawRoundedRect(bmp.rect(),unit_radius,unit_radius);
-
-    // setMask(bmp);
-
-    rs->setFixedSize(size());
+    rs->updateDisplay();
     rs->raise();
     update();
 }

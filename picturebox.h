@@ -20,7 +20,6 @@ public:
     QSize actualSize;
 
     int off_x,off_y;
-    bool changed = true;
     double m_scale = 1.0;
     void updateDispaly();
 protected:

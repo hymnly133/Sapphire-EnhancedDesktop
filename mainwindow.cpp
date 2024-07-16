@@ -6,6 +6,7 @@
 #include "ed_editbox.h"
 #include "ed_hidetextblock.h"
 #include "qgraphicseffect.h"
+#include "qmimedata.h"
 #include "qpainter.h"
 #include "roundshower.h"
 #include "ui_mainwindow.h"
@@ -30,7 +31,7 @@ void MainWindow::setupActions()
     QAction *act1 = new QAction("改变可见");
     this->addAction(act1);
     connect(act1, &QAction::triggered, this, [=]()
-            { inside->setVisible(!inside->Visible()); });
+            { setShoweredVisibal(!showeredVisibal); });
 
     QAction *act2 = new QAction("切换精简");
     this->addAction(act2);
@@ -48,23 +49,15 @@ void MainWindow::setupActions()
         QFileDialog* fd = new QFileDialog();
         QStringList filePaths =QFileDialog::getOpenFileNames(this, QStringLiteral("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
         foreach (const QString& filePath, filePaths) {
-            QFileInfo qinfo(filePath);
-            QList<FileInfo>infos = getFormFileInfo(qinfo);
-            foreach (const FileInfo& info, infos) {
-                auto tem = new ED_Block(this, info.icon.pixmap(256), info.name, info.filePath, 1, 1);
-                inside->InitAUnit(tem);
-
-                repaintAround(tem);
-            }
+            addAIcon(filePath);
         }
-
-
     });
 
     QAction *act4 = new QAction("退出程序");
     this->addAction(act4);
     connect(act4, &QAction::triggered, this, [=]()
-            { close(); });
+            { close();
+pls->close();    });
 
     QAction *act5 = new QAction("获取背景");
     this->addAction(act5);
@@ -97,7 +90,7 @@ void MainWindow::setupActions()
     this->addAction(act9);
     connect(act9, &QAction::triggered, this, [=]()
             {
-                auto dock = new ED_Dock(this,6,1,4);
+                auto dock = new ED_Dock(this,10,1,15);
                 InitAUnit(dock); });
 }
 void MainWindow::setupUnits()
@@ -136,26 +129,20 @@ void MainWindow::setupUnits()
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), weatherwidget(nullptr)
+    : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     pmw = this;
     pdt = QApplication::desktop();
     ui->setupUi(this);
     setWindowState(Qt::WindowFullScreen);
-        // mainwindow->setAttribute(Qt::WA_TransparentForMouseEvents,true);
-    // setWindowFlags(Qt::FramelessWindowHint|Qt::Window);
-
     setAttribute(Qt::WA_TranslucentBackground);
-
-
+    setAcceptDrops(true);
     Init(this);
-
     setFixedSize(QGuiApplication::primaryScreen()->availableSize());
     move(0,0);
     qDebug()<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
+
     move(-geometry().x(),-geometry().y());
-    // auto tem = -mapToGlobal(QPoint(0,0));
-    // move(tem);
     setupUnits();
 
     setupActions();
@@ -163,16 +150,49 @@ MainWindow::MainWindow(QWidget *parent)
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updatePer01second())); // slotCountMessage是我们需要执行的响应函数
     timer->start(50);                                                   // 每隔0.1s
-    // setEnabled(true);
-    // show();
-    // repaint();
 
-    roundShower* rs = new roundShower(this);
-    // rs->setFixedSize(200,200);
-    rs->move(0,0);
-    rs->setVisible(true);
-    rs->raise();
 
+    connect(this,&MainWindow::showerSize_changed,this,[=](QSize val){
+        changeShower->repaint();
+    });
+
+    connect(this,&MainWindow::showerRadius_changed,this,[=](int val){
+        qDebug()<<val;
+    });
+
+    changeShower = new roundShower(this);
+    changeShower->distri(&showerSize,&showerRadius);
+    changeShower->setVisible(true);
+    changeShower->move(0,0);
+
+    showerSizeAnimation = new QPropertyAnimation(this,"showerSize");
+    showerRadiusAnimation = new QPropertyAnimation(this,"showerRadius");
+    showerSizeAnimation->setDuration(500);
+    showerSizeAnimation->setEasingCurve(QEasingCurve::InSine);
+    showerRadiusAnimation->setDuration(500);
+    showerRadiusAnimation->setEasingCurve(QEasingCurve::InSine);
+
+    showerAnimations = new QParallelAnimationGroup(this);
+    showerAnimations->addAnimation(showerRadiusAnimation);
+    showerAnimations->addAnimation(showerSizeAnimation);
+
+
+    connect(showerAnimations,&QParallelAnimationGroup::finished,this,[=](){
+        if (showeredVisibal){
+            // foreach (ED_Unit* content,*(inside->contents)) {
+            //     content->setVisible(true);
+            // }
+            inside->setVisible(true);
+        }
+    });
+
+
+    // buffer = QPixmap(size());
+    // inside->setVisible(true);
+    // // setShoweredVisibal(false);
+    // buffer = this->grab(rect());
+    // inside->setVisible(false);
+    setShoweredVisibal(true);
     ed_update();
     updateBG();
 }
@@ -181,6 +201,7 @@ void MainWindow::InitAUnit(ED_Unit *aim)
 {
     // connect(aim, &ED_Unit::sendSelf, this, &MainWindow::getObject);
     inside->InitAUnit(aim);
+    // aim->ed_update();
 }
 
 MainWindow::~MainWindow()
@@ -209,7 +230,86 @@ void MainWindow::InitDesktop()
     // 获取图标
     QList<FileInfo> iconns = scanalldesktopfiles();
     QList<QString> nametem;
-    foreach (const FileInfo &file, iconns)
+    addAIcon(iconns);
+
+    auto eb = new ED_EditBox(this);
+    InitAUnit(eb);
+
+}
+
+void MainWindow::capture()
+{
+    inside->setVisible(false,true);
+    repaint();
+    QThread::msleep(100);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    bgshower->captrued = screen->grabWindow(0).copy(rect());
+    bgshower->cap = true;
+    inside->setVisible(true,true);
+}
+
+void MainWindow::updateBG()
+{
+    if(enable_background_transparent){
+        if(!bgshower->cap)
+        capture();
+    }
+    else{
+        bgshower->captrued = bg;
+    }
+}
+
+void MainWindow::setShoweredVisibal(bool val){
+    // changeShower->raise();
+
+    if (!val){
+        foreach (ED_Unit* content,*(inside->contents_AlwaysShow)) {
+            content->setVisible(false);
+        }
+
+        buffer = this->grab(rect());
+
+        foreach (ED_Unit* content,*(inside->contents_AlwaysShow)) {
+            content->setVisible(true);
+        }
+
+        inside->setVisible(false);
+    }
+    showeredVisibal = val;
+
+
+    updata_animation();
+}
+
+void MainWindow::updata_animation()
+{
+
+    showerAnimations->stop();
+
+    showerSizeAnimation->setStartValue(showerSize);
+    showerSizeAnimation->setEndValue(aim_showerSize());
+    showerRadiusAnimation->setStartValue(showerRadius);
+    showerRadiusAnimation->setEndValue(aim_showerRadius());
+
+    showerAnimations->start();
+
+}
+
+void MainWindow::addAIcon(QString path)
+{
+    addAIcon(QFileInfo(path));
+}
+
+void MainWindow::addAIcon(QFileInfo qinfo)
+{
+    QList<FileInfo>infos = getFormFileInfo(qinfo);
+    addAIcon(infos);
+}
+
+void MainWindow::addAIcon(QList<FileInfo> infos)
+{
+    QList<QString> nametem;
+    foreach (const FileInfo &file, infos)
     {
         qDebug() << file.name << file.type;
         int sizex = 1;
@@ -222,7 +322,7 @@ void MainWindow::InitDesktop()
             if (!file.multi)
             {
 
-                tem = new ED_Block(this, file.icon.pixmap(256), file.name, file.filePath, sizex, sizey);
+                tem = new ED_Block(this, file.icon.pixmap(32), file.name, file.filePath, sizex, sizey);
                 nametem.append(file.name);
             }
             else
@@ -262,32 +362,14 @@ void MainWindow::InitDesktop()
             tem->raise();
         }
     }
-
-    auto eb = new ED_EditBox(this);
-    InitAUnit(eb);
-
 }
 
-void MainWindow::capture()
+void MainWindow::appendPoints(QPoint p)
 {
-    inside->setVisible(false,true);
-    repaint();
-    QThread::msleep(100);
-    QScreen *screen = QGuiApplication::primaryScreen();
-    bgshower->captrued = screen->grabWindow(0);
-    bgshower->cap = true;
-    inside->setVisible(true,true);
-}
-
-void MainWindow::updateBG()
-{
-    if(enable_background_transparent){
-        if(!bgshower->cap)
-        capture();
+    if ( drawParamList.count() == 2 ) {
+        drawParamList.removeLast(); // 移除最后一个点
     }
-    else{
-        bgshower->captrued = bg;
-    }
+    drawParamList.append(p);
 }
 
 void MainWindow::updatePer01second()
@@ -298,28 +380,77 @@ void MainWindow::updatePer01second()
     // qDebug()<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0));
 }
 
+void MainWindow::dropEvent(QDropEvent *e)
+{
+    if(e->mimeData()->hasUrls())//处理期望数据类型
+    {
+        QList<QUrl> list = e->mimeData()->urls();//获取数据并保存到链表中
+        for(int i = 0; i < list.count(); i++)
+        {
+            addAIcon( list[i].toLocalFile());
+        }
+    }
+    else
+    {
+        e->ignore();
+    }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+    if(e->mimeData()->hasUrls())//判断数据类型
+    {
+        e->acceptProposedAction();//接收该数据类型拖拽事件
+    }
+    else
+    {
+        e->ignore();//忽略
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    appendPoints(event->pos());
+        pls->update();  // 启动paintEvent
+    //  mouseReleaseAndControl();  // 在鼠标释放后调用快速定位的功能
+    drawParamList.clear();
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    appendPoints(event->pos());
+    pls->update();
+}
+
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
-    QPainter painter0(this);
-    painter0.fillRect(rect(),QColor(1,1,1,1));
     if (!enable_background_transparent)
     {
         QPainter painter(this);
         painter.drawPixmap(rect(), bg);
     }
+
+    if((!showeredVisibal)||(showeredVisibal&&showerAnimations->state()==QAnimationGroup::Running)){
+        QPainter painter(this);
+        painter.drawPixmap(rect(), buffer);
+    }
+
+
     Q_UNUSED(ev);
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 {
-    inside->setVisible(!inside->Visible());
+    setShoweredVisibal(!showeredVisibal);
     pdt->activateWindow();
     Q_UNUSED(ev);
 }
 
 void MainWindow::mousePressEvent(QMouseEvent* ev){
-    pdt->activateWindow();
-    Q_UNUSED(ev);
+
+    appendPoints(ev->pos());
+    printf("mousePressEvent \n");
+    pls->raise();
 }
 
 void MainWindow::onSelectBackground()

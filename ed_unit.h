@@ -7,6 +7,8 @@
 #include <QWidget>
 #include<qlabel.h>
 #include <QVariant>
+#include<qopenglwidget.h>
+#include<qopenglfunctions.h>
 class ED_Layout;
 
 class ED_Unit : public QWidget
@@ -110,16 +112,22 @@ public:
     virtual void setSimpleMode(bool);
     virtual void setScale(double val);
     virtual void setScaleFix(double val);
+    virtual void setAlwaysShow(bool val);
     QColor mainColor_Alphaed();
 
 
     void updata_animation();
+
+
 
 public: signals:
     void alpha_changed(int);
     void mainColor_changed(QColor);
     void scale_changed(double);
     void scaleFix_changed(double);
+
+
+    // QOpenGLWidget interface
 
 };
 Q_DECLARE_METATYPE(ED_Unit);

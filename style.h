@@ -36,4 +36,6 @@ extern int muilt_icon_default_type;
 
 extern double scale_fix_ratio;
 
+extern bool enable_lnk_redirect;
+
 #endif // STYLE_H

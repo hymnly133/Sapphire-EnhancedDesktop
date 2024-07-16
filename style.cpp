@@ -35,3 +35,4 @@ bool enable_image_fill=false;
 
 int muilt_icon_default_type =1;
 double scale_fix_ratio = 1.3;
+bool enable_lnk_redirect = 1;

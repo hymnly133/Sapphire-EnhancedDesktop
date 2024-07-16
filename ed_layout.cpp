@@ -106,6 +106,12 @@ void ED_Layout::put_ED_Unit(ED_Unit* aim,int xind,int yind){
     aim->raise();
 
     contents->push_back(aim);
+    if(aim->alwaysShow){
+        contents_AlwaysShow->push_back(aim);
+    }
+    else{
+        contents_Show->push_back(aim);
+    }
 
     qDebug()<<"Put Done,Container Pos:"<<pContainer->pos()<<"Aim geometry "<<aim->geometry()<<"Pos: "<<aim->pos();
     if(enable_background_blur) Update_Region();
@@ -156,6 +162,31 @@ void ED_Layout::RemoveAUnit(ED_Unit* aim){
     {
         qDebug() << "not find!";
     }
+
+    if(aim->alwaysShow){
+        auto s = std::find(contents_AlwaysShow->begin(), contents_AlwaysShow->end(), aim);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
+        if (s != contents_AlwaysShow->end())//如果找到，就输出这个元素
+        {
+            contents_AlwaysShow->erase(s);
+        }
+        else//如果没找到
+        {
+            qDebug() << "not find!";
+        }
+    }
+    else{
+        auto s = std::find(contents_Show->begin(), contents_Show->end(), aim);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
+        if (s != contents_Show->end())//如果找到，就输出这个元素
+        {
+            contents_Show->erase(s);
+        }
+        else//如果没找到
+        {
+            qDebug() << "not find!";
+        }
+    }
+
+
     Update_Region();
     qDebug()<<"Removed";
 }
@@ -254,12 +285,27 @@ QPoint ED_Layout::NearestEmptyBlockInd(ED_Unit* aim,int posx,int posy)
 
 void ED_Layout::setVisible(bool val ,bool force){
     int countt =0;
-    foreach(ED_Unit* unit,*contents){
-        if((val==true || !unit->alwaysShow)||force){
+    if(force){
+        foreach(ED_Unit* unit,*contents){
+
+                unit->setVisible(val);
+                countt ++;
+
+        }
+    }
+    else{
+        foreach (ED_Unit* unit,*contents_Show) {
             unit->setVisible(val);
             countt ++;
         }
+
+        if(!val){
+            foreach (ED_Unit* unit,*contents_AlwaysShow) {
+                unit->raise();
+            }
+        }
     }
+
     visibal = val;
     Update_Region();
     pContainer->update();

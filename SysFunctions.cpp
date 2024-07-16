@@ -1,5 +1,6 @@
 #include <complex>
 #include<windows.h>
+#include "layershower.h"
 #include"mainwindow.h"
 #include "qapplication.h"
 #include "qpainter.h"
@@ -24,6 +25,7 @@
 
 MainWindow* pmw;;
 MouseHook* pmh;
+LayerShower* pls;
 
 QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
@@ -338,7 +340,7 @@ QList<FileInfo>getFormFileInfo(QFileInfo x){
     }
     file.name=fileName;
     qDebug()<<x.suffix().toLower()<<x.symLinkTarget();
-    if (x.suffix().toLower() == "lnk")
+    if (x.suffix().toLower() == "lnk" && enable_lnk_redirect)
     {
         // 处理快捷方式（.lnk 文件）
         QString target = x.symLinkTarget();
@@ -362,6 +364,8 @@ QList<FileInfo>getFormFileInfo(QFileInfo x){
     else
     {
         QFileIconProvider a;
+
+        a.setOptions(QFileIconProvider::Option::DontUseCustomDirectoryIcons);
         file.icon = a.icon(x);
     }
     //针对steam游戏
@@ -627,6 +631,8 @@ void writeStyleIni(){
 
     Write(Double,preference,scale_fix_ratio);
 
+    Write(Bool,preference,enable_lnk_redirect);
+
     //写入完成后删除指针
     delete styleIni;
 }
@@ -675,6 +681,8 @@ void readStyleIni(){
         Read(Bool,preference,muilt_icon_default_type);
 
         Read(Double,preference,scale_fix_ratio);
+
+        Read(Bool,preference,enable_lnk_redirect);
 
         delete styleIni;
     }
