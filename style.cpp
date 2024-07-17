@@ -24,6 +24,7 @@ int unit_shadow_alpha = 120;
 int unit_shadow_blur_radius = 80;
 
 int unit_radius = 30;
+int position_animation_time = 100;
 
 bool enable_background_transparent = true;
 bool enable_background_blur = false;

@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "ed_bgshower.h"
-#include "ed_layout.h"
+#include "ed_blocklayout.h"
 #include <QMainWindow>
 #include <mousehook.h>
 #include <QPushButton>  // 添加QPushButton头文件
@@ -31,7 +31,7 @@ public:
     Ui::MainWindow *ui;
     ED_BGShower* bgshower = nullptr;
 
-    ED_Layout* inside;
+    ED_BlockLayout* inside;
     QPixmap bg;
     QPixmap buffer;
     roundShower* changeShower;
@@ -44,7 +44,7 @@ public:
     QPropertyAnimation* showerRadiusAnimation;
     QParallelAnimationGroup * showerAnimations;
 
-    void InitAUnit(ED_Unit* aim);
+    void InitAUnit(ED_Unit* aim, bool animated=false);
     void paintEvent(QPaintEvent * ev) override;
     void mouseDoubleClickEvent(QMouseEvent* ev) override;
     void mousePressEvent(QMouseEvent* ev) override;

@@ -23,6 +23,7 @@ extern int unit_shadow_alpha;
 extern int unit_shadow_blur_radius;
 
 extern int unit_radius;
+extern int position_animation_time;
 
 extern bool enable_background_transparent;
 extern bool enable_background_blur;

@@ -1,98 +1,70 @@
 #include "ed_layout.h"
 #include "SysFunctions.h"
 #include "mainwindow.h"
-#include "qdebug.h"
-#include<cmath>
+#include "qtimer.h"
+#include<algorithm>
 
+int cmp(const ED_Unit* a,const ED_Unit* b)
+{
+    ED_Unit* p1=(ED_Unit*)a;
+    ED_Unit* p2=(ED_Unit*)b;
+    //将a和b强制类型转换后分别存入int型指针变量p1和p2
+    return *p1<*p2;
 
-
-ED_Layout::ED_Layout(QWidget *father, int row, int col, int borad_space,int space_x,int space_y) {
-    this->row = row;
-    this->col = col;
-    this->space = borad_space;
-    this->spaceX = space_x;
-    this->spaceY = space_y;
-    this->pContainer = father;
-    for(int i=0;i<row;i++){
-        for(int k=0;k<col;k++){
-            blocks[i][k] = new little_Block(this,i,k);
-            blocks[i][k]->occupied = false;
-        }
-    }
-    visibal = true;
 }
 
-
-QPoint ED_Layout::NearestBlockInd(QPoint point){
-    return QPoint((point.x()-space)/(W_Block_Clean()+spaceX),(point.y()-space)/(H_Block_Clean()+spaceY));
-}
-QPoint ED_Layout::NearestBlockInd(int posx,int posy){
-    return QPoint((posx-space)/(W_Block_Clean()+spaceX),(posy-space)/(H_Block_Clean()+spaceY));
+ED_Layout::ED_Layout(QWidget *father)
+{
+    pContainer = father;
 }
 
-//从Block序号获取中心坐标
-QPoint ED_Layout::BlockInd2CenterPoint(QPoint ind){
-    return blocks[ind.x()][ind.y()]->CenterPoint();
-}
-QPoint ED_Layout::BlockInd2CenterPoint(int x,int y){
-    return blocks[x][y]->CenterPoint();
+QPoint ED_Layout::pos2Ind(QPoint point)
+{
+    return pos2Ind(point.x(),point.y());
 }
 
-//从Block序号获取是否占用
-bool& ED_Layout::Occupied(QPoint ind){
-    if(ind.x()<0||ind.y()<0||ind.x()>=row||ind.y()>=col)
-    {
-        bool x=false;
-        return x;
-    }
-    return blocks[ind.x()][ind.y()]->occupied;
-}
-bool& ED_Layout::Occupied(int x,int y){
-    if(x<0||y<0||x>=row||y>=col)
-    {
-        bool x=false;
-        return x;
-    }
-    return blocks[x][y]->occupied;
+QPoint ED_Layout::ind2CenterPoint(QPoint ind)
+{
+    return ind2CenterPoint(ind.x(),ind.y());
 }
 
-bool ED_Layout::OKForUnit(ED_Unit* aim,int xind,int yind){
-    int x = aim->sizeX;
-    int y = aim->sizeY;
-    if(x+xind>row)return false;
-    if(y+yind>col) return false;
-    for(int i=0;i<x;i++){
-        for(int k=0;k<y;k++){
-            if(Occupied(xind+i,yind+k)) return false;
-        }
-    }
-    return true;
+QSize ED_Layout::ind2Size(QPoint ind)
+{
+    return ind2Size(ind.x(),ind.y());
 }
 
-//将一个ED_Unit放置在Block中，并在双方的变量中纪律以便之后识别
-void ED_Layout::put_ED_Unit(ED_Unit* aim,QPoint ind){
-    return put_ED_Unit(aim,ind.x(),ind.y());
+QPoint ED_Layout::ind2Pos(QPoint ind)
+{
+    return ind2Pos(ind.x(),ind.y());
 }
 
-void ED_Layout::put_ED_Unit(ED_Unit* aim,int xind,int yind){
-    aim->setParent(pContainer);
-    int x = aim->sizeX;
-    int y = aim->sizeY;
-    for(int i=0;i<x;i++){
-        for(int k=0;k<y;k++){
-            Occupied(xind+i,yind+k) = true;
-            blocks[xind+i][yind+k]->content = aim;
-        }
-    }
+QPoint ED_Layout::ind2Pos_Centual(QPoint ind)
+{
+    return ind2Pos_Centual(ind.x(),ind.y());
+}
+
+QPoint ED_Layout::ind2Pos_Centual(int xind, int yind)
+{
+    QSize size = ind2Size(xind,yind);
+    return ind2CenterPoint(xind,yind)-QPoint(size.width(),size.height())/2;
+}
+
+bool ED_Layout::Occupied(QPoint ind)
+{
+    return Occupied(ind.x(),ind.y());
+}
+
+void ED_Layout::putUnit(ED_Unit *aim, int xind, int yind, bool animated)
+{
+    updateBeforePut(aim,xind,yind);
+
     aim->indX = xind;
     aim->indY = yind;
 
-    aim->setFixedSize(W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX,H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY);
-    aim->move(blocks[xind][yind]->posX(),blocks[xind][yind]->posY());
+    aim->layout = this;
 
-    aim->update_after_resize();
-    aim->edlayout = this;
-    aim->setVisible(true);
+
+    //setRect
     if(isMain){
         aim->showRect = true;
         aim->showLight = true;
@@ -102,9 +74,6 @@ void ED_Layout::put_ED_Unit(ED_Unit* aim,int xind,int yind){
         aim->showLight = false;
     }
 
-    pContainer->raise();
-    aim->raise();
-
     contents->push_back(aim);
     if(aim->alwaysShow){
         contents_AlwaysShow->push_back(aim);
@@ -113,41 +82,45 @@ void ED_Layout::put_ED_Unit(ED_Unit* aim,int xind,int yind){
         contents_Show->push_back(aim);
     }
 
-    qDebug()<<"Put Done,Container Pos:"<<pContainer->pos()<<"Aim geometry "<<aim->geometry()<<"Pos: "<<aim->pos();
-    if(enable_background_blur) Update_Region();
-    // aim->ed_update();
-}
 
-void ED_Layout::Update_Region(){
-    int countt =0;
-    region = QRegion();
-    for(ED_Unit* content:*(contents)){
-        // qDebug()<< content->isVisible();
-        if(content->isVisible()){
-            auto tem = content->mapToGlobal(QPoint(0,0));
-            region = region.united(QRegion(tem.x(),tem.y(),content->width(),content->height()));
-            // qDebug()<<content->geometry();
-            countt++;
-        }
+    aim->preSetInLayout(animated);
 
+    updateBeforePutAnimation(aim,xind,yind);
+
+    if(enable_background_blur) UpdateRegion();
+
+    if(animated){
+        QTimer *pTimer = new QTimer(pContainer);
+        pTimer->singleShot(position_animation_time*2,[=](){
+            if(aim->layout!=nullptr){
+                aim->setInLayout(true);
+                updateAfterPut(aim,xind,yind);
+                qDebug()<<"timer setted end";
+            }
+            // qDebug()<<"timer end";
+        });
     }
-    qDebug()<<"Region count"<<countt;
+    else{
+        aim->setInLayout(false);
+        updateAfterPut(aim,xind,yind);
+    }
 }
-void ED_Layout::RemoveAUnit(ED_Unit* aim){
-    int x = aim->sizeX;
-    int y = aim->sizeY;
-    int xind = aim->indX;
-    int yind = aim->indY ;
+
+void ED_Layout::putUnit(ED_Unit *aim, QPoint ind, bool animated)
+{
+    putUnit(aim,ind.x(),ind.y(),animated);
+}
+
+void ED_Layout::RemoveAUnit(ED_Unit *aim)
+{
     QPoint tempos = aim->mapToGlobal(QPoint(0,0));
-    for(int i=0;i<x;i++){
-        for(int k=0;k<y;k++){
-            Occupied(xind+i,yind+k) = false;
-            blocks[xind+i][yind+k]->content = NULL;
-        }
-    }
+    int indx = aim->indX;
+    int indy = aim->indY;
+
+    updateBeforeRemove(aim,indx,indy);
     aim->indX = -1;
     aim->indY = -1;
-    aim->edlayout = nullptr;
+    aim->layout = nullptr;
     aim->setParent(pmw);
     aim->move(tempos);
     aim->setEnabled(true);
@@ -187,109 +160,52 @@ void ED_Layout::RemoveAUnit(ED_Unit* aim){
     }
 
 
-    Update_Region();
-    qDebug()<<"Removed";
+
+    updateAfterRemove(aim,indx,indy);
+
+    UpdateRegion();
 }
 
-void ED_Layout::InplaceAUnit(ED_Unit* aim){
-    QPoint absolutePos =  aim->mapToGlobal(QPoint(0, 0));
-    QPoint relativePos = absolutePos-pContainer->pos();
-    QPoint dis = NearestEmptyBlockInd(aim,relativePos);
-    // qDebug()<<absolutePos<<relativePos<<dis;
-    aim->move(absolutePos);
-    put_ED_Unit(aim,dis);
-}
-
-void ED_Layout::InitAUnit(ED_Unit* aim){
-    default_Put_ED_Unit(aim);
-    aim->update_after_resize();
-    aim->raise();
-}
-
-//根据一个Block索引获取对应的ED_Unit指针
-ED_Unit* ED_Layout::getUnitFromBlock(int xind,int yind)
+void ED_Layout::clearPut(ED_Unit *aim,bool animated)
 {
-    if(Occupied(xind,yind))
-    {
-        return blocks[xind][yind]->content;
+    if(OKForClearPut(aim)){
+        putUnit(aim,clearPutableInd(aim),animated);
     }
-    else
-    {
-        return nullptr;
-    }
-    //若无返回空指针
-}
-ED_Unit* ED_Layout::getUnitFromBlock(QPoint ind)
-{
-    return getUnitFromBlock(ind.x(),ind.y());
-}
-//将一个ED_Unit按序号最下且可放置的位置放置
-
-void ED_Layout::default_Put_ED_Unit(ED_Unit* aim)
-{
-    for(int j=0;j<col;j++)
-    {
-        for(int i=0;i<row;i++)
-        {
-            if(OKForUnit(aim,i,j))
-            {
-                put_ED_Unit(aim,i,j);
-                return;
-            }
-        }
+    else{
+        qDebug()<<"No Area";
     }
 }
-QPoint ED_Layout::NearestEmptyBlockInd(ED_Unit* aim,QPoint pos)
+bool ED_Layout::OKForClearPut(ED_Unit *aim)
 {
-    return NearestEmptyBlockInd(aim,pos.x(),pos.y());
+    if(clearPutableInd(aim)==QPoint(-1,-1)) return false;
+    else return true;
 }
 
-bool ED_Layout::OKforput(ED_Unit*aim)
+bool ED_Layout::OKForDefaultPut(ED_Unit *aim)
 {
-    bool flag=false;
-    for(int i=0;i<row;i++)
-    {
-        for(int j=0;j<col;j++)
-        {
-            if(OKForUnit(aim,i,j))
-                flag=true;
-        }
-    }
-    return flag;
+    if(defaultPutableInd(aim)==QPoint(-1,-1)) return false;
+    else return true;
 }
 
-QPoint ED_Layout::NearestEmptyBlockInd(ED_Unit* aim,int posx,int posy)
+ED_Unit *ED_Layout::ind2Unit(QPoint ind)
 {
-    int mindeltaw=W_Container();
-    int mindeltah=H_Container();
-    int bpw,bph;
-    bpw=bph=-1;
-    for(int i=0;i<row;i++)
-    {
-        for(int j=0;j<col;j++)
-        {
-            int deltaw=abs(posx-space-i*(W_Block_Clean()+spaceX));
-            int deltah=abs(posy-space-j*(H_Block_Clean()+spaceY));
-            if((deltaw+deltah<mindeltaw+mindeltah)&&(OKForUnit(aim,i,j)))
-            {
-                mindeltaw=deltaw;
-                mindeltah=deltah;
-                bpw=i;
-                bph=j;
-            }
-        }
-    }
-    return QPoint(bpw,bph);
+    return ind2Unit(ind.x(),ind.y());
 }
 
+void ED_Layout::defaultPut(ED_Unit *aim, bool animated)
+{
+    QPoint dis = defaultPutableInd(aim);
+    putUnit(aim,dis,animated);
+}
 
-void ED_Layout::setVisible(bool val ,bool force){
+void ED_Layout::setVisible(bool val, bool force)
+{
     int countt =0;
     if(force){
         foreach(ED_Unit* unit,*contents){
 
-                unit->setVisible(val);
-                countt ++;
+            unit->setVisible(val);
+            countt ++;
 
         }
     }
@@ -307,67 +223,83 @@ void ED_Layout::setVisible(bool val ,bool force){
     }
 
     visibal = val;
-    Update_Region();
+    UpdateRegion();
     pContainer->update();
     qDebug()<<"setted"<<countt<<" "<<val;
 }
-bool ED_Layout::Visible(){
-    return visibal;
+
+void ED_Layout::UpdateRegion()
+{
+    int countt =0;
+    region = QRegion();
+    for(ED_Unit* content:*(contents)){
+        if(content->isVisible()){
+            auto tem = content->mapToGlobal(QPoint(0,0));
+            region = region.united(QRegion(tem.x(),tem.y(),content->width(),content->height()));
+            countt++;
+        }
+
+    }
+    qDebug()<<"Region count"<<countt;
 }
-void ED_Layout::Update_Positon(){
-    for(ED_Unit* aim:*contents){
-        aim->setFixedSize(W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX,H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY);
-        aim->move(blocks[aim->indX][aim->indY]->posX(),blocks[aim->indX][aim->indY]->posY());
+
+void ED_Layout::UpdateContentPositon()
+{
+    foreach (ED_Unit* content, *contents) {
+        content->updateInLayout();
     }
 }
 
+void ED_Layout::updateAfterPut(ED_Unit *, int, int)
+{
+
+}
+
+void ED_Layout::updateBeforePutAnimation(ED_Unit *, int, int)
+{
+
+}
+
+void ED_Layout::updateAfterRemove(ED_Unit *, int, int)
+{
+
+}
+
+void ED_Layout::updateBeforePut(ED_Unit *, int, int)
+{
+
+}
+
+void ED_Layout::updateBeforeRemove(ED_Unit *, int, int)
+{
+
+}
+
+void ED_Layout::load_json(QJsonObject rootObject)
+{
+    contents->clear();
+    QJsonArray contentArray = rootObject.value("contents").toArray();
+    QVector<ED_Unit*> tem;
+    foreach (QJsonValue contentValue , (contentArray)) {
+        QJsonObject contentObject = contentValue.toObject();
+        ED_Unit* unit = from_json(contentObject);
+        tem.append(unit);
+    }
+    std::sort(tem.begin(),tem.end(),cmp);
+    foreach (ED_Unit* aim , tem) {
+        putUnit(aim,aim->indX,aim->indY,false);
+    }
+}
 
 QJsonObject ED_Layout::to_json()
 {
     QJsonObject rootObject;
-    rootObject.insert("row",row);
-    rootObject.insert("col",col);
-    rootObject.insert("space",space);
-    rootObject.insert("spaceX",spaceX);
-    rootObject.insert("spaceY",spaceY);
     QJsonArray contentArray;
+    // std::sort(contents->begin(),contents->end());
+
     foreach (ED_Unit* content, *(contents)) {
         contentArray.append(content->to_json());
     }
     rootObject.insert("contents",contentArray);
     return rootObject;
-}
-
-void ED_Layout::load_json(QJsonObject rootObject)
-{
-
-    for(int i=0;i<row;i++){
-        for(int k=0;k<col;k++){
-            delete blocks[i][k];
-        }
-    }
-    contents->clear();
-
-    row = rootObject.value("row").toInt();
-    col = rootObject.value("col").toInt();
-    space = rootObject.value("space").toInt();
-    spaceX = rootObject.value("spaceX").toInt();
-    spaceY = rootObject.value("spaceY").toInt();
-
-
-    for(int i=0;i<row;i++){
-        for(int k=0;k<col;k++){
-            blocks[i][k] = new little_Block(this,i,k);
-            blocks[i][k]->occupied = false;
-        }
-    }
-
-    QJsonArray contentArray = rootObject.value("contents").toArray();
-    foreach (QJsonValue contentValue , (contentArray)) {
-        QJsonObject contentObject = contentValue.toObject();
-        ED_Unit* unit = from_json(contentObject);
-        put_ED_Unit(unit,unit->indX,unit->indY);
-    }
-
-
 }

@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ed_bgshower.h"
-#include "ed_container.h"
+#include "ed_blockcontainer.h"
 #include "ed_block.h"
 #include "ed_dock.h"
 #include "ed_editbox.h"
@@ -70,28 +70,35 @@ pls->close();    });
     this->addAction(act6);
     connect(act6, &QAction::triggered, this, [=]()
             {
-                auto bc = new ED_Container(this,2,2,2,2,5,10,10);
+                auto bc = new ED_BlockContainer(this,2,2,2,2,5,10,10);
                 InitAUnit(bc); });
     QAction *act7 = new QAction("新建中型格子");
     this->addAction(act7);
     connect(act7, &QAction::triggered, this, [=]()
             {
-                auto bc = new ED_Container(this,3,3,3,3,5,15,15);
+                auto bc = new ED_BlockContainer(this,3,3,3,3,5,15,15);
                 InitAUnit(bc); });
 
     QAction *act8 = new QAction("新建大型格子");
     this->addAction(act8);
     connect(act8, &QAction::triggered, this, [=]()
             {
-                auto bc = new ED_Container(this,4,4,4,4,5,20,20);
+                auto bc = new ED_BlockContainer(this,4,4,4,4,5,20,20);
                 InitAUnit(bc); });
 
     QAction *act9 = new QAction("新建dock栏");
     this->addAction(act9);
     connect(act9, &QAction::triggered, this, [=]()
             {
-                auto dock = new ED_Dock(this,10,1,15);
+                auto dock = new ED_Dock(this);
                 InitAUnit(dock); });
+
+    QAction *act10 = new QAction("新建新dock栏");
+    this->addAction(act10);
+    connect(act10, &QAction::triggered, this, [=]()
+    {
+    auto dock = new ED_Dock(this);
+    InitAUnit(dock); });
 }
 void MainWindow::setupUnits()
 {
@@ -103,7 +110,7 @@ void MainWindow::setupUnits()
     bgshower->move(0, 0);
     bgshower->setVisible(true);
     bgshower->lower();
-    inside = new ED_Layout(this, 20, 12, 5, 10, 10);
+    inside = new ED_BlockLayout(this, 20, 12, 5, 10, 10);
     inside->isMain = true;
     setBlur(enable_background_blur);
 
@@ -123,7 +130,7 @@ void MainWindow::setupUnits()
     bg = QPixmap(":/images/background");
 
     setVisible(true);
-    inside->Update_Region();
+    inside->UpdateRegion();
     update();
     // bgshower->update();
 }
@@ -197,10 +204,10 @@ MainWindow::MainWindow(QWidget *parent)
     updateBG();
 }
 
-void MainWindow::InitAUnit(ED_Unit *aim)
+void MainWindow::InitAUnit(ED_Unit *aim,bool animated)
 {
     // connect(aim, &ED_Unit::sendSelf, this, &MainWindow::getObject);
-    inside->InitAUnit(aim);
+    inside->defaultPut(aim,animated);
     // aim->ed_update();
 }
 

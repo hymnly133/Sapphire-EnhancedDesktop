@@ -3,6 +3,8 @@ win32 {
 LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
 }
+
+VERSION = 1.2.0.0
 QMAKE_PROJECT_DEPTH = 0
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,11 +18,14 @@ SOURCES += \
     SysFunctions.cpp \
     ed_bgshower.cpp \
     ed_block.cpp \
+    ed_blockcontainer.cpp \
+    ed_blocklayout.cpp \
     ed_container.cpp \
     ed_dock.cpp \
     ed_editbox.cpp \
     ed_hidetextblock.cpp \
     ed_layout.cpp \
+    ed_linearlayout.cpp \
     ed_unit.cpp \
     filepreviewwidget.cpp \
     hitokoto.cpp \
@@ -37,11 +42,14 @@ HEADERS += \
     SysFunctions.h \
     ed_bgshower.h \
     ed_block.h \
+    ed_blockcontainer.h \
+    ed_blocklayout.h \
     ed_container.h \
     ed_dock.h \
     ed_editbox.h \
     ed_hidetextblock.h \
     ed_layout.h \
+    ed_linearlayout.h \
     ed_unit.h \
     filepreviewwidget.h \
     hitokoto.h \
@@ -57,7 +65,7 @@ FORMS += \
     mainwindow.ui
 
 TRANSLATIONS += \
-    Enhanced-desktop_zh_CN.ts \
+    Sapphire_zh_CN.ts \
 CONFIG += lrelease \
 CONFIG += embed_translations \
 

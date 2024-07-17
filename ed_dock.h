@@ -1,7 +1,7 @@
 #ifndef ED_DOCK_H
 #define ED_DOCK_H
 
-#include "ed_container.h"
+#include "ed_blockcontainer.h"
 #include "ed_unit.h"
 #include <QWidget>
 
@@ -9,10 +9,13 @@ class ED_Dock : public ED_Container
 {
     Q_OBJECT
 public:
-    using ED_Container::ED_Container;
-    ED_Dock(QWidget *parent,int outSizeX,int outSizeY,int inSize);
-    virtual void InplaceAUnit(ED_Unit* aim) override;
-    virtual bool OKforput(ED_Unit* aim) override;
+    explicit ED_Dock(QWidget *parent = nullptr, int outSizeX=5, int outSizeY=1);
+    explicit ED_Dock(QWidget *parent, QJsonObject rootObject);
+    ED_Dock(const ED_BlockContainer &other)
+        :ED_Dock(other.parentWidget())
+    {}
+
+
 
     void paintEvent(QPaintEvent *event);
 signals:

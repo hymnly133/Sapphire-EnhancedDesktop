@@ -1,4 +1,3 @@
-#include <complex>
 #include<windows.h>
 #include "layershower.h"
 #include"mainwindow.h"

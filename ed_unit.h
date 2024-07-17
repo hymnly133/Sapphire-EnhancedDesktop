@@ -1,6 +1,8 @@
 #ifndef ED_UNIT_H
 #define ED_UNIT_H
+#include "ed_layout.h"
 #include "qgraphicseffect.h"
+#include "qparallelanimationgroup.h"
 #include "qpropertyanimation.h"
 #include "roundshower.h"
 #include "style.h"
@@ -18,10 +20,20 @@ class ED_Unit : public QWidget
     Q_PROPERTY(QColor mainColor MEMBER mainColor NOTIFY mainColor_changed WRITE setMainColor)
     Q_PROPERTY(double scale MEMBER scale NOTIFY scale_changed WRITE setScale)
     Q_PROPERTY(double scaleFix MEMBER scaleFix NOTIFY scaleFix_changed WRITE setScaleFix)
+    Q_PROPERTY(QPoint nowPos MEMBER nowPos NOTIFY nowPos_changed)
+    Q_PROPERTY(QSize nowSize MEMBER nowSize NOTIFY nowSize_changed)
 public:
     enum ED_TYPE {Unit,Container};
     ED_TYPE type = Unit;
-    ED_Layout* edlayout;
+    ED_Layout* layout;
+    ED_Layout* preLayout;
+
+
+    QPoint nowPos;
+    QPoint aim_pos;
+    QSize nowSize;
+    QSize aim_size;
+
     bool moving = false;
     bool premove = false;
     bool showRect = true;
@@ -36,6 +48,10 @@ public:
     QColor mainColor;
     QPropertyAnimation* alphaAnimation;
     QPropertyAnimation* scaleFixAnimation;
+    QPropertyAnimation* posAnimation;
+    QPropertyAnimation* sizeAnimation;
+    QParallelAnimationGroup * positionAnimations;
+    QParallelAnimationGroup * focusAnimations;
     int sizeX = 1;
     int sizeY = 1;
     int ind;
@@ -74,12 +90,18 @@ public:
     {
 
     }
+
+    bool operator<(const ED_Unit& another) const{
+        if(indX!=another.indX) return indX<another.indX;
+        else return indY<another.indY;
+    }
+
     void removeFromLayout();
 
     virtual void setupMenu();
 
 
-    virtual void update_after_resize();
+    // virtual void update_after_resize();
     virtual void double_click_action();
     virtual void single_click_action();
     virtual void mouse_move_action();
@@ -92,6 +114,7 @@ public:
     virtual void whenSimpleModeChange(bool val);
     virtual void whenScaleChange(double val);
     virtual void whenMainColorChange(QColor val);
+    virtual void afterResize(QResizeEvent* event);
 
 
     virtual void ed_update();
@@ -116,8 +139,25 @@ public:
     QColor mainColor_Alphaed();
 
 
-    void updata_animation();
+    void updataFocusAnimation();
+    void updatePositionAnimation();
 
+    QPoint MyPos_Centual(){
+        return layout->ind2Pos_Centual(indX,indY);
+    }
+    QPoint MyPos(){
+        return layout->ind2Pos(indX,indY);
+    }
+    QSize MySize(){
+        return layout->ind2Size(indX,indY);
+    }
+
+    virtual void preSetInLayout(bool animated);
+    virtual void setInLayout(bool animated);
+
+    virtual void updateInLayout();
+
+    virtual void moveto(QPoint pos,QSize size);
 
 
 public: signals:
@@ -125,10 +165,16 @@ public: signals:
     void mainColor_changed(QColor);
     void scale_changed(double);
     void scaleFix_changed(double);
+    void nowPos_changed(QPoint);
+    void nowSize_changed(QSize);
 
 
     // QOpenGLWidget interface
 
+
+    // QWidget interface
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 };
 Q_DECLARE_METATYPE(ED_Unit);
 

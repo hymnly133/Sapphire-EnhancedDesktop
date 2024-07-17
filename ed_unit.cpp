@@ -4,10 +4,8 @@
 #include "qdebug.h"
 #include "qevent.h"
 #include"SysFunctions.h"
-#include"ed_layout.h"
-#include"ed_container.h"
+#include"ed_blockcontainer.h"
 #include "qgraphicseffect.h"
-#include "qpainter.h"
 #include "style.h"
 #include"QPropertyAnimation"
 #include <cmath>
@@ -16,6 +14,13 @@
 ED_Unit::ED_Unit(): ED_Unit(nullptr,1,1){
 
 };
+
+#define SET_ANIMATION(ANIMATION,NAME,GROUP,TIME)\
+ANIMATION = new QPropertyAnimation(this,#NAME);\
+ANIMATION->setDuration(TIME);\
+ANIMATION->setEasingCurve(QEasingCurve::InSine);\
+GROUP->addAnimation(ANIMATION);
+
 
 ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
 {
@@ -31,12 +36,19 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
 
     colorAlpha = aim_alpha();
 
-    alphaAnimation = new QPropertyAnimation(this,"colorAlpha");
-    scaleFixAnimation = new QPropertyAnimation(this,"scaleFix");
-    alphaAnimation->setDuration(100);
-    alphaAnimation->setEasingCurve(QEasingCurve::InSine);
-    scaleFixAnimation->setDuration(100);
-    scaleFixAnimation->setEasingCurve(QEasingCurve::InSine);
+    focusAnimations = new QParallelAnimationGroup(this);
+    positionAnimations = new QParallelAnimationGroup(this);
+
+    SET_ANIMATION(alphaAnimation,colorAlpha,focusAnimations,100);
+
+    SET_ANIMATION(scaleFixAnimation,scaleFix,focusAnimations,100);
+
+    SET_ANIMATION(sizeAnimation,nowSize,positionAnimations,position_animation_time);
+
+    SET_ANIMATION(posAnimation,nowPos,positionAnimations,position_animation_time);
+
+
+
     // setMouseTracking(true);
 
     connect(this,&ED_Unit::alpha_changed,this,[=](int val){
@@ -51,8 +63,12 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
         whenScaleChange(val*scale);
     });
 
-    connect(this,&ED_Unit::mainColor_changed,this,[=](QColor val){
-        whenMainColorChange(val);
+    connect(this,&ED_Unit::nowPos_changed,this,[=](QPoint val){
+        move(val);
+    });
+
+    connect(this,&ED_Unit::nowSize_changed,this,[=](QSize val){
+        setFixedSize(val);
     });
 
     rs = new roundShower(this);
@@ -61,11 +77,9 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
     setupMenu();
 }
 
-
 void ED_Unit::single_click_action(){
     //最终单击执行
 }
-
 
 void ED_Unit::double_click_action(){
     //最终双击执行
@@ -89,7 +103,7 @@ void ED_Unit::mouse_release_action(){
 }
 
 void ED_Unit::removeFromLayout(){
-    edlayout->RemoveAUnit(this);
+    layout->RemoveAUnit(this);
 }
 
 void ED_Unit::setupMenu()
@@ -165,6 +179,8 @@ void ED_Unit::mousePressEvent(QMouseEvent *event)
         relativeP = event->pos();
     }
     event->accept();
+
+
 }
 
 void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
@@ -174,25 +190,22 @@ void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
     if(moving){
         //首先检查是否拖到文件夹
         ED_Layout* mwlayout = pmw->inside;
-        QPoint point = mwlayout->NearestBlockInd(pos().x()+width()/2,pos().y()+height()/2);
-        if(!(point.x()<0||point.y()<0||point.x()>=mwlayout->row||point.y()>=mwlayout->col))
-        {
-            if(mwlayout->Occupied(point)){
-                if(mwlayout->getUnitFromBlock(point)->type == ED_Unit::Container){
-                    qDebug()<<"Container";
-                    ED_Container*  c = (ED_Container*)mwlayout->getUnitFromBlock(point);
-                    if(c->OKforput(this)){
-                        c->InplaceAUnit(this);
-                        c->raise();
-                        moving = false;
-                        return;
-                    }
+        QPoint point = mwlayout->pos2Ind(pos().x()+width()/2,pos().y()+height()/2);
+
+        if(mwlayout->Occupied(point)){
+            if(mwlayout->ind2Unit(point)->type == ED_Unit::Container){
+                qDebug()<<"Container";
+                ED_BlockContainer*  c = (ED_BlockContainer*)mwlayout->ind2Unit(point);
+                if(c->OKForClearPut(this)){
+                    c->clearPut(this,true);
+                    moving = false;
+                    return;
                 }
             }
         }
         // 放置
         pMovingUnit = nullptr;
-        mwlayout->InplaceAUnit(this);
+        mwlayout->clearPut(this,true);
         moving = false;
     }
     premove = false;
@@ -219,10 +232,11 @@ void ED_Unit::mouseMoveEvent(QMouseEvent *event)
     else if(premove){
         auto tem = mapFromGlobal(cursor().pos());
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
-        qDebug()<<(dis)<<event->pos()<<relativeP;
+        // qDebug()<<(dis)<<event->pos()<<relativeP;
         if(dis>=2){
             QPoint usedp = mapToGlobal(QPoint(0,0));
-            if(edlayout)
+            positionAnimations->stop();
+            if(layout)
                 removeFromLayout();
             move(usedp);
             pMovingUnit = this;
@@ -232,39 +246,47 @@ void ED_Unit::mouseMoveEvent(QMouseEvent *event)
     event->accept();
 }
 
-void ED_Unit::updata_animation(){
-    alphaAnimation->stop();
-    alphaAnimation->setStartValue(colorAlpha);
-    alphaAnimation->setEndValue(aim_alpha());
-    alphaAnimation->start();
-
-
-    scaleFixAnimation->stop();
-    scaleFixAnimation->setStartValue(scaleFix);
-    scaleFixAnimation->setEndValue(aim_scaleFix());
-    scaleFixAnimation->start();
+void ED_Unit::updateInLayout()
+{
+    //当Layout改变大小等调用（不包含初次放置）
+    moveto(MyPos_Centual(),MySize());
 }
 
+void ED_Unit::moveto(QPoint pos, QSize size)
+{
+    aim_pos = pos;
+    aim_size = (size);
+    updatePositionAnimation();
+    // updataFocusAnimation();
+}
+
+void ED_Unit::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    rs->updateDisplay();
+    afterResize(event);
+}
 
 void ED_Unit::enterEvent(QEvent *event){
     onmouse = true  ;
     mouse_enter_action();
-    updata_animation();
+    updataFocusAnimation();
     event->accept();
-    if(edlayout!=nullptr)
-    if(!edlayout->isMain){
-        edlayout->pContainer->update();
+    if(layout!=nullptr)
+    if(!layout->isMain){
+        layout->pContainer->update();
     }
     update();
 }
+
 void ED_Unit::leaveEvent(QEvent *event){
     onmouse = false  ;
-    qDebug()<<type;
+    // qDebug()<<type;
     mouse_leave_action();
-    updata_animation();
-    if(edlayout!=nullptr)
-    if(!(edlayout->isMain)){
-        edlayout->pContainer->update();
+    updataFocusAnimation();
+    if(layout!=nullptr)
+    if(!(layout->isMain)){
+        layout->pContainer->update();
     }
     premove = false;
     moving = false;
@@ -272,25 +294,20 @@ void ED_Unit::leaveEvent(QEvent *event){
 
 void ED_Unit::setBlockSize(int w,int h){
     ED_Layout* tem = nullptr;
-    if(edlayout){
-        tem = edlayout;
+    if(layout){
+        tem = layout;
         removeFromLayout();
         ED_Unit temu(nullptr,w,h);
-        if(tem->OKforput(&temu)){
+        if(tem->OKForClearPut(&temu)){
             sizeX = w;
             sizeY = h;
         }
-        tem->InplaceAUnit(this);
+        tem->clearPut(this,true);
     }
     else{
         sizeX = w;
         sizeY = h;
     }
-}
-
-void ED_Unit::update_after_resize(){
-    ed_update();
-    rs->updateDisplay();
 }
 
 void ED_Unit::setSimpleMode(bool val){
@@ -338,33 +355,33 @@ void ED_Unit::setScaleFix(double val)
 void ED_Unit::setAlwaysShow(bool val)
 {
     alwaysShow = val;
-    if(edlayout!=nullptr){
+    if(layout!=nullptr){
         if(val){
-            auto s = std::find(edlayout->contents_Show->begin(), edlayout->contents_Show->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
-            if (s != edlayout->contents_Show->end())//如果找到，就输出这个元素
+            auto s = std::find(layout->contents_Show->begin(), layout->contents_Show->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
+            if (s != layout->contents_Show->end())//如果找到，就输出这个元素
             {
-                edlayout->contents_Show->erase(s);
+                layout->contents_Show->erase(s);
             }
             else//如果没找到
             {
                 qDebug() << "not find!";
             }
 
-            edlayout->contents_AlwaysShow->push_back(this);
+            layout->contents_AlwaysShow->push_back(this);
         }
         else{
 
-            auto s = std::find(edlayout->contents_AlwaysShow->begin(), edlayout->contents_AlwaysShow->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
-            if (s != edlayout->contents_AlwaysShow->end())//如果找到，就输出这个元素
+            auto s = std::find(layout->contents_AlwaysShow->begin(), layout->contents_AlwaysShow->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
+            if (s != layout->contents_AlwaysShow->end())//如果找到，就输出这个元素
             {
-                edlayout->contents_AlwaysShow->erase(s);
+                layout->contents_AlwaysShow->erase(s);
             }
             else//如果没找到
             {
                 qDebug() << "not find!";
             }
 
-            edlayout->contents_Show->push_back(this);
+            layout->contents_Show->push_back(this);
         }
     }
 }
@@ -377,7 +394,6 @@ void ED_Unit::paintEvent(QPaintEvent *event)
     paintLight(this,mainColor);
 }
 
-
 void ED_Unit::ed_update(){
     rs->updateDisplay();
     rs->raise();
@@ -388,6 +404,55 @@ QColor ED_Unit::mainColor_Alphaed(){
     QColor tem = mainColor;
     tem.setAlpha(colorAlpha);
     return tem;
+}
+
+void ED_Unit::updataFocusAnimation()
+{
+    focusAnimations->stop();
+
+    alphaAnimation->setStartValue(colorAlpha);
+    alphaAnimation->setEndValue(aim_alpha());
+
+    scaleFixAnimation->setStartValue(scaleFix);
+    scaleFixAnimation->setEndValue(aim_scaleFix());
+
+    focusAnimations->start();
+}
+
+void ED_Unit::updatePositionAnimation()
+{
+    positionAnimations->stop();
+    posAnimation->setStartValue(pos());
+    posAnimation->setEndValue(aim_pos);
+
+    sizeAnimation->setStartValue(size());
+    sizeAnimation->setEndValue(aim_size);
+    positionAnimations->start();
+}
+
+void ED_Unit::preSetInLayout(bool animated)
+{
+    raise();
+
+    if(animated){
+        moveto(layout->pContainer->mapToGlobal(MyPos_Centual()),MySize());
+    }
+    else{
+        move(layout->pContainer->mapToGlobal(MyPos_Centual()));
+        setFixedSize(MySize());
+    }
+
+}
+
+void ED_Unit::setInLayout(bool animated)
+{
+    QPoint tem = mapToGlobal(QPoint(0,0));
+    QPoint dis = layout->pContainer->mapFromGlobal(tem);
+    qDebug()<<tem<<dis;
+    setParent(layout->pContainer);
+    setVisible(true);
+    raise();
+    move(dis);
 }
 
 QJsonObject ED_Unit::to_json(){
@@ -425,5 +490,10 @@ void ED_Unit::load_json(QJsonObject rootObject)
 }
 
 void ED_Unit::whenMainColorChange(QColor val){
+
+}
+
+void ED_Unit::afterResize(QResizeEvent* event)
+{
 
 }

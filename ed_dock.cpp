@@ -1,26 +1,18 @@
 #include "ed_dock.h"
+#include "ed_linearlayout.h"
 #include"ed_unit.h"
 #include "qdebug.h"
 #include"QPainterPath"
 #include"QPainter"
 #include"QJsonObject"
-ED_Dock::ED_Dock(QWidget *parent,int outSizeX,int outSizeY,int inSize)
-    : ED_Container(parent,outSizeX,outSizeY,inSize,1,10,1,1)
+ED_Dock::ED_Dock(QWidget *parent,int outSizeX,int outSizeY)
+    : ED_Container(parent,outSizeX,outSizeY)
 {
     alwaysShow = true;
     setMainColor(QColor(79,98,124));
+    inside = new ED_LinearLayout(this);
 }
 
-void ED_Dock::InplaceAUnit(ED_Unit* aim){
-    aim->setBlockSize(1,1);
-    inside->InplaceAUnit(aim);
-}
-
-bool ED_Dock::OKforput(ED_Unit* aim){
-    ED_Unit tem(nullptr,1,1);
-    qDebug()<<inside->col;
-    return inside->OKforput(&tem);
-}
 
 void ED_Dock::paintEvent(QPaintEvent *event){
     // paintRect(this,QColor(0,0,155,aim_Alpha));
@@ -32,17 +24,18 @@ void ED_Dock::paintEvent(QPaintEvent *event){
     auto tem = mainColor_Alphaed();
 
     int count=0;
-    for(int i=0;i<row;i++){
-        if(inside->Occupied(i,0)){
-            count++;
-            auto temm = inside->getUnitFromBlock(i,0)->mainColor;
-            float ratio = 1.0*inside->blocks[i][0]->CenterX()/width();
-            // qDebug()<<"found" << i<<ratio<<edlayout->blocks[i][0]->CenterX()<<width();
-            temm.setAlpha(colorAlpha);
-            linearGradient.setColorAt(ratio, temm);
-        }
+    ED_LinearLayout* inside_ = (ED_LinearLayout*) inside;
+    for(int i=0;i<inside_->num();i++){
+        // for(int i =0;i<10;i++){
+        //     if(inside_->blocks[i]==nullptr) qDebug()<<i<<"No";
+        //     else qDebug()<<i<<"Yes";
+        // }
+        count++;
+        auto temm = inside->ind2Unit(i,0)->mainColor;
+        float ratio = 1.0*(inside->ind2CenterPoint(i,0).x())/width();
+        temm.setAlpha(colorAlpha);
+        linearGradient.setColorAt(ratio, temm);
     }
-
 
     if(count){
         linearGradient.setColorAt(0, QColor(255,255,255,0));

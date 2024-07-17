@@ -35,7 +35,7 @@ public:
 
     ED_Block(const ED_Block& other):ED_Block(other.parentWidget(),other.iconmap,other.name,other.filePath,other.sizeX,other.sizeY){};
 
-    void update_after_resize() override;
+    void afterResize(QResizeEvent* event) override;
     void mouse_enter_action() override;
     void mouse_leave_action()override;
     void whenSimpleModeChange(bool) override;

@@ -105,9 +105,9 @@ ED_Block::ED_Block(QWidget *parent, QString path, int sizeX, int sizeY):ED_Block
 }
 //---------------------------------------------------
 
-void ED_Block::update_after_resize(){
-    ED_Unit::update_after_resize();
-    lb->setFixedWidth(width()-5);
+void ED_Block::afterResize(QResizeEvent* event){
+    ED_Unit::afterResize(event);
+    lb->setFixedWidth(qBound(10, width()-5,9999));
     lb->setText(elidedLineText(lb,4,name));
     gv->updateDispaly();
 }
@@ -231,7 +231,7 @@ void ED_Block::unzip(QString filepath)
 
     // 显示图标
     iconmap=info.icon.pixmap(512);
-    qDebug()<<info.icon;
+    // qDebug()<<info.icon;
 
     setMainColor(pixmapMainColor(iconmap,sleep_color_ratio));
 

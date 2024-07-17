@@ -30,7 +30,6 @@ LayerShower::LayerShower(QWidget *parent)
 
 void LayerShower::paintEvent(QPaintEvent *event)
 {
-    qDebug()<<"111`1";
     QList<QPoint>& drawParamList = pmw->drawParamList;
 
     if (drawParamList.count() >= 2) {
