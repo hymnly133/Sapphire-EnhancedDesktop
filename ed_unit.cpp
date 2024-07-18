@@ -43,6 +43,8 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
 
     SET_ANIMATION(scaleFixAnimation,scaleFix,focusAnimations,100);
 
+    SET_ANIMATION(padRatioAnimation,nowPadRatio,focusAnimations,100);
+
     SET_ANIMATION(sizeAnimation,nowSize,positionAnimations,position_animation_time);
 
     SET_ANIMATION(posAnimation,nowPos,positionAnimations,position_animation_time);
@@ -53,6 +55,7 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
 
     connect(this,&ED_Unit::alpha_changed,this,[=](int val){
         update();
+        // qDebug()<<nowPadRatio;
     });
 
     connect(this,&ED_Unit::scale_changed,this,[=](double val){
@@ -73,7 +76,6 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
 
     rs = new roundShower(this);
     rs->raise();
-
     setupMenu();
 }
 
@@ -413,6 +415,9 @@ void ED_Unit::updataFocusAnimation()
     alphaAnimation->setStartValue(colorAlpha);
     alphaAnimation->setEndValue(aim_alpha());
 
+    padRatioAnimation->setStartValue(nowPadRatio);
+    padRatioAnimation->setEndValue(aim_padRatio());
+
     scaleFixAnimation->setStartValue(scaleFix);
     scaleFixAnimation->setEndValue(aim_scaleFix());
 
@@ -448,7 +453,8 @@ void ED_Unit::setInLayout(bool animated)
 {
     QPoint tem = mapToGlobal(QPoint(0,0));
     QPoint dis = layout->pContainer->mapFromGlobal(tem);
-    qDebug()<<tem<<dis;
+    // qDebug()<<tem<<dis;
+    nowPadRatio = aim_padRatio();
     setParent(layout->pContainer);
     setVisible(true);
     raise();

@@ -14,6 +14,9 @@ public:
         return contents->size();
     }
     int maxSize = 10;
+    int insideHeight(){
+        return pContainer->height()*0.9;
+    }
     struct littleBlock{
         int ind;
         ED_Unit* content;

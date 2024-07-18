@@ -22,6 +22,7 @@ class ED_Unit : public QWidget
     Q_PROPERTY(double scaleFix MEMBER scaleFix NOTIFY scaleFix_changed WRITE setScaleFix)
     Q_PROPERTY(QPoint nowPos MEMBER nowPos NOTIFY nowPos_changed)
     Q_PROPERTY(QSize nowSize MEMBER nowSize NOTIFY nowSize_changed)
+    Q_PROPERTY(double nowPadRatio MEMBER nowPadRatio NOTIFY nowPadRatio_changed)
 public:
     enum ED_TYPE {Unit,Container};
     ED_TYPE type = Unit;
@@ -33,6 +34,7 @@ public:
     QPoint aim_pos;
     QSize nowSize;
     QSize aim_size;
+    double nowPadRatio;
 
     bool moving = false;
     bool premove = false;
@@ -46,12 +48,16 @@ public:
     double scale = 1.0;
     QPoint relativeP;
     QColor mainColor;
+    QParallelAnimationGroup * positionAnimations;
     QPropertyAnimation* alphaAnimation;
     QPropertyAnimation* scaleFixAnimation;
+    QPropertyAnimation* padRatioAnimation;
+
+    QParallelAnimationGroup * focusAnimations;
     QPropertyAnimation* posAnimation;
     QPropertyAnimation* sizeAnimation;
-    QParallelAnimationGroup * positionAnimations;
-    QParallelAnimationGroup * focusAnimations;
+
+
     int sizeX = 1;
     int sizeY = 1;
     int ind;
@@ -73,6 +79,17 @@ public:
             return 1.0;
         }
     }
+    double aim_padRatio(){
+        if(layout==nullptr) return 1.0;
+        else{
+            if(layout->isMain) return 1.0;
+            else{
+                if(onmouse) return 1.0;
+                else return 0.0;
+            }
+        }
+    }
+
     int colorAlpha;
     bool alwaysShow = false;
     bool simpleMode = false;
@@ -167,7 +184,7 @@ public: signals:
     void scaleFix_changed(double);
     void nowPos_changed(QPoint);
     void nowSize_changed(QSize);
-
+    void nowPadRatio_changed(double);
 
     // QOpenGLWidget interface
 

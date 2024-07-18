@@ -1,5 +1,4 @@
 #include "ed_blocklayout.h"
-#include "qdebug.h"
 
 
 
@@ -37,6 +36,13 @@ QSize ED_BlockLayout::ind2Size(int xind, int yind)
     auto aim = ind2Unit(xind,yind);
     int w = W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX;
     int h = H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY;
+
+    if(aim->sizeX==1&&aim->sizeY==1&&!isMain){
+        return QSize(std::min(w,h),std::min(w,h));
+    }
+
+
+
     return QSize(w,h);
 }
 

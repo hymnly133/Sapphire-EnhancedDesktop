@@ -14,7 +14,7 @@
 #include"QGraphicsDropShadowEffect"
 
 int ED_Block::default_size = 48;
-ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex, sizey), previewWidget(new FilePreviewWidget(this)){
+ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex, sizey){
     filePath = "empty";
     name = "empty";
 
@@ -118,41 +118,41 @@ void ED_Block::mouse_enter_action(){
     // 文件预览
     QFileInfo fileInfo(filePath); // 去掉 "file:///"
     qDebug() << "File info: " << fileInfo.filePath()<<scale<<gv->m_scale<<gv->displaySize<<gv->actualSize; // 调试信息
-    if (fileInfo.isFile()) {
-        if (fileInfo.suffix() == "txt") {
-            QFile file(fileInfo.filePath());
-            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                QTextStream in(&file);
-                in.setCodec("UTF-8"); // 设置为UTF-8编码
-                QString content = in.readAll();
-                file.close();
+    // if (fileInfo.isFile()) {
+    //     if (fileInfo.suffix() == "txt") {
+    //         QFile file(fileInfo.filePath());
+    //         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    //             QTextStream in(&file);
+    //             in.setCodec("UTF-8"); // 设置为UTF-8编码
+    //             QString content = in.readAll();
+    //             file.close();
 
-                // 如果UTF-8读取失败，尝试其他编码
-                if (content.contains(QChar(0xFFFD))) { // 检查是否有替换字符
-                    file.open(QIODevice::ReadOnly | QIODevice::Text);
-                    in.setCodec("GBK"); // 尝试GBK编码
-                    content = in.readAll();
-                    file.close();
-                }
+    //             // 如果UTF-8读取失败，尝试其他编码
+    //             if (content.contains(QChar(0xFFFD))) { // 检查是否有替换字符
+    //                 file.open(QIODevice::ReadOnly | QIODevice::Text);
+    //                 in.setCodec("GBK"); // 尝试GBK编码
+    //                 content = in.readAll();
+    //                 file.close();
+    //             }
 
-                // 限制预览内容的长度
-                if (content.length() > 1000) {
-                    content = content.left(1000) + "\n...";
-                }
+    //             // 限制预览内容的长度
+    //             if (content.length() > 1000) {
+    //                 content = content.left(1000) + "\n...";
+    //             }
 
-                previewWidget->setText(content);
-                previewWidget->move(mapToGlobal(QPoint(0, height())));
-                previewWidget->show();
-                qDebug() << "Text file preview shown"; // 调试信息
-            }
-        } else if (fileInfo.suffix() == "png") {
-            QImage image(fileInfo.filePath());
-            previewWidget->setImage(image);
-            previewWidget->move(mapToGlobal(QPoint(0, height())));
-            previewWidget->show();
-            qDebug() << "Image file preview shown"; // 调试信息
-        }
-    }
+    //             previewWidget->setText(content);
+    //             previewWidget->move(mapToGlobal(QPoint(0, height())));
+    //             previewWidget->show();
+    //             qDebug() << "Text file preview shown"; // 调试信息
+    //         }
+    //     } else if (fileInfo.suffix() == "png") {
+    //         QImage image(fileInfo.filePath());
+    //         previewWidget->setImage(image);
+    //         previewWidget->move(mapToGlobal(QPoint(0, height())));
+    //         previewWidget->show();
+    //         qDebug() << "Image file preview shown"; // 调试信息
+    //     }
+    // }
 }
 
 void ED_Block::mouse_leave_action(){
@@ -161,8 +161,8 @@ void ED_Block::mouse_leave_action(){
 
     mainColor = pixmapMainColor(iconmap, sleep_color_ratio);
     // 文件预览
-    previewWidget->hide();
-        // 隐藏视频预览
+    // previewWidget->hide();
+    // 隐藏视频预览
 }
 
 void ED_Block::double_click_action(){

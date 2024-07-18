@@ -16,8 +16,6 @@ void ED_LinearLayout::refresh()
             blocks[i]->setInd(i);
         }
     }
-
-
 }
 
 QPoint ED_LinearLayout::pos2Ind(int posx, int posy)
@@ -27,12 +25,12 @@ QPoint ED_LinearLayout::pos2Ind(int posx, int posy)
 
 QPoint ED_LinearLayout::ind2CenterPoint(int x, int y)
 {
-    return QPoint(fixedCX(x),pContainer->height()/2);
+    return QPoint(fixedCX(x),  pContainer->height()/2);
 }
 
 QSize ED_LinearLayout::ind2Size(int xind, int yind)
 {
-    return QSize(pContainer->height(),pContainer->height());
+    return QSize(insideHeight(),insideHeight());
 }
 
 QPoint ED_LinearLayout::ind2Pos(int xind, int yind)
@@ -85,7 +83,7 @@ void ED_LinearLayout::updateAfterRemove(ED_Unit *aim, int x, int y)
 void ED_LinearLayout::updateBeforePut(ED_Unit *aim, int x, int y )
 {
     //将block队列位置调整对（ind仍为错）
-    qDebug()<<"Put"<<x;
+    // qDebug()<<"Put"<<x;
     for(int i =num()-1;i>=x;i--){
         blocks[i+1] = blocks[i];
     }

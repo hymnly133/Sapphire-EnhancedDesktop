@@ -155,7 +155,9 @@ ED_Unit* from_json(QJsonObject data){
 void paintRect(QWidget* aim,QColor color){
     bool another = true;
     bool choosen = false;
+
     if(aim->inherits("ED_Unit")) {
+        color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
         another = ((ED_Unit*)aim)->showRect;
         choosen = ((ED_Unit*)aim)->onmouse;
     }
@@ -176,6 +178,8 @@ void paintLight(QWidget* aim,QColor color){
     bool another = true;
     bool choosen = false;
     if(aim->inherits("ED_Unit")) {
+        color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
+        // qDebug()<<color.alpha();
         another = ((ED_Unit*)aim)->showLight;
         choosen = ((ED_Unit*)aim)->onmouse;
     }
@@ -195,8 +199,15 @@ void paintLight(QWidget* aim,QColor color){
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setPen(Qt::NoPen);
         color.setAlpha(light_alpha_start);
+        if(aim->inherits("ED_Unit")) {
+            color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
+        }
         radialGradient->setColorAt(0,color);
         color.setAlpha(light_alpha_end);
+        if(aim->inherits("ED_Unit")) {
+            color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
+            // qDebug()<<color.alpha();
+        }
         radialGradient->setColorAt(1.0,color);
         painter.setBrush(QBrush(*radialGradient));
         painter.drawRect(aim->rect());//在相应的坐标画出来
@@ -338,7 +349,7 @@ QList<FileInfo>getFormFileInfo(QFileInfo x){
         fileName.remove(lastDotIndex, fileName.length() - lastDotIndex);
     }
     file.name=fileName;
-    qDebug()<<x.suffix().toLower()<<x.symLinkTarget();
+    // qDebug()<<x.suffix().toLower()<<x.symLinkTarget();
     if (x.suffix().toLower() == "lnk" && enable_lnk_redirect)
     {
         // 处理快捷方式（.lnk 文件）
@@ -363,7 +374,6 @@ QList<FileInfo>getFormFileInfo(QFileInfo x){
     else
     {
         QFileIconProvider a;
-
         a.setOptions(QFileIconProvider::Option::DontUseCustomDirectoryIcons);
         file.icon = a.icon(x);
     }
@@ -424,7 +434,7 @@ QList<FileInfo>getFormFileInfo(QFileInfo x){
         }
     }
     files.append(file);
-    qDebug()<<QString::fromLocal8Bit(x.absoluteFilePath().toLocal8Bit())<<files.size();
+    // qDebug()<<QString::fromLocal8Bit(x.absoluteFilePath().toLocal8Bit())<<files.size();
     return files;
     //以上为针对steam游戏
 }

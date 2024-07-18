@@ -110,4 +110,5 @@ extern MainWindow* pmw;
 extern ED_Unit* pMovingUnit;
 extern QDesktopWidget* pdt;
 extern LayerShower* pls;
+extern bool debug;
 #endif // MAINWINDOW_H

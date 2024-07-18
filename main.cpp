@@ -35,8 +35,10 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     #ifndef QT_DEBUG
+
+    debug = false;
     qInstallMessageHandler(customMessageHandler);
-    // setMyAppAutoRun(true);
+
     #endif
 
     readStyleIni();

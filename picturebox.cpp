@@ -14,7 +14,7 @@ PictureBox::PictureBox(QWidget *parent,double m_scale) : QWidget(parent)
     source.fill();
     m_brush = QBrush(Qt::white);
     setScale(m_scale);
-    setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    setAttribute(Qt::WA_TransparentForMouseEvents, false);
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     setMinimumSize(10,10);
 }
@@ -73,7 +73,7 @@ void PictureBox::updateDispaly()
     r1 = window_width / image_width;
     r2 = window_height / image_height;
 
-    if(enable_image_fill)
+    if((enable_image_fill&&requireFill))
         r = qMax(r1, r2);
     else
         r= qMin(r1,r2);

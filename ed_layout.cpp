@@ -1,5 +1,6 @@
 #include "ed_layout.h"
 #include "SysFunctions.h"
+#include "ed_block.h"
 #include "mainwindow.h"
 #include "qtimer.h"
 #include<algorithm>
@@ -66,12 +67,11 @@ void ED_Layout::putUnit(ED_Unit *aim, int xind, int yind, bool animated)
 
     //setRect
     if(isMain){
-        aim->showRect = true;
-        aim->showLight = true;
+
     }
     else{
-        aim->showRect = false;
-        aim->showLight = false;
+        aim->showLight =true;
+        aim->showRect = true;
     }
 
     contents->push_back(aim);

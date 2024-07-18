@@ -8,6 +8,7 @@ ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, int sizey, int sizex) : ED_B
     lb->setVisible(false);
     setScale(1.0);
     vl->setMargin(0);
+    gv->requireFill = true;
 }
 ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, QPixmap image, QString _name, QString filepath, int sizex, int sizey):ED_HideTextBlock(parent,sizex,sizey){
     filePath = filepath;

@@ -46,7 +46,7 @@ public:
 
     void double_click_action() override;
     void paintEvent(QPaintEvent *event) override;
-    FilePreviewWidget *previewWidget;
+    // FilePreviewWidget *previewWidget;
     QVBoxLayout *layout; // 新增 QVBoxLayout 成员
     QJsonObject to_json() override;
     void load_json(QJsonObject rootObject) override;

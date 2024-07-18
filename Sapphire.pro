@@ -4,7 +4,7 @@ LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
 }
 
-VERSION = 1.2.0.0
+VERSION = 1.2.1.1
 QMAKE_PROJECT_DEPTH = 0
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

@@ -21,6 +21,7 @@
 #include"QStyle"
 ED_Unit *pMovingUnit = nullptr;
 QDesktopWidget* pdt;
+bool debug = true;
 
 void MainWindow::setupActions()
 {
@@ -57,14 +58,19 @@ void MainWindow::setupActions()
     this->addAction(act4);
     connect(act4, &QAction::triggered, this, [=]()
             { close();
-pls->close();    });
+    pls->close();    });
+
+    #ifdef QT_DEBUG
 
     QAction *act5 = new QAction("获取背景");
     this->addAction(act5);
     connect(act5, &QAction::triggered, this, [=]()
-    {
-        capture();
-    });
+            {
+                capture();
+            });
+
+    #endif
+
 
     QAction *act6 = new QAction("新建小型格子");
     this->addAction(act6);
@@ -92,13 +98,6 @@ pls->close();    });
             {
                 auto dock = new ED_Dock(this);
                 InitAUnit(dock); });
-
-    QAction *act10 = new QAction("新建新dock栏");
-    this->addAction(act10);
-    connect(act10, &QAction::triggered, this, [=]()
-    {
-    auto dock = new ED_Dock(this);
-    InitAUnit(dock); });
 }
 void MainWindow::setupUnits()
 {

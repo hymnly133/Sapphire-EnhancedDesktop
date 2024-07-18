@@ -35,9 +35,9 @@ void roundShower::paintEvent(QPaintEvent *event)
 
     //这里圆角区域需要根据dpi、size调整
     if(follow)
-        path.addRoundedRect(QRectF(0,0,aim_size().width(),aim_size().height()).adjusted(0.5, 0.5, -0.5, -0.5), aim_radius(), aim_radius());
+        path.addRoundedRect(QRectF(0,0,aim_size().width(),aim_size().height()), aim_radius(), aim_radius());
     else
-        path.addRoundedRect(QRectF((parentWidget()->width()-aim_size().width())/2,(parentWidget()->height()-aim_size().height())/2,aim_size().width(),aim_size().height()).adjusted(0.5, 0.5, -0.5, -0.5), aim_radius(), aim_radius());
+        path.addRoundedRect(QRectF((parentWidget()->width()-aim_size().width())/2,(parentWidget()->height()-aim_size().height())/2,aim_size().width(),aim_size().height()), aim_radius(), aim_radius());
     painter.fillPath(path, Qt::white);
     painter.end();
     // 在窗口上绘制该圆角图片

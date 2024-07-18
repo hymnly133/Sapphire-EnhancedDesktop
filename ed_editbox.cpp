@@ -21,13 +21,15 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         pmw->update();
     });
 
-    QCheckBox *checkBox2 = new QCheckBox("背景模糊",this);
-    checkBox2->setChecked(enable_background_blur);
-    overall->addWidget(checkBox2);
-    connect(checkBox2, &QCheckBox::clicked, this, [](bool checked) {
-        pmw->setBlur(checked);
-        pmw->update();
-    });
+#ifdef QT_DEBUG
+        QCheckBox *checkBox2 = new QCheckBox("背景模糊",this);
+        checkBox2->setChecked(enable_background_blur);
+        overall->addWidget(checkBox2);
+        connect(checkBox2, &QCheckBox::clicked, this, [](bool checked) {
+            pmw->setBlur(checked);
+            pmw->update();
+        });
+#endif
 
     QCheckBox *checkBox3 = new QCheckBox("特效追踪",this);
     checkBox3->setChecked(enable_light_track);
@@ -40,14 +42,18 @@ ED_EditBox::ED_EditBox(QWidget *parent)
     paint =  new QVBoxLayout(this);
     settings->addLayout(paint);
 
+
+#ifdef QT_DEBUG
+
     QCheckBox *checkBox4 = new QCheckBox("绘制边框",this);
     checkBox4->setChecked(ShowSide);
     paint->addWidget(checkBox4);
     connect(checkBox4, &QCheckBox::clicked, this, [](bool checked) {
         ShowSide = checked;
         pmw->update();
-    });
+    });}
 
+#endif
 
     QCheckBox *checkBox5 = new QCheckBox("绘制矩形",this);
     checkBox5->setChecked(ShowRect);
@@ -56,6 +62,8 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         ShowRect = checked;
         pmw->update();
     });
+
+
 
 
     QCheckBox *checkBox6 = new QCheckBox("绘制光效",this);
