@@ -7,7 +7,7 @@ LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi
 msvc:QMAKE_CXXFLAGS += -execution-charset:utf-8
 msvc:QMAKE_CXXFLAGS += -source-charset:utf-8
 
-VERSION = 1.2.3.1
+VERSION = 1.2.3.2
 QMAKE_PROJECT_DEPTH = 0
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

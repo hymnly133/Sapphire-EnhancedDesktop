@@ -1,13 +1,30 @@
 #ifndef STYLE_H
 #define STYLE_H
 
+#include "qglobal.h"
+#include"qstring.h"
+#include"qmap"
+class StyleHelper{
+    QMap<QString,int*> intStyles;
+    QMap<QString,double*> doubleStyles;
+    QMap<QString,bool*> boolStyles;
+public:
+    StyleHelper();
+    void Add(QString,bool*);
+    void Add(QString,int*);
+    void Add(QString, double*);
+    void readStyleIni();
+    void writeStyleIni();
+};extern StyleHelper* psh;
+
+
 extern int sleep_alpha;
 extern int active_alpha;
 extern int sleep_alpha_deep;
 extern int active_alpha_deep;
 
-extern float sleep_color_ratio;
-extern float active_color_ratio;
+extern double sleep_color_ratio;
+extern double active_color_ratio;
 
 extern int light_alpha_start;
 extern int light_alpha_end;

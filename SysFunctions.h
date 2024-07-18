@@ -43,8 +43,6 @@ void customMessageHandler(QtMsgType type,
                           const QMessageLogContext &context,
                           const QString &msg);
 
-void readStyleIni();
-void writeStyleIni();
 void writeJson();
 void readJson();
 void setMyAppAutoRun(bool isStart);

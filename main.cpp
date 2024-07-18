@@ -39,7 +39,8 @@ int main(int argc, char *argv[])
 
     #endif
 
-    readStyleIni();
+    StyleHelper sh = StyleHelper();
+    sh.readStyleIni();
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();

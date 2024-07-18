@@ -19,12 +19,12 @@
 #include "QScreen"
 #include"ContextMenu/contextmenu.h"
 #include "QThread"
-#include"QStyle"
+#include"style.h"
 #include"qmenu.h"
 ED_Unit *pMovingUnit = nullptr;
 QDesktopWidget* pdt;
 bool debug = true;
-
+StyleHelper* psh;
 
 
 #define SET_ANCTION(NAME,TEXT,FUCTION)\
@@ -442,7 +442,7 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
 {
 
     event->accept();
-    writeStyleIni();
+    psh->writeStyleIni();
     writeJson();
 }
 
