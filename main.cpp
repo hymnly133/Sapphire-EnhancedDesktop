@@ -24,8 +24,6 @@ int main(int argc, char *argv[])
     qRegisterMetaType<ED_HideTextBlock>();
     qRegisterMetaType<ED_Dock>();
     qRegisterMetaType<ED_EditBox>();
-    qRegisterMetaType<Hitokoto>();
-    qRegisterMetaType<Weather>();
 
     QSurfaceFormat format;
     format.setDepthBufferSize(24);

@@ -9,8 +9,6 @@
 #include "qlabel.h"
 #include <QWidget>
 //新增
-#include <QMediaPlayer>
-#include <QVideoWidget>
 #include <QVBoxLayout>
 
 class ED_Block : public ED_Unit
@@ -42,6 +40,8 @@ public:
     void whenScaleChange(double) override;
 
 
+
+
     void unzip(QString filepath);
 
     void double_click_action() override;
@@ -52,6 +52,13 @@ public:
     void load_json(QJsonObject rootObject) override;
     void whenMainColorChange(QColor val) override;
     virtual void ed_update() override;
+
+
+
+
+    // ED_Unit interface
+public:
+    void onShiftContextMenu(QContextMenuEvent *event) override;
 };
 
 Q_DECLARE_METATYPE(ED_Block)

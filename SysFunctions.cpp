@@ -274,24 +274,36 @@ void Init(MainWindow* mainwindow){
 
 void inplace(QWidget* aim) {
     // 接入到图标层
+    qDebug()<<"Star Inplacing";
     HWND background = NULL;
     HWND hwnd = FindWindowA("Progman", "Program Manager");
     HWND worker = NULL;
 
+    qDebug()<<"Entering Loop";
     // 循环查找WorkerW窗口
     do {
         worker = FindWindowExA(NULL, worker, "WorkerW", NULL);
         if (worker != NULL) {
+            qDebug()<<"Find WokerW";
             // 尝试找到SHELLDLL_DefView窗口
             HWND shelldlldefview = FindWindowExA(worker, NULL, "SHELLDLL_DefView", NULL);
             if (shelldlldefview != NULL) {
+                qDebug()<<"Find SHELLDLL_DefView";
                 // 检查SHELLDLL_DefView的父窗口是否为当前的WorkerW窗口
                 HWND parent = GetParent(shelldlldefview);
-                if (parent == worker) {
-                    // 找到了正确的WorkerW窗口
-                    background = worker;
-                    break; // 结束循环
+                if (parent != NULL) {
+                    qDebug()<<"Find SHELLDLL_DefView's Parent";
+                    if (parent == worker) {
+                        qDebug()<<"Right!";
+
+                        // 找到了正确的WorkerW窗口
+                        background = worker;
+                        break; // 结束循环
+                    }
                 }
+
+
+
             }
         }
     } while (worker != NULL);

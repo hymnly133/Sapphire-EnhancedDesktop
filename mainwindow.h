@@ -9,8 +9,6 @@
 #include "qdesktopwidget.h"
 #include "qfileinfo.h"
 #include "qparallelanimationgroup.h"
-#include "weather.h"
-#include "hitokoto.h"
 #include<QLinkedList>
 #include"ed_unit.h"
 QT_BEGIN_NAMESPACE
@@ -30,7 +28,8 @@ public:
     ~MainWindow();
     Ui::MainWindow *ui;
     ED_BGShower* bgshower = nullptr;
-
+    bool onShift = false;
+    QMenu* myMenu;
     ED_BlockLayout* inside;
     QPixmap bg;
     QPixmap buffer;
@@ -39,7 +38,7 @@ public:
     QList<QPoint> drawParamList;
     bool showeredVisibal = false;
     int showerRadius = 500;
-
+    double globalScale =1;
     QPropertyAnimation* showerSizeAnimation;
     QPropertyAnimation* showerRadiusAnimation;
     QParallelAnimationGroup * showerAnimations;
@@ -95,8 +94,6 @@ public: signals:
 protected:
     void dropEvent(QDropEvent *event) override;
 
-
-
     // QWidget interface
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -107,6 +104,20 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void closeEvent( QCloseEvent * event ) override;
 
+
+    // QWidget interface
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+
+    // QWidget interface
+protected:
+    void contextMenuEvent(QContextMenuEvent *event) override;
+
+
+    // QWidget interface
+protected:
+    void wheelEvent(QWheelEvent *event) override;
 };
 
 extern MainWindow* pmw;

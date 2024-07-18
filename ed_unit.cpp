@@ -108,67 +108,48 @@ void ED_Unit::removeFromLayout(){
     layout->RemoveAUnit(this);
 }
 
+#define SET_ANCTION(NAME,TEXT,FUCTION)\
+QAction *NAME = new QAction(#TEXT);\
+    myMenu->addAction(NAME);\
+    connect(NAME, &QAction::triggered, this, [=]()FUCTION);
+
 void ED_Unit::setupMenu()
 {
+    myMenu = new QMenu(this);
 
-    setContextMenuPolicy(Qt::ActionsContextMenu);
+    SET_ANCTION(act1,加宽,{
+        setBlockSize(sizeX+1,sizeY);
+    });
 
-    QAction* act1  = new QAction("加宽");
-    this->addAction(act1);
-    connect(act1, &QAction::triggered, this, [=]()
-            {
-                setBlockSize(sizeX+1,sizeY);
-            });
+    SET_ANCTION(act2,加高,{
+        setBlockSize(sizeX,sizeY+1);
+    });
 
-    QAction* act3  = new QAction("减宽");
-    this->addAction(act3);
-    connect(act3, &QAction::triggered, this, [=]()
-            {
-                if(sizeX>=2)
-                    setBlockSize(sizeX-1,sizeY);
-            });
+    SET_ANCTION(act3,减宽,{
+        if(sizeX>=2)
+            setBlockSize(sizeX-1,sizeY);
+    });
 
-    QAction* act2  = new QAction("加高");
-    this->addAction(act2);
-    connect(act2, &QAction::triggered, this, [=]()
-            {
-                setBlockSize(sizeX,sizeY+1);
-            });
+    SET_ANCTION(act4,减高,{
+        if(sizeY>=2)
+            setBlockSize(sizeX,sizeY-1);
+    });
 
+    SET_ANCTION(act5,切换复杂度,{
+        changeSimpleMode();
+    });
 
-
-    QAction* act4  = new QAction("减高");
-    this->addAction(act4);
-    connect(act4, &QAction::triggered, this, [=]()
-            {
-                if(sizeY>=2)
-                    setBlockSize(sizeX,sizeY-1);
-            });
-
-
-
-    QAction* act5  = new QAction("切换复杂度");
-    this->addAction(act5);
-    connect(act5, &QAction::triggered, this, [=]()
-            {
-                changeSimpleMode();
-            });
-
-
-    QAction* act6  = new QAction("删除");
-    this->addAction(act6);
-    connect(act6, &QAction::triggered, this, [=]()
-            {
-                removeFromLayout();
-                deleteLater();
-            });
-
-    QAction* act7  = new QAction("切换始终显示");
-    this->addAction(act7);
-    connect(act7, &QAction::triggered, this, [=]()
-            {
+    SET_ANCTION(act6,切换始终显示,{
         setAlwaysShow(!alwaysShow);
-            });
+    });
+
+
+    SET_ANCTION(act7,删除,{
+        removeFromLayout();
+        deleteLater();
+    });
+
+
 }
 
 void ED_Unit::mousePressEvent(QMouseEvent *event)
@@ -269,6 +250,14 @@ void ED_Unit::resizeEvent(QResizeEvent *event)
     afterResize(event);
 }
 
+void ED_Unit::contextMenuEvent(QContextMenuEvent *event)
+{
+    if(event->modifiers() == Qt::ShiftModifier)
+        onShiftContextMenu(event);
+    else
+        onContextMenu(event);
+}
+
 void ED_Unit::enterEvent(QEvent *event){
     onmouse = true  ;
     mouse_enter_action();
@@ -310,6 +299,16 @@ void ED_Unit::setBlockSize(int w,int h){
         sizeX = w;
         sizeY = h;
     }
+}
+
+void ED_Unit::onContextMenu(QContextMenuEvent *event)
+{
+    myMenu->exec(event->globalPos());
+}
+
+void ED_Unit::onShiftContextMenu(QContextMenuEvent *event)
+{
+
 }
 
 void ED_Unit::setSimpleMode(bool val){

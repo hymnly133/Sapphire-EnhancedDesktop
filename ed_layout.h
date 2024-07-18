@@ -1,6 +1,5 @@
 #ifndef ED_LAYOUT_H
 #define ED_LAYOUT_H
-
 #include "qjsonobject.h"
 #include "qregion.h"
 #include <QObject>

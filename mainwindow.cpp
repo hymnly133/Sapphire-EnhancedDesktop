@@ -17,94 +17,95 @@
 #include <QFileDialog>
 #include <qtimer.h>
 #include "QScreen"
+#include"ContextMenu/contextmenu.h"
 #include "QThread"
 #include"QStyle"
+#include"qmenu.h"
 ED_Unit *pMovingUnit = nullptr;
 QDesktopWidget* pdt;
 bool debug = true;
+
+
+
+#define SET_ANCTION(NAME,TEXT,FUCTION)\
+QAction *NAME = new QAction(#TEXT);\
+myMenu->addAction(NAME);\
+connect(NAME, &QAction::triggered, this, [=]()FUCTION);
 
 void MainWindow::setupActions()
 {
     // 只要将某个QAction添加给对应的窗口, 这个action就是这个窗口右键菜单中的一个菜单项了
     // 在窗口中点击鼠标右键, 就可以显示这个菜单
-    setContextMenuPolicy(Qt::ActionsContextMenu);
+    myMenu = new QMenu(this);
     // 给当前窗口添加QAction对象
-    QAction *act1 = new QAction("改变可见");
-    this->addAction(act1);
-    connect(act1, &QAction::triggered, this, [=]()
-            { setShoweredVisibal(!showeredVisibal); });
 
-    QAction *act2 = new QAction("切换精简");
-    this->addAction(act2);
+    SET_ANCTION(act1,改变可见,
+    { setShoweredVisibal(!showeredVisibal); })
 
-    connect(act2, &QAction::triggered, this, [=]()
-            {
-                for(ED_Unit* content:*(inside->contents)){
-                    content->changeSimpleMode();
-                } });
+    SET_ANCTION(act2,切换精简,
+    {
+    for(ED_Unit* content:*(inside->contents)){
+        content->changeSimpleMode();
+    }})
 
-    QAction *act3 = new QAction("新增文件");
-    this->addAction(act3);
-    connect(act3, &QAction::triggered, this, [=]()
+
+    SET_ANCTION(act3,新增文件,
     {
         QFileDialog* fd = new QFileDialog();
         QStringList filePaths =QFileDialog::getOpenFileNames(this, QStringLiteral("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
         foreach (const QString& filePath, filePaths) {
             addAIcon(filePath);
         }
-    });
+    })
 
-    QAction *act4 = new QAction("退出程序");
-    this->addAction(act4);
-    connect(act4, &QAction::triggered, this, [=]()
-            { close();
-    pls->close();    });
+    SET_ANCTION(act4,退出程序,
+    {
+
+        close();
+        pls->close();
+
+    })
+
 
     #ifdef QT_DEBUG
 
-    QAction *act5 = new QAction("获取背景");
-    this->addAction(act5);
-    connect(act5, &QAction::triggered, this, [=]()
-            {
-                capture();
-            });
+    SET_ANCTION(act5,获取背景,{
+        capture();
+    })
 
     #endif
 
 
-    QAction *act6 = new QAction("新建小型格子");
-    this->addAction(act6);
-    connect(act6, &QAction::triggered, this, [=]()
-            {
-                auto bc = new ED_BlockContainer(this,2,2,2,2,5,10,10);
-                InitAUnit(bc); });
-    QAction *act7 = new QAction("新建中型格子");
-    this->addAction(act7);
-    connect(act7, &QAction::triggered, this, [=]()
-            {
-                auto bc = new ED_BlockContainer(this,3,3,3,3,5,15,15);
-                InitAUnit(bc); });
+    SET_ANCTION(act6,新建小型格子,{
+        auto bc = new ED_BlockContainer(this,2,2,2,2,5,10,10);
+        InitAUnit(bc);
+    })
 
-    QAction *act8 = new QAction("新建大型格子");
-    this->addAction(act8);
-    connect(act8, &QAction::triggered, this, [=]()
-            {
-                auto bc = new ED_BlockContainer(this,4,4,4,4,5,20,20);
-                InitAUnit(bc); });
 
-    QAction *act9 = new QAction("新建dock栏");
-    this->addAction(act9);
-    connect(act9, &QAction::triggered, this, [=]()
-            {
-                auto dock = new ED_Dock(this);
-                InitAUnit(dock); });
 
-    QAction *act10 = new QAction("新建设置箱");
-    this->addAction(act10);
-    connect(act10, &QAction::triggered, this, [=]()
-            {
-                auto dock = new ED_EditBox(this);
-                InitAUnit(dock); });
+    SET_ANCTION(act7,新建中型格子,{
+        auto bc = new ED_BlockContainer(this,3,3,3,3,5,15,15);
+        InitAUnit(bc);
+    })
+
+
+    SET_ANCTION(act8,新建大型格子,{
+        auto bc = new ED_BlockContainer(this,4,4,4,4,5,20,20);
+        InitAUnit(bc);
+    })
+
+
+    SET_ANCTION(act9,新建Dock栏,{
+        auto dock = new ED_Dock(this);
+        InitAUnit(dock);
+    })
+
+
+    SET_ANCTION(act10,新建设置箱,{
+        auto dock = new ED_EditBox(this);
+        InitAUnit(dock);
+    })
+
 }
 void MainWindow::setupUnits()
 {
@@ -192,19 +193,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(showerAnimations,&QParallelAnimationGroup::finished,this,[=](){
         if (showeredVisibal){
-            // foreach (ED_Unit* content,*(inside->contents)) {
-            //     content->setVisible(true);
-            // }
             inside->setVisible(true);
+            changeShower->lower();
         }
     });
 
-
-    // buffer = QPixmap(size());
-    // inside->setVisible(true);
-    // // setShoweredVisibal(false);
-    // buffer = this->grab(rect());
-    // inside->setVisible(false);
     setShoweredVisibal(true);
     ed_update();
     updateBG();
@@ -224,9 +217,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::setScale(double scale)
 {
+    scale = qBound(0.001,scale,1.0);
     foreach(ED_Unit *content , *(inside->contents))
     {
         content->setScale(scale);
+    }
+    globalScale = scale;
+    ED_EditBox *ed = findChild<ED_EditBox *>();
+    if(ed!=nullptr){
+        if(ed->scale_Slider!=nullptr){
+            ed->scale_Slider->blockSignals(true);
+            ed->scale_Slider->setValue(scale*100);
+            ed->scale_Slider->blockSignals(false);
+        }
     }
 }
 
@@ -442,6 +445,43 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
     writeStyleIni();
     writeJson();
 }
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    // if(event->key()==Qt::Key_Shift){
+    //     onShift = true;
+    // }
+    event->accept();
+
+
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    // if(event->key()==Qt::Key_Shift){
+    //     onShift = false;
+    // }
+    event->accept();
+}
+
+void MainWindow::contextMenuEvent(QContextMenuEvent *event)
+{
+    if(event->modifiers() == Qt::ShiftModifier){
+        // ContextMenu::show(QStringList() << "D:/", (void *)winId(), QCursor::pos());
+    }
+    else
+        myMenu->exec(event->globalPos());
+
+}
+
+void MainWindow::wheelEvent(QWheelEvent *event)
+{
+    if(event->modifiers() ==Qt::ShiftModifier){
+        qDebug()<<event->angleDelta();
+        setScale((globalScale+(event->angleDelta().y()/1000.0)));
+    }
+}
+
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
     if (!enable_background_transparent)
@@ -471,6 +511,7 @@ void MainWindow::mousePressEvent(QMouseEvent* ev){
     appendPoints(ev->pos());
     printf("mousePressEvent \n");
     pls->raise();
+
 }
 
 void MainWindow::onSelectBackground()

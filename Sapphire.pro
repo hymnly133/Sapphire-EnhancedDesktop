@@ -1,10 +1,13 @@
-QT += core gui widgets winextras network multimedia multimediawidgets concurrent
+QT += core gui widgets winextras network concurrent quick qml
 win32 {
 LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
+LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi
 }
+msvc:QMAKE_CXXFLAGS += -execution-charset:utf-8
+msvc:QMAKE_CXXFLAGS += -source-charset:utf-8
 
-VERSION = 1.2.2.0
+VERSION = 1.2.3.1
 QMAKE_PROJECT_DEPTH = 0
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,6 +18,9 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ContextMenu/contextmenu.cpp \
+    ContextMenu/shellitem.cpp \
+    ContextMenu/shellmemmanager.cpp \
     SysFunctions.cpp \
     ed_bgshower.cpp \
     ed_block.cpp \
@@ -39,6 +45,9 @@ SOURCES += \
     weather.cpp
 
 HEADERS += \
+    ContextMenu/contextmenu.h \
+    ContextMenu/shellitem.h \
+    ContextMenu/shellmemmanager.h \
     SysFunctions.h \
     ed_bgshower.h \
     ed_block.h \
@@ -70,11 +79,6 @@ CONFIG += lrelease \
 CONFIG += embed_translations \
 
 
-# TEMPLATE = subdirs
-
-SUBDIRS += \
-    ContextMenu/ContextMenu.pro
-
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -85,7 +89,6 @@ RESOURCES += \
     res.qrc
 
 DISTFILES += \
-    AcrylicMaterial/CMakeLists.txt \
     README.md \
     style.json
 

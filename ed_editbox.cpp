@@ -90,7 +90,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
     });
     paint->addWidget(checkBox8);
 
-    QSlider* scale_Slider = new QSlider(this);
+    scale_Slider = new QSlider(this);
     scale_Slider->setRange(0, 100);
     scale_Slider->setValue(100);
     connect(scale_Slider, &QSlider::valueChanged, this, [](int val) {

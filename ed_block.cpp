@@ -4,6 +4,7 @@
 #include"QProcess"
 #include "qboxlayout.h"
 #include"SysFunctions.h"
+#include "qevent.h"
 #include "qfileinfo.h"
 #include "qlabel.h"
 #include"QDebug"
@@ -12,6 +13,7 @@
 #include"QTextCodec"
 #include "qpainter.h"
 #include"QGraphicsDropShadowEffect"
+#include"ContextMenu/contextmenu.h"
 
 int ED_Block::default_size = 48;
 ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex, sizey){
@@ -209,6 +211,12 @@ void ED_Block::ed_update()
 {
     ED_Unit::ed_update();
     whenScaleChange(scale*scaleFix);
+}
+
+void ED_Block::onShiftContextMenu(QContextMenuEvent *event)
+{
+    qDebug()<<filePath;
+    ContextMenu::show(QStringList() << filePath, (void *)pmw->winId(), event->globalPos());
 }
 void ED_Block::whenSimpleModeChange(bool val){
     lb->setVisible(!val);

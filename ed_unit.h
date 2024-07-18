@@ -2,6 +2,7 @@
 #define ED_UNIT_H
 #include "ed_layout.h"
 #include "qgraphicseffect.h"
+#include "qmenu.h"
 #include "qparallelanimationgroup.h"
 #include "qpropertyanimation.h"
 #include "roundshower.h"
@@ -28,7 +29,7 @@ public:
     ED_TYPE type = Unit;
     ED_Layout* layout;
     ED_Layout* preLayout;
-
+    QMenu* myMenu;
 
     QPoint nowPos;
     QPoint aim_pos;
@@ -127,6 +128,9 @@ public:
     virtual void mouse_leave_action();
     virtual void setBlockSize(int w,int h);
 
+    virtual void onContextMenu(QContextMenuEvent* event);
+    virtual void onShiftContextMenu(QContextMenuEvent* event);
+
 
     virtual void whenSimpleModeChange(bool val);
     virtual void whenScaleChange(double val);
@@ -171,9 +175,7 @@ public:
 
     virtual void preSetInLayout(bool animated);
     virtual void setInLayout(bool animated);
-
     virtual void updateInLayout();
-
     virtual void moveto(QPoint pos,QSize size);
 
 
@@ -192,6 +194,10 @@ public: signals:
     // QWidget interface
 protected:
     void resizeEvent(QResizeEvent *event) override;
+
+    // QWidget interface
+protected:
+    void contextMenuEvent(QContextMenuEvent *event) override;
 };
 Q_DECLARE_METATYPE(ED_Unit);
 
