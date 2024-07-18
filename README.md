@@ -8,7 +8,7 @@
 - **环境**：使用 Windows API 和 Qt 框架，mingw32 编译，只保证兼容 Windows 11。
 - 由原项目`Enhanced-desktop`接续开发，使用`Sapphire`作为新的软件名与原项目进行区别。
 
-- README 文件对应版本：`V1.2.1.1`
+- README 文件对应版本：`V1.2.2.0`
 
 # 项目特点
 
@@ -94,10 +94,18 @@ _斜体_ 表示已在可视化组件中给出
 - _enable_image_fill_ 大图标填充
 - muilt_icon_default_type 设置 Steam 图标获取方式
   - 0 小图标，1 竖图标，2 横图标（切换未完工）
-- scale_fix_ratio=1.3 聚焦时缩放比率
+- scale_fix_ratio 聚焦时缩放比率
 - enable_lnk_redirect 快捷方式的图标重定向
   - 开启会获取原软件的图标，没有小箭头，但可能会有错误
   - 关闭会获取快捷方式本身的图标，有小箭头
+
+# Todo
+
+- [ ] 自定义图标
+- [X] 更好的保存逻辑
+- [ ] 文件夹缩放
+- [ ] 多屏适配
+- [ ] 更好的右键菜单
 
 # 须知
 

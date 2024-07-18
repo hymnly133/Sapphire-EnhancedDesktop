@@ -6,6 +6,8 @@
 #include <QObject>
 class ED_Unit;
 
+void writeJson();
+
 class ED_Layout
 {
 public:
@@ -89,6 +91,10 @@ public:
 
     virtual void load_json(QJsonObject rootObject);
     virtual QJsonObject to_json();
+
+    void saveLayout(){
+        writeJson();
+    }
 };
 
 

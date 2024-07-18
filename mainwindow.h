@@ -105,7 +105,10 @@ protected:
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void closeEvent( QCloseEvent * event ) override;
+
 };
+
 extern MainWindow* pmw;
 extern ED_Unit* pMovingUnit;
 extern QDesktopWidget* pdt;

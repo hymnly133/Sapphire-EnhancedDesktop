@@ -1,9 +1,10 @@
 #include "ed_layout.h"
 #include "SysFunctions.h"
-#include "ed_block.h"
 #include "mainwindow.h"
 #include "qtimer.h"
 #include<algorithm>
+#include"QFuture"
+#include<QtConcurrent/QtConcurrent>
 
 int cmp(const ED_Unit* a,const ED_Unit* b)
 {
@@ -104,6 +105,8 @@ void ED_Layout::putUnit(ED_Unit *aim, int xind, int yind, bool animated)
         aim->setInLayout(false);
         updateAfterPut(aim,xind,yind);
     }
+
+    QFuture<void> future = QtConcurrent::run(writeJson);
 }
 
 void ED_Layout::putUnit(ED_Unit *aim, QPoint ind, bool animated)

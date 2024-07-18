@@ -1,10 +1,10 @@
-QT += core gui widgets winextras network multimedia multimediawidgets
+QT += core gui widgets winextras network multimedia multimediawidgets concurrent
 win32 {
 LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
 }
 
-VERSION = 1.2.1.1
+VERSION = 1.2.2.0
 QMAKE_PROJECT_DEPTH = 0
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -86,6 +86,7 @@ RESOURCES += \
 
 DISTFILES += \
     AcrylicMaterial/CMakeLists.txt \
+    README.md \
     style.json
 
 

@@ -51,7 +51,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
     connect(checkBox4, &QCheckBox::clicked, this, [](bool checked) {
         ShowSide = checked;
         pmw->update();
-    });}
+    });
 
 #endif
 

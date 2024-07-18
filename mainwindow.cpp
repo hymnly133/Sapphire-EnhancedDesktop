@@ -435,6 +435,13 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     pls->update();
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事件函数
+{
+
+    event->accept();
+    writeStyleIni();
+    writeJson();
+}
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
     if (!enable_background_transparent)

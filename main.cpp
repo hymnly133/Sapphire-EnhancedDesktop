@@ -63,9 +63,6 @@ int main(int argc, char *argv[])
 
     a.exec();
 
-    writeStyleIni();
-
-    writeJson();
 
 
     return 0;
