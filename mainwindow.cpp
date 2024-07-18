@@ -98,6 +98,13 @@ void MainWindow::setupActions()
             {
                 auto dock = new ED_Dock(this);
                 InitAUnit(dock); });
+
+    QAction *act10 = new QAction("新建设置箱");
+    this->addAction(act10);
+    connect(act10, &QAction::triggered, this, [=]()
+            {
+                auto dock = new ED_EditBox(this);
+                InitAUnit(dock); });
 }
 void MainWindow::setupUnits()
 {
