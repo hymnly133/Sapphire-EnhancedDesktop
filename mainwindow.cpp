@@ -467,7 +467,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     if(event->modifiers() == Qt::ShiftModifier){
-        // ContextMenu::show(QStringList() << "D:/", (void *)winId(), QCursor::pos());
+        StyleSettingWindow* k = new StyleSettingWindow();
+        k->show();
     }
     else
         myMenu->exec(event->globalPos());

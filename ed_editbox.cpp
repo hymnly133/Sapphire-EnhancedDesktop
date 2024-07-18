@@ -63,9 +63,6 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         pmw->update();
     });
 
-
-
-
     QCheckBox *checkBox6 = new QCheckBox("绘制光效",this);
     checkBox6->setChecked(ShowLight);
     paint->addWidget(checkBox6);

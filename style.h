@@ -1,21 +1,115 @@
 #ifndef STYLE_H
 #define STYLE_H
 
+#include "qboxlayout.h"
+#include "qcheckbox.h"
+#include "qdebug.h"
+#include "qdialog.h"
 #include "qglobal.h"
+#include "qsettings.h"
+#include "qslider.h"
 #include"qstring.h"
+#include"QObject"
 #include"qmap"
+#include "qwindowdefs.h"
+
+struct boolVal{
+    bool* pval;
+    QString fullname;
+    bool& val(){return *pval;};
+    boolVal(QString fullname,bool *pval,bool ,bool):pval(pval),fullname(fullname){};
+    void read(QSettings *styleIni){
+        val() = styleIni->value(fullname).toBool();
+        qDebug() <<"Read"<< fullname << ":" << val();
+    }
+    void write(QSettings *styleIni){
+        styleIni->setValue(fullname, QString::number(val()));
+        qDebug() <<"Wrote"<< fullname << ":" << val();
+    }
+    QString field(){
+        return fullname.split("/")[0];
+    }
+    QString name(){
+        return fullname.split("/")[1];
+    }
+    QCheckBox* checkBox;
+};
+struct intVal{
+    int* pval;
+    QString fullname;
+    int min;
+    int max;
+    int& val(){return *pval;};
+    intVal(QString fullname,int *pval,int min,int max):pval(pval),fullname(fullname),min(min),max(max){};
+    void read(QSettings *styleIni){
+        val() = styleIni->value( fullname).toInt();
+        qDebug() <<"Read"<< fullname << ":" << val();
+    }
+    void write(QSettings *styleIni){
+        styleIni->setValue(fullname, QString::number(val()));
+        qDebug() <<"Wrote"<< fullname << ":" << val();
+    }
+    QString field(){
+        return fullname.split("/")[0];
+    }
+    QString name(){
+        return fullname.split("/")[1];
+    }
+    QSlider* slider;
+
+};
+struct doubleVal{
+    double* pval;
+    QString fullname;
+    double min;
+    double max;
+    double& val(){return *pval;};
+    doubleVal(QString fullname,double *pval,double min,double max):pval(pval),fullname(fullname),min(min),max(max){};
+    void read(QSettings *styleIni){
+        val() = styleIni->value( fullname).toDouble();
+        qDebug() <<"Read"<< fullname << ":" << val();
+    }
+    void write(QSettings *styleIni){
+        styleIni->setValue(fullname, QString::number(val()));
+        qDebug() <<"Wrote"<< fullname << ":" << val();
+    }
+    QString field(){
+        return fullname.split("/")[0];
+    }
+    QString name(){
+        return fullname.split("/")[1];
+    }
+    QSlider* slider;
+};
+
 class StyleHelper{
-    QMap<QString,int*> intStyles;
-    QMap<QString,double*> doubleStyles;
-    QMap<QString,bool*> boolStyles;
 public:
+
+    QVector<intVal*> intStyles;
+    QVector<doubleVal*> doubleStyles;
+    QVector<boolVal*> boolStyles;
+
     StyleHelper();
-    void Add(QString,bool*);
-    void Add(QString,int*);
-    void Add(QString, double*);
+    void Add(QString,bool*,bool,bool);
+    void Add(QString name, int * pval,int min,int max);
+    void Add(QString, double*, double min, double max);
     void readStyleIni();
     void writeStyleIni();
+    void showSetting();
 };extern StyleHelper* psh;
+
+
+
+class StyleSettingWindow:public QDialog{
+    Q_OBJECT
+public:
+    StyleSettingWindow();
+    QMap<QString,QHBoxLayout*> layouts;
+    QMap<QString,QVBoxLayout*> checklayouts;
+    QMap<QString,QVBoxLayout*> sliderlayouts;
+    QVBoxLayout* mainLayout;
+    void setInLayout(QString field,QString name,QWidget* content,bool checkBox);
+};
 
 
 extern int sleep_alpha;
