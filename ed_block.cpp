@@ -14,6 +14,13 @@
 #include "qpainter.h"
 #include"QGraphicsDropShadowEffect"
 #include"ContextMenu/contextmenu.h"
+#include"QFileDialog"
+
+#define SET_ANCTION(NAME,TEXT,FUCTION)\
+QAction *NAME = new QAction(#TEXT);\
+    myMenu->addAction(NAME);\
+    connect(NAME, &QAction::triggered, this, [=]()FUCTION);
+
 
 int ED_Block::default_size = 48;
 ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex, sizey){
@@ -25,17 +32,16 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
     vl->setContentsMargins(0, 5, 0, 5);
     vl->addSpacing(0);
 
-    gv = new PictureBox(this, 1.0);
+    gv = new PictureBox(this);
     lb = new QLabel(this);
     // lb->adjustSize();
 
     // 显示图标
     // double defaultRatio = (double)default_size/image.size().width();
-    iconmap=QPixmap();
+    iconmap=QPixmap(1,1);
     setMainColor(pixmapMainColor(iconmap,sleep_color_ratio));
 
     (( QGraphicsDropShadowEffect*)graphicsEffect())->setColor(mainColor);
-    gv->setImage(iconmap);
     gv->setBackground(QBrush (QColor(0,0,0,0)));
     gv->setVisible(true);
     // vl->setAlignment(Qt::AlignHCenter);
@@ -72,9 +78,14 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
     text_shadow->setOffset(0, 0);      // 偏移量
     gv->setGraphicsEffect(text_shadow);
     setScale(1.0);
+
+    SET_ANCTION(act1,选择图标,{
+        QString tem =  QFileDialog::getOpenFileName(pmw,tr("open a file."),"D:/");
+        if(!tem.isEmpty()){
+            setIcon(tem);
+        }
+    })
 }
-
-
 
 ED_Block::ED_Block(QWidget *parent, QPixmap image, QString _name, QString filepath, int sizex, int sizey)
     : ED_Block(parent, sizex, sizey)
@@ -88,7 +99,7 @@ ED_Block::ED_Block(QWidget *parent, QPixmap image, QString _name, QString filepa
 
     ((QGraphicsDropShadowEffect*)graphicsEffect())->setColor(mainColor);
 
-    gv->setImage(image);
+    gv->follow(&iconmap);
 
     lb->setText(elidedLineText(lb, 3, name));
 
@@ -100,10 +111,9 @@ ED_Block::ED_Block(QWidget *parent, QPixmap image, QString _name, QString filepa
 
 }
 
-
 ED_Block::ED_Block(QWidget *parent, QString path, int sizeX, int sizeY):ED_Block(parent,sizeX,sizeY)
 {
-    unzip(path);
+    loadFromPath(path);
 }
 //---------------------------------------------------
 
@@ -187,13 +197,19 @@ QJsonObject ED_Block::to_json()
 {
     QJsonObject rootObject = ED_Unit::to_json();
     rootObject.insert("path",filePath);
+    rootObject.insert("requireIcon",requireIcon);
+    rootObject.insert("iconPath",iconPath);
     return rootObject;
 }
 
 void ED_Block::load_json(QJsonObject rootObject)
 {
     ED_Unit::load_json(rootObject);
-    unzip(rootObject.value("path").toString());
+    loadFromPath(rootObject.value("path").toString());
+    requireIcon = rootObject.value("path").toBool();
+    if(requireIcon){
+        setIcon(rootObject.value("iconPath").toString());
+    }
 }
 
 void ED_Block::whenMainColorChange(QColor val)
@@ -223,34 +239,38 @@ void ED_Block::whenSimpleModeChange(bool val){
 }
 
 void ED_Block::whenScaleChange(double val){
-    // qDebug()<<"called"<<val<<default_scale;
     gv->setScale(val*default_scale);
 }
 
-void ED_Block::unzip(QString filepath)
+void ED_Block::setIcon(QString iconPath)
 {
-    QList<FileInfo> infos = getFormFileInfo(QFileInfo(filepath));
-    FileInfo info = infos[0];
-    qDebug() << info.name;
+    iconmap = path2Icon(iconPath)[0];
+    requireIcon = true;
+    this->iconPath = iconPath;
+}
 
+void ED_Block::loadFromMyFI(MyFileInfo info){
     filePath = info.filePath;
     name = info.name;
-    // 初始化内部组件
+    iconmap=info.icons[0];
+    requireIcon = false;
 
-    // 显示图标
-    iconmap=info.icon.pixmap(512);
-    // qDebug()<<info.icon;
 
     setMainColor(pixmapMainColor(iconmap,sleep_color_ratio));
 
     ((QGraphicsDropShadowEffect*)graphicsEffect())->setColor(mainColor);
-
-    gv->setImage(iconmap);
-
+    gv->follow(&iconmap);
     lb->setText(elidedLineText(lb, 3, name));
 
     auto tem = mainColor;
     tem.setAlpha(icon_shadow_alpha);
     icon_shadow->setColor(tem);
     text_shadow->setColor(tem);
+}
+
+void ED_Block::loadFromPath(QString filepath)
+{
+    qDebug()<<"Loading form path:"<<filepath;
+    MyFileInfo info = path2MyFI(filepath);
+    loadFromMyFI(info);
 }

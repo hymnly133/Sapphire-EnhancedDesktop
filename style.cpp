@@ -38,7 +38,7 @@ bool enable_intime_repaint = false;
 
 bool enable_image_fill=false;
 
-int muilt_icon_default_type =1;
+int default_steam_icon_type =1;
 double scale_fix_ratio = 1.3;
 bool enable_lnk_redirect = 1;
 
@@ -81,7 +81,7 @@ StyleHelper::StyleHelper()
     ADD(Render,enable_intime_repaint,0,0);
 
     ADD(Preference,enable_image_fill,0,0);
-    ADD(Preference,muilt_icon_default_type,0,2);
+    ADD(Preference,default_steam_icon_type,0,2);
 
     ADD(Preference,scale_fix_ratio,1,2);
     ADD(Preference,enable_lnk_redirect,0,0);

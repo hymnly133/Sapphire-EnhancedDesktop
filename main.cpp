@@ -11,12 +11,22 @@
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
+#include"QMessageBox"
 #include"QDesktopWidget"
+#include "qsharedmemory.h"
 
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块
+    if (!shareMem->create(1))//创建大小1b的内存
+    {
+        QMessageBox::about(NULL, "提示", "已经打开了另一个程序！");
+        qApp->quit();
+        return -1;
+    }
 
     qRegisterMetaType<ED_Unit>();
     qRegisterMetaType<ED_Block>();

@@ -27,8 +27,8 @@ class ED_Unit : public QWidget
 public:
     enum ED_TYPE {Unit,Container};
     ED_TYPE type = Unit;
-    ED_Layout* layout;
-    ED_Layout* preLayout;
+    ED_Layout* layout = nullptr;
+
     QMenu* myMenu;
 
     QPoint nowPos;

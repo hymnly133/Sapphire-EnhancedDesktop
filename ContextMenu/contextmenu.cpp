@@ -1,4 +1,5 @@
 #include "contextmenu.h"
+#include "SysFunctions.h"
 #include "qdebug.h"
 #include "shellitem.h"
 
@@ -256,20 +257,6 @@ private:
             CoTaskMemFree(pszText);
         }
         return text;
-    }
-
-    QString toWindowsPath(QString const& linuxPath)
-    {
-       QString windowsPath = linuxPath;
-       windowsPath.replace("/", "\\");
-       return windowsPath;
-    }
-
-    QString toLinuxPath(QString const& windowsPath)
-    {
-        QString linuxPath = windowsPath;
-        linuxPath.replace("\\", "/");
-        return linuxPath;
     }
 
     IShellFolder* pDesktop;

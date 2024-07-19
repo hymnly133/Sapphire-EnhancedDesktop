@@ -244,9 +244,11 @@ void MainWindow::ed_update()
 void MainWindow::InitDesktop()
 {
     // 获取图标
-    QList<FileInfo> iconns = scanalldesktopfiles();
-    QList<QString> nametem;
-    addAIcon(iconns);
+    qDebug()<<"Init Desktop Icons";
+    QVector<MyFileInfo> iconns = scanalldesktopfiles();
+    foreach (MyFileInfo content, iconns) {
+        addAIcon(content);
+    }
 
     auto eb = new ED_EditBox(this);
     InitAUnit(eb);
@@ -313,71 +315,56 @@ void MainWindow::updata_animation()
 
 void MainWindow::addAIcon(QString path)
 {
-    addAIcon(QFileInfo(path));
+    addAIcon(path2MyFI(path));
 }
 
 void MainWindow::addAIcon(QFileInfo qinfo)
 {
-    QList<FileInfo>infos = getFormFileInfo(qinfo);
-    addAIcon(infos);
+    addAIcon(MyFileInfo(qinfo));
 }
 
-void MainWindow::addAIcon(QList<FileInfo> infos)
+void MainWindow::addAIcon(MyFileInfo info)
 {
-    QList<QString> nametem;
-    foreach (const FileInfo &file, infos)
+
+    qDebug() <<"Adding to Desktop"<< info.name << info.type;
+
+    ED_Block *tem = nullptr;
+
+
+    if (info.type==MyFileInfo::SINGLE)
     {
-        qDebug() << file.name << file.type;
-        int sizex = 1;
-        int sizey = 1;
-
-        ED_Unit *tem = nullptr;
-        if (!nametem.contains(file.name))
+        tem = new ED_Block(this);
+        tem->loadFromMyFI(info);
+    }
+    else
+    {
+        switch (default_steam_icon_type)
         {
+        case 0:
+                tem = new ED_Block(this, 1, 1);
+                tem->loadFromMyFI(info);
 
-            if (!file.multi)
-            {
+            break;
+        case 1:
 
-                tem = new ED_Block(this, file.icon.pixmap(32), file.name, file.filePath, sizex, sizey);
-                nametem.append(file.name);
-            }
-            else
-            {
-                switch (file.type)
-                {
-                case FileInfo::NORM:
-                    if (muilt_icon_default_type == 0)
-                    {
+                tem = new ED_HideTextBlock(this,1,2);
+                tem->loadFromMyFI(info);
+            break;
+        case 2:
 
-                        tem = new ED_Block(this, file.icon.pixmap(256), file.name, file.filePath, sizex, sizey);
-                        nametem.append(file.name);
-                    }
-                    break;
-                case FileInfo::HORI:
-                    if (muilt_icon_default_type == 1)
-                    {
-                        tem = new ED_HideTextBlock(this, file.icon.pixmap(512), file.name, file.filePath, 2, 1);
-                        nametem.append(file.name);
-                    }
-                    break;
-                case FileInfo::VERT:
-                    if (muilt_icon_default_type == 2)
-                    {
-                        tem = new ED_HideTextBlock(this, file.icon.pixmap(512), file.name, file.filePath, 1, 2);
-                        nametem.append(file.name);
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        if (tem)
-        {
-            InitAUnit(tem);
-            tem->raise();
+                tem = new ED_HideTextBlock(this,2,1);
+                tem->loadFromMyFI(info);
+            break;
         }
     }
+
+
+    if (tem)
+    {
+        InitAUnit(tem);
+        tem->raise();
+    }
+
 }
 
 void MainWindow::appendPoints(QPoint p)
@@ -469,6 +456,7 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     if(event->modifiers() == Qt::ShiftModifier){
         StyleSettingWindow* k = new StyleSettingWindow();
         k->show();
+        // ContextMenu::show(QStringList()<<toLinuxPath(*UserDesktopPath),(HWND*)winId(),event->globalPos());
     }
     else
         myMenu->exec(event->globalPos());

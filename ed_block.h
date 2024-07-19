@@ -19,6 +19,8 @@ public:
     QLabel* lb ;
     QPixmap iconmap;
     QString filePath;
+    bool requireIcon = false;
+    QString iconPath;
     double default_scale = 0.5;
     static int default_size;
     QString name;
@@ -38,12 +40,13 @@ public:
     void mouse_leave_action()override;
     void whenSimpleModeChange(bool) override;
     void whenScaleChange(double) override;
+    void setIcon(QString iconPath);
 
 
 
 
-    void unzip(QString filepath);
-
+    void loadFromPath(QString filepath);
+    virtual void loadFromMyFI(MyFileInfo info);
     void double_click_action() override;
     void paintEvent(QPaintEvent *event) override;
     // FilePreviewWidget *previewWidget;

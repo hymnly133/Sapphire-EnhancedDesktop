@@ -12,25 +12,37 @@ QString Unicode2Utf(QString c);
 QString GetCorrectUnicode(const QByteArray &ba);
 QString elidedLineText(QWidget *pWidget, int nLine, QString strText);
 
-struct FileInfo
+struct MyFileInfo
 {
     //定义返回的结构体
     enum TYPE{
-        NORM = 0,
-        HORI = 1,
-        VERT = 2
+        SINGLE = 0,
+        MULTI =1
     };
-    bool multi =false;
     TYPE type;
     QString name;
     QString filePath;
-    QIcon icon;
-    bool operator<(FileInfo& another) const{
+    QMap<int,QPixmap> icons;
+    bool operator<(MyFileInfo& another) const{
         return type<another.type;
     }
+    MyFileInfo(QString path,int size=512);
+    MyFileInfo(QFileInfo qfi,int size = 512);
+    QPixmap aimIcon(){
+        if(okForAim())
+            return icons[default_steam_icon_type];
+        else{
+            qDebug()<<"No aim icon!,use default";
+            return icons[0];
+        }
+    }
+    bool okForAim(){
+        return icons.contains(default_steam_icon_type);
+    }
 };
-QList<FileInfo> scanalldesktopfiles();
-QList<FileInfo>getFormFileInfo(QFileInfo x);
+
+QVector<MyFileInfo> scanalldesktopfiles();
+QVector<MyFileInfo>getFormFileInfo(QFileInfo x);
 void paintRect(QWidget* aim,QColor color);
 void repaintAround(QWidget* aim);
 void inplace(QWidget* aim);
@@ -48,5 +60,11 @@ void readJson();
 void setMyAppAutoRun(bool isStart);
 ED_Unit* from_json(QJsonObject data);
 QColor GetWindowsThemeColor();
-
+QString toWindowsPath(QString const& linuxPath);
+QString toLinuxPath(QString const& windowsPath);
+extern QString* UserDesktopPath;
+extern QString* PublicDesktopPath;
+MyFileInfo path2MyFI(QString path,int size=512);
+QMap<int,QPixmap> path2Icon(QString path,int size=512);
+QString path2Name(QString path);
 #endif // SYSFUNCTIONS_H

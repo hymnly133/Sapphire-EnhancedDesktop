@@ -144,7 +144,7 @@ extern bool enable_intime_repaint;
 
 extern bool enable_image_fill;
 
-extern int muilt_icon_default_type;
+extern int default_steam_icon_type;
 
 extern double scale_fix_ratio;
 

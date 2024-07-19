@@ -21,6 +21,7 @@ void roundShower::updateDisplay()
     if(follow){
         setFixedSize(parentWidget()->size());
     }
+
 }
 
 

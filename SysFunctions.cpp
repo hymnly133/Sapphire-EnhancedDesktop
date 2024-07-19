@@ -16,6 +16,7 @@
 #include<QFileIconProvider>
 #include<QSettings>
 #include<QIcon>
+#include"QVector"
 #include <QMetaType>
 #include <QtCore>
 #include<QMessageBox>
@@ -25,7 +26,8 @@
 MainWindow* pmw;;
 MouseHook* pmh;
 LayerShower* pls;
-
+QString* UserDesktopPath;
+QString* PublicDesktopPath;
 QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
 
@@ -258,17 +260,31 @@ void InitMouseHook(){
     pmh->SetMouseOnCallBack(mouse_on);
 }
 
-
 void Init(MainWindow* mainwindow){
     //初始化
     qDebug()<<"Initing";
-
+    UserDesktopPath = new QString(getDesktopPath());
+    qDebug()<<"User Desktop:"<<*UserDesktopPath;
+    PublicDesktopPath=new QString(QDir::toNativeSeparators("C:/Users/Public/Desktop"));
+    qDebug()<<"Public Desktop:"<<*PublicDesktopPath;
     inplace(mainwindow);
 
     qDebug()<<"Initing done";
 }
 
+QString toWindowsPath(QString const& linuxPath)
+{
+    QString windowsPath = linuxPath;
+    windowsPath.replace("/", "\\");
+    return windowsPath;
+}
 
+QString toLinuxPath(QString const& windowsPath)
+{
+    QString linuxPath = windowsPath;
+    linuxPath.replace("\\", "/");
+    return linuxPath;
+}
 
 void inplace(QWidget* aim) {
     // 接入到图标层
@@ -344,136 +360,32 @@ void inplace2(QWidget* pmw2) {
     // 如果找到了符合条件的 WorkerW 窗口，设置 Qt 窗口的父窗口
 }
 
-QList<FileInfo>getFormFileInfo(QFileInfo x){
-    QList<FileInfo > files;
-    FileInfo file;
-    file.type = FileInfo::NORM;
-    file.filePath=x.absoluteFilePath();
-    QString fileName = x.fileName();
-    int lastDotIndex = fileName.lastIndexOf('.');
-    if (lastDotIndex != -1)
-    {
-        fileName.remove(lastDotIndex, fileName.length() - lastDotIndex);
-    }
-    file.name=fileName;
-    // qDebug()<<x.suffix().toLower()<<x.symLinkTarget();
-    if (x.suffix().toLower() == "lnk" && enable_lnk_redirect)
-    {
-        // 处理快捷方式（.lnk 文件）
-        QString target = x.symLinkTarget();
-        if (!target.isEmpty())
-        {
-            qDebug()<<"redirect"<<target<<"success";
 
-            QDir targetDir(QFileInfo(target).absolutePath());
-            // QStringList iconFiles = targetDir.entryList(QStringList() << "*.ico", QDir::Files);
-            // if (!iconFiles.isEmpty())
-            // {
-            //     file.icon = QIcon(targetDir.absoluteFilePath(iconFiles.first())); // 或者根据需要设置其他类型
-            // }
-            // if(file.icon.isNull())
-            // {
-            QFileIconProvider iconProvider;
-            file.icon =iconProvider.icon(QFileInfo(target));
-            // }
-        }
-    }
-    else
-    {
-        QFileIconProvider a;
-        a.setOptions(QFileIconProvider::Option::DontUseCustomDirectoryIcons);
-        file.icon = a.icon(x);
-    }
-    //针对steam游戏
-    QSettings shortcut(x.filePath(), QSettings::IniFormat);
-    QString target = shortcut.value("InternetShortcut/URL").toString();
-    QRegularExpression re("steam://rungameid/(\\d+)");
-    QRegularExpressionMatch match = re.match(target);
-    if (match.hasMatch())
-    {
-        file.multi =true;
-        QString gameId = match.captured(1);
-        //QString steamPath = "C:/Program Files (x86)/Steam/appcache/librarycache"; // 你的Steam安装路径
-        QString steamPath;
-        QSettings reg("HKEY_CURRENT_USER\\Software\\Valve\\Steam", QSettings::NativeFormat);
-        steamPath = reg.value("SteamPath").toString()+"/appcache/librarycache";
-        QStringList result;
-        QDir directory(steamPath);
-        QStringList steamfileList=directory.entryList(QDir::Files);
-
-        QRegularExpression regex(gameId+"_library_600x900");
-        //长竖图标版本
-        steamfileList=directory.entryList(QDir::Files);
-
-
-        foreach(const QString& steamfilename,steamfileList)
-        {
-            if(regex.match(steamfilename).hasMatch())
-            {
-                file.icon=QIcon(directory.absoluteFilePath(steamfilename));
-                file.type = FileInfo::HORI;
-                files.append(file);
-            }
-        }
-        regex = QRegularExpression(gameId+"_header");
-        //长横图标版本
-        foreach(const QString& steamfilename,steamfileList)
-        {
-            if(regex.match(steamfilename).hasMatch())
-            {
-                file.icon=QIcon(directory.absoluteFilePath(steamfilename));
-                file.type = FileInfo::VERT;
-                files.append(file);
-            }
-        }
-
-
-        regex = QRegularExpression(gameId+"_icon");
-        //小图标版本
-        foreach(const QString& steamfilename,steamfileList)
-        {
-            if(regex.match(steamfilename).hasMatch())
-            {
-                result.append(directory.absoluteFilePath(steamfilename));
-                file.icon=QIcon(directory.absoluteFilePath(steamfilename));
-                file.type = FileInfo::NORM;
-            }
-        }
-    }
-    files.append(file);
-    // qDebug()<<QString::fromLocal8Bit(x.absoluteFilePath().toLocal8Bit())<<files.size();
-    return files;
-    //以上为针对steam游戏
-}
-
-QList<FileInfo> scandesktopfiles(const QString &desktopPath)
+QVector<MyFileInfo> scandesktopfiles(const QString &desktopPath)
 {
     //对于指定桌面路径，返还桌面路径中的文件信息的列表
-    QList<FileInfo> files;
+    QVector<MyFileInfo> files;
     QDir desktopDir(desktopPath);
     desktopDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
     QFileInfoList fileInfoList=desktopDir.entryInfoList();
     foreach(const QFileInfo &x,fileInfoList)
     {
-        files.append(getFormFileInfo(x));
+        files.append(MyFileInfo(x));
     }
     std::sort(files.begin(), files.end());
     return files;
 }
 
-
-QList<FileInfo> scanalldesktopfiles()
+QVector<MyFileInfo> scanalldesktopfiles()
 {
     //寻找桌面路径，并返回两个桌面中所有文件信息的列表
-    QList<FileInfo> files;
-    // QString userdesktoppath=QDir::homePath()+"/Desktop";
-    // files.append(scandesktopfiles(userdesktoppath));
-    QString publicdesktoppath=QDir::toNativeSeparators("C:/Users/Public/Desktop");
-    files.append(scandesktopfiles(publicdesktoppath));
-    QString another = getDesktopPath();
-    files.append(scandesktopfiles(another));
+    QVector<MyFileInfo> files;
+
+    files.append(scandesktopfiles(*PublicDesktopPath));
+    files.append(scandesktopfiles(*UserDesktopPath));
+
     std::sort(files.begin(),files.end());
-    qDebug()<<publicdesktoppath<<another;
+    qDebug()<<*PublicDesktopPath<<*UserDesktopPath;
     return files;
 }
 
@@ -554,7 +466,6 @@ QString elidedLineText(QWidget *pWidget, int nLine, QString strText)
     return strResult;
 }
 
-
 QColor pixmapMainColor(QPixmap p, double bright) //p为目标图片 bright为亮度系数，为1则表示保持不变
 {
     int step=20; //步长：在图片中取点时两点之间的间隔，若为1,则取所有点，适当将此值调大有利于提高运行速度
@@ -602,15 +513,94 @@ QString  getDesktopPath()
     return QString(szDir);
 }
 
+QString path2Name(QString path){
+    return QFileInfo(path).baseName();
+}
+
+QMap<int,QPixmap> path2Icon(QString path,int size){
+    QMap<int,QPixmap> res;
+    QFileInfo qfileinfo(path);
+    QFileIconProvider iconProvider;
+    // qDebug()<<x.suffix().toLower()<<x.symLinkTarget();
+    if (qfileinfo.suffix().toLower() == "lnk" && enable_lnk_redirect)
+    {
+        // 处理快捷方式（.lnk 文件）
+        QString target = qfileinfo.symLinkTarget();
+        if (!target.isEmpty())
+        {
+            qDebug()<<"redirect"<<target<<"success";
+            res[0]=(iconProvider.icon(QFileInfo(target)).pixmap(size));
+        }
+    }
+    else
+    {
+        res[0]=(iconProvider.icon(path).pixmap(size));
+    }
+    //针对steam游戏
+    QSettings shortcut(qfileinfo.filePath(), QSettings::IniFormat);
+    QString target = shortcut.value("InternetShortcut/URL").toString();
+    QRegularExpression re("steam://rungameid/(\\d+)");
+    QRegularExpressionMatch match = re.match(target);
+    if (match.hasMatch())
+    {
+        QString gameId = match.captured(1);
+        QString steamPath;
+        QSettings reg("HKEY_CURRENT_USER\\Software\\Valve\\Steam", QSettings::NativeFormat);// 你的Steam安装路径
+        steamPath = reg.value("SteamPath").toString()+"/appcache/librarycache";
+        QDir directory(steamPath);
+        QStringList steamfileList=directory.entryList(QDir::Files);
+
+
+
+        steamfileList=directory.entryList(QDir::Files);
+
+
+        foreach(const QString& steamfilename,steamfileList)
+        {
+            QRegularExpression regex;
+
+            //小图标版本
+
+            regex = QRegularExpression(gameId+"_icon");
+            if(regex.match(steamfilename).hasMatch())
+            {
+                res[0]=(QPixmap(directory.absoluteFilePath(steamfilename)));
+                qDebug()<<"Find Little";
+            }
+
+
+            //长竖图标版本
+            regex = QRegularExpression(gameId+"_library_600x900");
+            if(regex.match(steamfilename).hasMatch())
+            {
+                res[1]=(QPixmap(directory.absoluteFilePath(steamfilename)));
+                qDebug()<<"Find Verti";
+            }
+
+            //长横图标版本
+
+            regex = QRegularExpression(gameId+"_header");
+            if(regex.match(steamfilename).hasMatch())
+            {
+                res[2]=(QPixmap(directory.absoluteFilePath(steamfilename)));
+                qDebug()<<"Find Hori";
+            }
+        }
+
+    // qDebug()<<QString::fromLocal8Bit(x.absoluteFilePath().toLocal8Bit())<<files.size();
+
+    }
+    qDebug()<<"get"<<res.size()<<"icons";
+    return res;
+}
 
 void writeJson(){
     QJsonObject rootObj =  pmw->inside->to_json();
     QJsonDocument document;
     document.setObject(rootObj);
 
-    QByteArray byte_array = document.toJson(QJsonDocument::Compact);
+    QByteArray byte_array = document.toJson(QJsonDocument::Indented);
     QString json_str(byte_array);
-    //根据实际填写路径
     QFile file("content.json");
 
 
@@ -641,4 +631,23 @@ void readJson(){
     QJsonObject jsonObject = document.object();
     pmw->inside->load_json(jsonObject);
 
+}
+
+MyFileInfo path2MyFI(QString path,int size){
+    return MyFileInfo(path,size);
+}
+
+MyFileInfo::MyFileInfo(QString path, int size)
+{
+    type = TYPE::SINGLE;
+    name = path2Name(path);
+    icons = path2Icon(path,size);
+    if(icons.size()>1){
+        type= TYPE::MULTI;
+    }
+    filePath = path;
+}
+
+MyFileInfo::MyFileInfo(QFileInfo qfi, int size):MyFileInfo(qfi.filePath(),size)
+{
 }

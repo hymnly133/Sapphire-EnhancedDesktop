@@ -14,7 +14,8 @@ public:
     void setScale(double scale);
     ~PictureBox();
     bool requireFill =false;
-    QPixmap source;
+    bool followSource = false;
+    QPixmap* source;
     QPixmap scaled;
     QBrush m_brush;
     QSize displaySize;
@@ -27,7 +28,8 @@ protected:
     void paintEvent(QPaintEvent * event);
 
 public slots:
-    bool setImage(QPixmap &image);
+    void setImage(QPixmap &image);
+    void follow(QPixmap* pPixmap);
     void setBackground(QBrush brush);
 };
 #endif

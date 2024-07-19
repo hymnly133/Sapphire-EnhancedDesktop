@@ -17,7 +17,7 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-struct FileInfo;
+struct MyFileInfo;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -72,7 +72,7 @@ public:
 
     void addAIcon(QString path);
     void addAIcon(QFileInfo info);
-    void addAIcon(QList<FileInfo> infos);
+    void addAIcon(MyFileInfo info);
     void appendPoints(QPoint p);
 
 private:

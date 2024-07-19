@@ -192,7 +192,6 @@ void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
         moving = false;
     }
     premove = false;
-    // repaintAround(this);
     event->accept();
 
 }
@@ -206,16 +205,15 @@ void ED_Unit::mouseDoubleClickEvent(QMouseEvent *event)
 void ED_Unit::mouseMoveEvent(QMouseEvent *event)
 {
     mouse_move_action();
-    // update();
 
     if (moving)
     {
         move(cursor().pos()-relativeP);
+        update();
     }
     else if(premove){
         auto tem = mapFromGlobal(cursor().pos());
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
-        // qDebug()<<(dis)<<event->pos()<<relativeP;
         if(dis>=2){
             QPoint usedp = mapToGlobal(QPoint(0,0));
             positionAnimations->stop();
@@ -285,7 +283,7 @@ void ED_Unit::leaveEvent(QEvent *event){
 
 void ED_Unit::setBlockSize(int w,int h){
     ED_Layout* tem = nullptr;
-    if(layout){
+    if(layout!=nullptr){
         tem = layout;
         removeFromLayout();
         ED_Unit temu(nullptr,w,h);

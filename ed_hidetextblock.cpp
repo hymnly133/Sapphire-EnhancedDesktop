@@ -2,7 +2,7 @@
 #include"QDesktopServices"
 #include "SysFunctions.h"
 
-ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, int sizey, int sizex) : ED_Block(parent, sizex, sizey)
+ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, int sizex, int sizey) : ED_Block(parent, sizex, sizey)
 {
     deepColor =true;
     lb->setVisible(false);
@@ -21,7 +21,7 @@ ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, QPixmap image, QString _name
 
     ((QGraphicsDropShadowEffect*)graphicsEffect())->setColor(mainColor);
 
-    gv->setImage(image);
+    gv->follow(&iconmap);
 
 
     lb->setText(elidedLineText(lb, 3, name));
@@ -41,6 +41,18 @@ void ED_HideTextBlock::whenScaleChange(double val)
 {
     // qDebug()<<"HSCalled";
     gv->setScale(1.0*scaleFix);
+}
+
+void ED_HideTextBlock::loadFromMyFI(MyFileInfo info)
+{
+    ED_Block::loadFromMyFI(info);
+    if(info.okForAim()){
+        iconmap = info.icons[default_steam_icon_type];
+    }
+    else{
+        iconmap = info.icons[0];
+    }
+    gv->follow(&iconmap);
 }
 
 // void ED_HideTextBlock::ed_update()

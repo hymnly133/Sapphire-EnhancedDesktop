@@ -10,7 +10,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
     type = Unit;
     settings= new QHBoxLayout(this);
 
-    overall = new QVBoxLayout(this);
+    overall = new QVBoxLayout();
     settings->addLayout(overall);
 
     QCheckBox *checkBox1 = new QCheckBox("背景透视",this);             //创建QCheckBox对象
@@ -39,7 +39,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         pmw->update();
     });
 
-    paint =  new QVBoxLayout(this);
+    paint =  new QVBoxLayout();
     settings->addLayout(paint);
 
 

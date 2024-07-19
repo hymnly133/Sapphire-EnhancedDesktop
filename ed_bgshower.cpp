@@ -12,7 +12,6 @@ ED_BGShower::ED_BGShower(QWidget *parent)
     ef->setEnabled(true);
     ef->setBlurRadius(30);
     setGraphicsEffect(ef);
-
     setWindowTitle("BG_Shower");
     setAttribute(Qt::WA_TransparentForMouseEvents, true);
     setAttribute(Qt::WA_TranslucentBackground);
