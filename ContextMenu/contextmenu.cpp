@@ -266,4 +266,4 @@ void ContextMenu::show(QStringList const& fileNames,
                      void *handle, QPoint const& p)
 {
     ContextMenuHelper::Instatnce()->showContextMenu(fileNames, handle, p.x(), p.y());
-}
+};

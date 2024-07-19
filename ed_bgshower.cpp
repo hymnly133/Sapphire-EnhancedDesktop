@@ -7,6 +7,7 @@
 ED_BGShower::ED_BGShower(QWidget *parent)
     : QWidget{parent}
 {
+    pmw = (MainWindow*)parent;
     QGraphicsBlurEffect* ef = new QGraphicsBlurEffect(this);
     ef->setBlurHints(QGraphicsBlurEffect::PerformanceHint);
     ef->setEnabled(true);
@@ -32,10 +33,10 @@ void ED_BGShower::paintEvent(QPaintEvent * ev){
 
 QRegion ED_BGShower::updateMask(){
     QRegion tem = pmw->inside->region;
-    if(pMovingUnit){
-        auto pos = pMovingUnit->mapToGlobal(QPoint(0,0));
-        auto geo = pMovingUnit->geometry();
-         tem = tem.united(QRect(pos.x(),pos.y(),geo.width(),geo.height()));
-    }
+    // if(pMovingUnit){
+    //     auto pos = pMovingUnit->mapToGlobal(QPoint(0,0));
+    //     auto geo = pMovingUnit->geometry();
+    //      tem = tem.united(QRect(pos.x(),pos.y(),geo.width(),geo.height()));
+    // }
     return tem;
 }

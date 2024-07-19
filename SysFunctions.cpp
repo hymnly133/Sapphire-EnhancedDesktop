@@ -1,12 +1,13 @@
 #include<windows.h>
-#include "layershower.h"
 #include"mainwindow.h"
+#include "layershower.h"
 #include "qapplication.h"
 #include "qpainter.h"
 #include "qpainterpath.h"
+#include "qscreen.h"
+#include "screenfunc.h"
 #include"windows.h"
 #include "shlobj.h"
-#include"mousehook.h"
 #include"SysFunctions.h"
 #include"QTextCodec"
 #include <QJsonObject>
@@ -22,15 +23,6 @@
 #include<QMessageBox>
 #include<windows.h>
 #include<uxtheme.h>
-
-MainWindow* pmw;;
-MouseHook* pmh;
-LayerShower* pls;
-QString* UserDesktopPath;
-QString* PublicDesktopPath;
-QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
-QTextCodec* gbk = QTextCodec::codecForName("GBK");
-
 #include <QCoreApplication>
 #include <QDebug>
 #include <QFile>
@@ -38,11 +30,114 @@ QTextCodec* gbk = QTextCodec::codecForName("GBK");
 #include <QDateTime>
 #include <QMutex>
 #include <dwmapi.h>
-static QMutex mutex;
+#include"QWindowStateChangeEvent"
+
+static QMutex mutex;;
+
+
+QMap<int,MainWindow*> pmws;
+QMap<int,QScreen*> pscs;
+int screenNum;
+StyleHelper* psh;
+LayerShower* pls;
+QDesktopWidget* pdt;
+QString* UserDesktopPath;
+QString* PublicDesktopPath;
+ED_Unit* pMovingUnit;
+
+
+
+QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
+QTextCodec* gbk = QTextCodec::codecForName("GBK");
+
+
+
 
 #define AUTO_RUN_KEY	"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 //设置/取消自启动
 //isStart: true(开机启动)    false(开机不启动)
+
+void SetUp()
+{
+    qDebug()<<"Setting Up...";
+
+    UserDesktopPath = new QString(getDesktopPath());
+    qDebug()<<"User Desktop:"<<*UserDesktopPath;
+    PublicDesktopPath=new QString(QDir::toNativeSeparators("C:/Users/Public/Desktop"));
+    qDebug()<<"Public Desktop:"<<*PublicDesktopPath;
+
+    pdt = QApplication::desktop();
+
+    pscs[0]=QGuiApplication::primaryScreen();
+    // 通过循环可以遍历每个显示器
+    QList<QScreen *> list_screen = QGuiApplication::screens();
+    screenNum = list_screen.size();
+
+    for (int i = 0; i < screenNum; i++)
+    {
+        QScreen * qs =list_screen.at(i);
+        QRect rect = qs->geometry();
+        qDebug()<<"Setting Screen"<<i<< rect<< (pscs[0] == qs);
+        pscs[i] = list_screen[i];
+    }
+    qDebug()<<"Setting layerShower";
+    pls = new LayerShower();
+
+
+    QMap<int,QJsonObject> jsons = readJson();
+    int jsonNum = jsons.size();
+
+    qDebug()<<"Find"<<jsonNum<<"Jsons";
+    qDebug()<<"Find"<<screenNum<<"Screens";
+
+
+    // if(jsonNum>screenNum){
+    //     QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！").arg(jsonNum).arg(screenNum));
+    //     for(int i=0;i<screenNum;i++){
+    //         pmws[i] = new MainWindow(nullptr,i);
+    //         pmws[i]->load_json(jsons[i]);
+    //     }
+    // }
+    // else if(jsonNum<screenNum){
+    //     QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将初始化新布局！").arg(jsonNum).arg(screenNum));
+    //     for(int i=0;i<jsonNum;i++){
+    //         pmws[i] = new MainWindow(nullptr,i);
+    //         pmws[i]->load_json(jsons[i]);
+    //     }
+    //     for(int i=jsonNum;i<screenNum;i++){
+    //         pmws[i] = new MainWindow(nullptr,i);
+    //         if
+    //         pmws[i]->Init(false);
+    //     }
+    // }
+    // else{
+    //     for(int i=0;i<screenNum;i++){
+    //         pmws[i] = new MainWindow(nullptr,i);
+    //         pmws[i]->load_json(jsons[i]);
+    //     }
+    // }
+    if(jsonNum<screenNum)
+    QMessageBox::about(nullptr,"注意！",QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化").arg(jsonNum).arg(screenNum));
+    if(jsonNum>screenNum)
+    QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！").arg(jsonNum).arg(screenNum));
+
+    for(int i=0;i<screenNum;i++){
+        qDebug()<<"Processing Mainwindow"<<i;
+        pmws[i] = new MainWindow(nullptr,i);
+        if(jsons.contains(i)){
+            pmws[i]->load_json(jsons[i]);
+        }
+        else{
+            pmws[i]->Init();
+        }
+    }
+    for(int i=0;i<screenNum;i++){
+        pmws[i]->show();
+    }
+    pls->show();
+    pls->raise();
+}
+
 
 QColor GetWindowsThemeColor()
 {
@@ -85,40 +180,40 @@ void customMessageHandler(QtMsgType type,
     QDateTime _datetime = QDateTime::currentDateTime();
     QString szDate = _datetime.toString("yyyy-MM-dd hh:mm:ss.zzz");//"yyyy-MM-dd hh:mm:ss ddd"
     QString txt(szDate);
-switch (type)
-    {
-    case QtDebugMsg://调试信息提示
-    {
-        txt += QString(" [Debug] ");
-        break;
-    }
-    case QtInfoMsg://信息输出
-    {
-        txt += QString(" [Info] ");
-        break;
-    }
-    case QtWarningMsg://一般的warning提示
-    {
-        txt += QString(" [Warning] ");
-        break;
-    }
-    case QtCriticalMsg://严重错误提示
-    {
-        txt += QString(" [Critical] ");
-        break;
-    }
-    case QtFatalMsg://致命错误提示
-    {
-        txt += QString(" [Fatal] ");
-        //abort();
-        break;
-    }
-    default:
-    {
-        txt += QString(" [Trace] ");
-        break;
-    }
-    }
+    switch (type)
+        {
+        case QtDebugMsg://调试信息提示
+        {
+            txt += QString(" [Debug] ");
+            break;
+        }
+        case QtInfoMsg://信息输出
+        {
+            txt += QString(" [Info] ");
+            break;
+        }
+        case QtWarningMsg://一般的warning提示
+        {
+            txt += QString(" [Warning] ");
+            break;
+        }
+        case QtCriticalMsg://严重错误提示
+        {
+            txt += QString(" [Critical] ");
+            break;
+        }
+        case QtFatalMsg://致命错误提示
+        {
+            txt += QString(" [Fatal] ");
+            //abort();
+            break;
+        }
+        default:
+        {
+            txt += QString(" [Trace] ");
+            break;
+        }
+        }
 
     txt.append( QString(" %1").arg(context.file) );
     txt.append( QString("<%1>: ").arg(context.line) );
@@ -138,7 +233,7 @@ QRect AbsoluteRect(QWidget* aim){
     return QRect(pos.x()+tem.x(),pos.y()+tem.y(),tem.width(),tem.height());
 }
 
-ED_Unit* from_json(QJsonObject data){
+ED_Unit* from_json(QJsonObject data,MainWindow* parent){
     QString name = data.value("Class").toString();
     int id = QMetaType::type(name.toStdString().c_str());
     if (id == QMetaType::UnknownType){
@@ -149,7 +244,10 @@ ED_Unit* from_json(QJsonObject data){
     }
     auto k = QMetaType::create(id);
     ED_Unit *unit = static_cast<ED_Unit*>(QMetaType::create(id));
+    unit->setParent(parent);
+    unit->setPMW(parent);
     unit->load_json(data);
+
     return unit;
 
 }
@@ -244,33 +342,24 @@ void mouse_move(int x,int y){
     qDebug()<<"move"<<x<<y;
     // pmw->move(x,y);
 }
+
 void mouse_on(int x,int y){
 
     qDebug()<<"on"<<x<<y;
 }
+
 void mouse_off(int x,int y){
 
     qDebug()<<"off"<<x<<y;
 }
 
-void InitMouseHook(){
-    pmh = new MouseHook();
-    pmh->SetMouseMoveCallBack(mouse_move);
-    pmh->SetMouseOffCallBack(mouse_off);
-    pmh->SetMouseOnCallBack(mouse_on);
-}
+// void InitMouseHook(){
+//     pmh = new MouseHook();
+//     pmh->SetMouseMoveCallBack(mouse_move);
+//     pmh->SetMouseOffCallBack(mouse_off);
+//     pmh->SetMouseOnCallBack(mouse_on);
+// }
 
-void Init(MainWindow* mainwindow){
-    //初始化
-    qDebug()<<"Initing";
-    UserDesktopPath = new QString(getDesktopPath());
-    qDebug()<<"User Desktop:"<<*UserDesktopPath;
-    PublicDesktopPath=new QString(QDir::toNativeSeparators("C:/Users/Public/Desktop"));
-    qDebug()<<"Public Desktop:"<<*PublicDesktopPath;
-    inplace(mainwindow);
-
-    qDebug()<<"Initing done";
-}
 
 QString toWindowsPath(QString const& linuxPath)
 {
@@ -359,7 +448,6 @@ void inplace2(QWidget* pmw2) {
 
     // 如果找到了符合条件的 WorkerW 窗口，设置 Qt 窗口的父窗口
 }
-
 
 QVector<MyFileInfo> scandesktopfiles(const QString &desktopPath)
 {
@@ -491,7 +579,7 @@ QColor pixmapMainColor(QPixmap p, double bright) //p为目标图片 bright为亮
 void repaintAround(QWidget* aim){
     auto tem = aim->geometry();
     auto rrect = QRect(tem.x()-100,tem.y()-100,tem.width()+200,tem.height()+200);
-    pmw->repaint(rrect);
+    pmws[screenInd(aim)]->repaint(rrect);
 
 }
 
@@ -595,9 +683,14 @@ QMap<int,QPixmap> path2Icon(QString path,int size){
 }
 
 void writeJson(){
-    QJsonObject rootObj =  pmw->inside->to_json();
+    QJsonArray rootArrar;
+    foreach (auto pmw, pmws) {
+        QJsonObject rootObj =  pmw->to_json();
+        rootArrar.append(rootObj);
+    }
+
     QJsonDocument document;
-    document.setObject(rootObj);
+    document.setArray(rootArrar);
 
     QByteArray byte_array = document.toJson(QJsonDocument::Indented);
     QString json_str(byte_array);
@@ -615,9 +708,18 @@ void writeJson(){
     file.close();   // 关闭file
 }
 
-void readJson(){
+QMap<int,QJsonObject> readJson(){
+    QMap<int,QJsonObject> res;
+
     QFile file("content.json");
+
+    if(!file.exists()){
+        QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化");
+        return res;
+    }
+
     file.open(QIODevice::ReadOnly | QIODevice::Text);
+
     QString value = file.readAll();
     file.close();
 
@@ -625,12 +727,24 @@ void readJson(){
     QJsonDocument document = QJsonDocument::fromJson(value.toUtf8(), &parseJsonErr);
     if (! (parseJsonErr.error == QJsonParseError::NoError)) {
         QMessageBox::about(NULL, "提示", "配置文件错误！");
-        return;
+        return res;
     }
 
-    QJsonObject jsonObject = document.object();
-    pmw->inside->load_json(jsonObject);
 
+    if(document.isArray()){
+
+        QJsonArray arr = document.array();
+        qDebug()<<"Find array of"<<arr.size();
+
+        for(int i=0;i<arr.size();i++){
+            res.insert(i,arr[i].toObject());
+        }
+    }
+    else{
+        qDebug()<<"Find object";
+        res.insert(0,document.object());
+    }
+    return res;
 }
 
 MyFileInfo path2MyFI(QString path,int size){
@@ -651,3 +765,33 @@ MyFileInfo::MyFileInfo(QString path, int size)
 MyFileInfo::MyFileInfo(QFileInfo qfi, int size):MyFileInfo(qfi.filePath(),size)
 {
 }
+
+
+
+// void HighDpiAdapt()
+// {
+//     // 获取当前显示器的数目
+//     int numbers = GetSystemMetrics(SM_CMONITORS);
+//     std::string scale_name = "";
+//     for (int i = 0; i < numbers; ++i)
+//     {
+//         DISPLAY_DEVICEW device;
+//         device.cb = sizeof(device);
+//         BOOL result = EnumDisplayDevicesW(NULL, i, &device, 0);
+//         DEVMODEW device_mode;
+//         device_mode.dmSize = sizeof(device_mode);
+//         device_mode.dmDriverExtra = 0;
+//         result = EnumDisplaySettingsExW(device.DeviceName, ENUM_CURRENT_SETTINGS, &device_mode, 0);
+//         std::string screen_name = WStringToAnsiString(device.DeviceName);
+//         scale_name += screen_name;
+//         scale_name += (device_mode.dmPelsWidth > 1920) ? "=1.5;" : "=1;";  //设置不同的缩放比例系数
+//     }
+//     scale_name[scale_name.size() - 1] = '\0';
+//     qputenv("QT_SCREEN_SCALE_FACTORS", scale_name.c_str());
+//     //处理图像模糊问题
+//     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+//     //禁止高缩放支持
+//     //QGuiApplication::setAttribute(Qt::AA_DisableHighDpiScaling);   //AA_EnableHighDpiScaling
+//     //程序保持默认的尺寸，不缩放
+//     QGuiApplication::setAttribute(Qt::AA_Use96Dpi);
+// }

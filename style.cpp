@@ -1,6 +1,6 @@
 #include "style.h"
+#include "SysFunctions.h"
 #include "mainwindow.h"
-#include "qdebug.h"
 #include "qfileinfo.h"
 #include "qsettings.h"
 
@@ -42,6 +42,7 @@ int default_steam_icon_type =1;
 double scale_fix_ratio = 1.3;
 bool enable_lnk_redirect = 1;
 
+bool enable_global_move = 1;
 #define ADD(TYPE,NAME,MIN,MAX)\
 Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
 
@@ -69,6 +70,8 @@ StyleHelper::StyleHelper()
     ADD(Effect,unit_shadow_alpha,0,255);
     ADD(Effect,unit_shadow_blur_radius,0,100);
 
+    ADD(Effect,position_animation_time,0,200);
+
     ADD(Render,unit_radius,0,100);
 
     ADD(Render,ShowRect,0,0);
@@ -85,6 +88,8 @@ StyleHelper::StyleHelper()
 
     ADD(Preference,scale_fix_ratio,1,2);
     ADD(Preference,enable_lnk_redirect,0,0);
+
+    ADD(Preference,enable_global_move,0,0);
     psh = this;
 }
 
@@ -169,7 +174,9 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr)
         iterator0.value()->checkBox->setChecked(iterator0.value()->val());
         connect(iterator0.value()->checkBox,&QCheckBox::stateChanged,this,[=](bool value){
             iterator0.value()->val() = value;
-            pmw->update();
+            foreach (auto pmw, pmws) {
+                pmw->update();
+            }
         });
         setInLayout(iterator0.value()->field(),iterator0.value()->name(),iterator0.value()->checkBox,1);
     }
@@ -184,7 +191,9 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr)
         // iterator1.value()->slider->setText(iterator1.value()->name());
         connect(iterator1.value()->slider,&QSlider::valueChanged,this,[=](int value){
             iterator1.value()->val() = (double)value/1000*(iterator1.value()->max-iterator1.value()->min)+iterator1.value()->min;
-            pmw->update();
+            foreach (auto pmw, pmws) {
+                pmw->update();
+            }
         });
         setInLayout(iterator1.value()->field(),iterator1.value()->name(),iterator1.value()->slider,0);
 
@@ -199,7 +208,9 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr)
         iterator2.value()->slider->setValue(var);
         connect(iterator2.value()->slider,&QSlider::valueChanged,this,[=](int value){
             iterator2.value()->val() = (double)1.0*value/1000*(iterator2.value()->max-iterator2.value()->min)+iterator2.value()->min;
-            pmw->update();
+            foreach (auto pmw, pmws) {
+                pmw->update();
+            }
         });
         setInLayout(iterator2.value()->field(),iterator2.value()->name(),iterator2.value()->slider,0);
 

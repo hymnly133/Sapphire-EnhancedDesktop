@@ -1,6 +1,6 @@
 #include "ed_blocklayout.h"
-
-
+#include "SysFunctions.h"
+#include "screenfunc.h"
 
 ED_BlockLayout::ED_BlockLayout(QWidget *father, int row, int col, int borad_space,int space_x,int space_y):ED_Layout(father) {
     this->row = row;
@@ -79,7 +79,7 @@ void ED_BlockLayout::updateAfterRemove(ED_Unit *aim, int indx, int indy)
 
 QPoint ED_BlockLayout::clearPutableInd(ED_Unit *aim)
 {
-    auto pos = pContainer->mapFromGlobal(aim->pos());
+    auto pos = pContainer->mapFrom(pmw,aim->pos());
     int posx = pos.x();
     int posy = pos.y();
     int mindeltaw=W_Container();

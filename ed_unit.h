@@ -1,6 +1,5 @@
 #ifndef ED_UNIT_H
 #define ED_UNIT_H
-#include "ed_layout.h"
 #include "qgraphicseffect.h"
 #include "qmenu.h"
 #include "qparallelanimationgroup.h"
@@ -12,8 +11,10 @@
 #include <QVariant>
 #include<qopenglwidget.h>
 #include<qopenglfunctions.h>
-class ED_Layout;
+#include"ed_layout.h"
 
+
+class MainWindow;
 class ED_Unit : public QWidget
 {
     Q_OBJECT
@@ -30,7 +31,7 @@ public:
     ED_Layout* layout = nullptr;
 
     QMenu* myMenu;
-
+    MainWindow* pmw;
     QPoint nowPos;
     QPoint aim_pos;
     QSize nowSize;
@@ -49,6 +50,7 @@ public:
     double scale = 1.0;
     QPoint relativeP;
     QColor mainColor;
+
     QParallelAnimationGroup * positionAnimations;
     QPropertyAnimation* alphaAnimation;
     QPropertyAnimation* scaleFixAnimation;
@@ -157,6 +159,7 @@ public:
     virtual void setScale(double val);
     virtual void setScaleFix(double val);
     virtual void setAlwaysShow(bool val);
+    virtual void setPMW(MainWindow* pmw);
     QColor mainColor_Alphaed();
 
 

@@ -43,6 +43,15 @@ void ED_Container::load_json(QJsonObject rootObject)
     ED_Unit::load_json(rootObject);
     inside->load_json(rootObject.value("content").toObject());
 }
+
+void ED_Container::setPMW(MainWindow *pmw)
+{
+    ED_Unit::setPMW(pmw);
+    inside->pmw = pmw;
+    foreach (auto content, *(inside->contents)) {
+        content->setPMW(pmw);
+    }
+}
 void ED_Container::clearPut(ED_Unit* aim, bool animated){
     inside->clearPut(aim,animated);
 }

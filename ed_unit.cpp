@@ -1,15 +1,20 @@
 #include "ed_unit.h"
 #include "mainwindow.h"
 #include "qaction.h"
+#include "qapplication.h"
 #include "qdebug.h"
 #include "qevent.h"
 #include"SysFunctions.h"
 #include"ed_blockcontainer.h"
+#include "qeventloop.h"
 #include "qgraphicseffect.h"
+#include "screenfunc.h"
 #include "style.h"
 #include"QPropertyAnimation"
 #include <cmath>
 #include "QBitmap"
+
+
 
 ED_Unit::ED_Unit(): ED_Unit(nullptr,1,1){
 
@@ -154,7 +159,6 @@ void ED_Unit::setupMenu()
 
 void ED_Unit::mousePressEvent(QMouseEvent *event)
 {
-    qDebug()<<to_json();
     if(event->button() == Qt::LeftButton){
         grabMouse();
         single_click_action();
@@ -162,8 +166,7 @@ void ED_Unit::mousePressEvent(QMouseEvent *event)
         relativeP = event->pos();
     }
     event->accept();
-
-
+    qDebug()<<"press"<<event->pos()<<event->globalPos()<<mapTo(pmw,event->pos());
 }
 
 void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
@@ -173,7 +176,10 @@ void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
     if(moving){
         //首先检查是否拖到文件夹
         ED_Layout* mwlayout = pmw->inside;
-        QPoint point = mwlayout->pos2Ind(pos().x()+width()/2,pos().y()+height()/2);
+        auto pp = QPoint(pos().x()+width()/2,pos().y()+height()/2);
+        qDebug()<<"Detecting Pos:"<<pp;
+        QPoint point = mwlayout->pos2Ind(pp);
+        qDebug()<<"Find Ins:"<<point;
 
         if(mwlayout->Occupied(point)){
             if(mwlayout->ind2Unit(point)->type == ED_Unit::Container){
@@ -205,17 +211,20 @@ void ED_Unit::mouseDoubleClickEvent(QMouseEvent *event)
 void ED_Unit::mouseMoveEvent(QMouseEvent *event)
 {
     mouse_move_action();
-
     if (moving)
     {
-        move(cursor().pos()-relativeP);
-        update();
+        int screenind =screenInd(this);
+        move(mapTo(pmw,event->pos())-relativeP);
+        if(enable_global_move)
+            pls->update();
+        else
+            update();
     }
     else if(premove){
-        auto tem = mapFromGlobal(cursor().pos());
+        auto tem = event->pos();
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
         if(dis>=2){
-            QPoint usedp = mapToGlobal(QPoint(0,0));
+            QPoint usedp = mapTo(pmw,QPoint(0,0));
             positionAnimations->stop();
             if(layout)
                 removeFromLayout();
@@ -385,6 +394,11 @@ void ED_Unit::setAlwaysShow(bool val)
     }
 }
 
+void ED_Unit::setPMW(MainWindow *pmw)
+{
+    this->pmw = pmw;
+}
+
 void ED_Unit::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -437,10 +451,10 @@ void ED_Unit::preSetInLayout(bool animated)
     raise();
 
     if(animated){
-        moveto(layout->pContainer->mapToGlobal(MyPos_Centual()),MySize());
+        moveto(layout->pContainer->mapTo(pmw,MyPos_Centual()),MySize());
     }
     else{
-        move(layout->pContainer->mapToGlobal(MyPos_Centual()));
+        move(layout->pContainer->mapTo(pmw,MyPos_Centual()));
         setFixedSize(MySize());
     }
 
@@ -448,14 +462,19 @@ void ED_Unit::preSetInLayout(bool animated)
 
 void ED_Unit::setInLayout(bool animated)
 {
-    QPoint tem = mapToGlobal(QPoint(0,0));
-    QPoint dis = layout->pContainer->mapFromGlobal(tem);
+    QPoint dis = layout->pContainer->mapFrom(pmw, mapTo(pmw,QPoint(0,0)));
     // qDebug()<<tem<<dis;
     nowPadRatio = aim_padRatio();
     setParent(layout->pContainer);
-    setVisible(true);
-    raise();
+
     move(dis);
+    setVisible(true);
+
+    if(!layout->isMain)
+    parentWidget()->update();
+
+    update();
+
 }
 
 QJsonObject ED_Unit::to_json(){

@@ -57,7 +57,7 @@ public:
     little_Block* blocks[50][50];
 
 
-    ED_BlockLayout(QWidget *father,int row, int col,int borad_space,int space_x,int space_y);
+    ED_BlockLayout(QWidget *father,int row =10, int col=10,int borad_space=5,int space_x=5,int space_y=5);
 
     QPoint pos2Ind(int posx,int posy)override;
 

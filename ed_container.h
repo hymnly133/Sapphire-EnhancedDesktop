@@ -25,11 +25,16 @@ public:
     void setScale(double val)override;
     void ed_update()override;
 
+
     // ED_Unit interface
 public:
     QJsonObject to_json()override ;
     void load_json(QJsonObject rootObject)override ;
 signals:
+
+    // ED_Unit interface
+public:
+    void setPMW(MainWindow *pmw) override;
 };
 
 #endif // ED_CONTAINER_H

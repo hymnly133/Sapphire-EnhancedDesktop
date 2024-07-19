@@ -1,10 +1,11 @@
 #ifndef ED_LAYOUT_H
 #define ED_LAYOUT_H
+
 #include "qjsonobject.h"
 #include "qregion.h"
 #include <QObject>
 class ED_Unit;
-
+class MainWindow;
 void writeJson();
 
 class ED_Layout
@@ -15,6 +16,8 @@ public:
 
     bool visibal;
     bool isMain = false;
+
+    MainWindow* pmw;
 
     QRegion region;
     QWidget* pContainer;

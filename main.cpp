@@ -13,12 +13,21 @@
 #include <QTranslator>
 #include"QMessageBox"
 #include"QDesktopWidget"
+#include "qscreen.h"
 #include "qsharedmemory.h"
 
 
 int main(int argc, char *argv[])
 {
+    // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+    QApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+
     QApplication a(argc, argv);
+
+    // 获取多显示器,通过list存储当前主机所有显示器
+
 
     static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块
     if (!shareMem->create(1))//创建大小1b的内存
@@ -44,7 +53,6 @@ int main(int argc, char *argv[])
 
     #ifndef QT_DEBUG
 
-    debug = false;
     qInstallMessageHandler(customMessageHandler);
 
     #endif
@@ -62,16 +70,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    MainWindow mw ;
-    LayerShower ls;
-    //鼠标钩子
-    // InitMouseHook();
-
-    mw.show();
-    ls.show();
+    SetUp();
 
     a.exec();
-
+    sh.writeStyleIni();
 
 
     return 0;

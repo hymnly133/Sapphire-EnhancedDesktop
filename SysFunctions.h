@@ -2,15 +2,33 @@
 #define SYSFUNCTIONS_H
 #include<windows.h>
 #include <QIcon>
-#include"mainwindow.h"
+#include "layershower.h"
+#include "mainwindow.h"
+#include "qdesktopwidget.h"
 #include "qfileinfo.h"
-void Init(MainWindow* mainwindow);
-void inplace();
-void InitMouseHook();
+
+
+extern QMap<int,MainWindow*> pmws;
+extern QMap<int,QScreen*> pscs;
+extern QDesktopWidget* pdt;
+extern LayerShower* pls;
+extern StyleHelper* psh;
+extern ED_Unit* pMovingUnit;
+extern int screenNum;
+
+// static void HighDpiAdapt();
+
+void SetUp();
+
+
 QString Unicode2GBK(QString c);
 QString Unicode2Utf(QString c);
 QString GetCorrectUnicode(const QByteArray &ba);
 QString elidedLineText(QWidget *pWidget, int nLine, QString strText);
+extern QString* UserDesktopPath;
+extern QString* PublicDesktopPath;
+
+
 
 struct MyFileInfo
 {
@@ -56,14 +74,13 @@ void customMessageHandler(QtMsgType type,
                           const QString &msg);
 
 void writeJson();
-void readJson();
+QMap<int,QJsonObject> readJson();
 void setMyAppAutoRun(bool isStart);
-ED_Unit* from_json(QJsonObject data);
+ED_Unit* from_json(QJsonObject data, MainWindow *parent);
 QColor GetWindowsThemeColor();
 QString toWindowsPath(QString const& linuxPath);
 QString toLinuxPath(QString const& windowsPath);
-extern QString* UserDesktopPath;
-extern QString* PublicDesktopPath;
+
 MyFileInfo path2MyFI(QString path,int size=512);
 QMap<int,QPixmap> path2Icon(QString path,int size=512);
 QString path2Name(QString path);

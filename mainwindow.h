@@ -5,8 +5,6 @@
 #include <QMainWindow>
 #include <mousehook.h>
 #include <QPushButton>  // 添加QPushButton头文件
-#include "layershower.h"
-#include "qdesktopwidget.h"
 #include "qfileinfo.h"
 #include "qparallelanimationgroup.h"
 #include<QLinkedList>
@@ -24,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_PROPERTY(QSize showerSize MEMBER showerSize NOTIFY showerSize_changed)
     Q_PROPERTY(int showerRadius MEMBER showerRadius NOTIFY showerRadius_changed)
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr,int screenInd=0);
     ~MainWindow();
     Ui::MainWindow *ui;
     ED_BGShower* bgshower = nullptr;
@@ -42,7 +40,7 @@ public:
     QPropertyAnimation* showerSizeAnimation;
     QPropertyAnimation* showerRadiusAnimation;
     QParallelAnimationGroup * showerAnimations;
-
+    int screenInd;
     void InitAUnit(ED_Unit* aim, bool animated=false);
     void paintEvent(QPaintEvent * ev) override;
     void mouseDoubleClickEvent(QMouseEvent* ev) override;
@@ -53,7 +51,7 @@ public:
     void setTransparent(bool val);
     void setBlur(bool val);
     void ed_update();
-    void InitDesktop();
+
     void capture();
     void updateBG();
     void setShoweredVisibal(bool val);
@@ -74,10 +72,16 @@ public:
     void addAIcon(QFileInfo info);
     void addAIcon(MyFileInfo info);
     void appendPoints(QPoint p);
+    QJsonObject to_json();
+    void load_json(QJsonObject rootObject);
+
+
+    void Init();
 
 private:
     void setupActions();
     void setupUnits();
+    void setupLayout(int x,int y);
 
 public slots:;
     void setScale(double Scale);
@@ -104,9 +108,4 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
 };
 
-extern MainWindow* pmw;
-extern ED_Unit* pMovingUnit;
-extern QDesktopWidget* pdt;
-extern LayerShower* pls;
-extern bool debug;
 #endif // MAINWINDOW_H

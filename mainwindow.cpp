@@ -3,6 +3,7 @@
 #include "ed_blockcontainer.h"
 #include "ed_block.h"
 #include "ed_dock.h"
+#include"QInputDialog"
 #include "ed_editbox.h"
 #include "ed_hidetextblock.h"
 #include "qgraphicseffect.h"
@@ -21,10 +22,7 @@
 #include "QThread"
 #include"style.h"
 #include"qmenu.h"
-ED_Unit *pMovingUnit = nullptr;
-QDesktopWidget* pdt;
-bool debug = true;
-StyleHelper* psh;
+
 
 
 #define SET_ANCTION(NAME,TEXT,FUCTION)\
@@ -61,7 +59,9 @@ void MainWindow::setupActions()
     SET_ANCTION(act4,退出程序,
     {
 
-        close();
+    foreach(auto pmw,pmws){
+            pmw->close();
+        }
         pls->close();
 
     })
@@ -117,20 +117,9 @@ void MainWindow::setupUnits()
     bgshower->move(0, 0);
     bgshower->setVisible(true);
     bgshower->lower();
-    inside = new ED_BlockLayout(this, 20, 12, 5, 10, 10);
-    inside->isMain = true;
+
+
     setBlur(enable_background_blur);
-
-
-    // qDebug()<<edlayout->W_Container()<<edlayout->H_Container();
-
-    QFileInfo fi("content.json");
-    if(fi.exists()){
-        readJson();
-    }
-    else{
-        InitDesktop();
-    }
 
 
     // 初始化一些
@@ -142,23 +131,34 @@ void MainWindow::setupUnits()
     // bgshower->update();
 }
 
-MainWindow::MainWindow(QWidget *parent)
+void MainWindow::setupLayout(int x, int y)
+{
+    inside = new ED_BlockLayout(this, x, y, 5, 10, 10);
+    inside->isMain = true;
+    inside->pmw =this;
+}
+
+MainWindow::MainWindow(QWidget *parent, int screenInd)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
-    pmw = this;
-    pdt = QApplication::desktop();
+    this->screenInd = screenInd;
+    setObjectName("MainWindow"+QString::number(screenInd));
     ui->setupUi(this);
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
     setAcceptDrops(true);
-    Init(this);
-    setFixedSize(QGuiApplication::primaryScreen()->availableSize());
-    move(0,0);
-    qDebug()<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
+    inplace(this);
 
-    move(-geometry().x(),-geometry().y());
+    setFixedSize(pscs[screenInd]->availableSize());
+    move(pscs[screenInd]->geometry().x(),pscs[screenInd]->geometry().y());
+
+    qDebug()<<"MainWindow"<<screenInd<<"Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0))<<mapFromGlobal(QPoint(0,0)) ;
+    auto geopos = geometry().topLeft();
+    move(2*pos()-geopos);
+
+    qDebug()<<"MainWindow"<<screenInd<<"Information Fixed:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0))<<mapToGlobal(QPoint(0,0))<<mapFromGlobal(QPoint(0,0)) ;
+    setupLayout(10,10);
     setupUnits();
-
     setupActions();
 
     QTimer *timer = new QTimer(this);
@@ -171,7 +171,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(this,&MainWindow::showerRadius_changed,this,[=](int val){
-        qDebug()<<val;
     });
 
     changeShower = new roundShower(this);
@@ -205,6 +204,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::InitAUnit(ED_Unit *aim,bool animated)
 {
+    aim->setPMW(this);
     // connect(aim, &ED_Unit::sendSelf, this, &MainWindow::getObject);
     inside->defaultPut(aim,animated);
     // aim->ed_update();
@@ -233,6 +233,21 @@ void MainWindow::setScale(double scale)
     }
 }
 
+QJsonObject MainWindow::to_json(){
+    QJsonObject rootObject;
+    rootObject.insert("ind",screenInd);
+    rootObject.insert("content",inside->to_json());
+    return rootObject;
+}
+
+void MainWindow::load_json(QJsonObject rootObject)
+{
+    qDebug()<<"MainWindow Loading json";
+    screenInd = rootObject.value("ind").toInt();
+    setupLayout(10,10);
+    inside->load_json(rootObject.value("content").toObject());
+}
+
 void MainWindow::ed_update()
 {
     foreach(ED_Unit *content , *(inside->contents))
@@ -241,18 +256,32 @@ void MainWindow::ed_update()
     }
 }
 
-void MainWindow::InitDesktop()
+void MainWindow::Init()
 {
     // 获取图标
-    qDebug()<<"Init Desktop Icons";
-    QVector<MyFileInfo> iconns = scanalldesktopfiles();
-    foreach (MyFileInfo content, iconns) {
-        addAIcon(content);
+    qDebug()<<"Init Mainwindow"<<screenInd;
+    QString name;
+    if(screenInd==0) name+="主屏幕";
+    else name+= "副屏幕";
+
+    name+="初始化";
+    int sizeX = QInputDialog::getInt(nullptr,name,"请输入布局宽度(根据屏幕大小)",20,1,1000,2);
+    int sizeY = QInputDialog::getInt(nullptr,name,"请输入布局高度(根据屏幕大小)",12,1,1000,2);
+    if(!sizeX) sizeX=10;
+    if(!sizeY) sizeY=10;
+
+    setupLayout(sizeX,sizeY);
+
+    if(screenInd==0){
+        qDebug()<<"Scaning";
+        QVector<MyFileInfo> iconns = scanalldesktopfiles();
+        foreach (MyFileInfo content, iconns) {
+            addAIcon(content);
+        }
+        auto eb = new ED_EditBox(this);
+        InitAUnit(eb);
     }
-
-    auto eb = new ED_EditBox(this);
-    InitAUnit(eb);
-
+    qDebug()<<"Init Done";
 }
 
 void MainWindow::capture()
@@ -495,12 +524,15 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
     Q_UNUSED(ev);
 }
 
-void MainWindow::mousePressEvent(QMouseEvent* ev){
+void MainWindow::mousePressEvent(QMouseEvent* event){
 
-    appendPoints(ev->pos());
+    appendPoints(event->pos());
     printf("mousePressEvent \n");
+    qDebug()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos());
     pls->raise();
-
+    foreach(auto content,*(inside->contents)){
+        qDebug()<<content->pos()<<content->parentWidget()->objectName()<<content->isVisible();
+    }
 }
 
 void MainWindow::onSelectBackground()

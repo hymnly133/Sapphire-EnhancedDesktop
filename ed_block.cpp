@@ -80,12 +80,14 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
     setScale(1.0);
 
     SET_ANCTION(act1,选择图标,{
-        QString tem =  QFileDialog::getOpenFileName(pmw,tr("open a file."),"D:/");
+        QString tem =  QFileDialog::getOpenFileName(pls,tr("open a file."),"D:/");
         if(!tem.isEmpty()){
             setIcon(tem);
             writeJson();
         }
     })
+
+    ed_update();
 }
 
 ED_Block::ED_Block(QWidget *parent, QPixmap image, QString _name, QString filepath, int sizex, int sizey)
@@ -103,7 +105,6 @@ ED_Block::ED_Block(QWidget *parent, QPixmap image, QString _name, QString filepa
     gv->follow(&iconmap);
 
     lb->setText(elidedLineText(lb, 3, name));
-
 
     auto tem = mainColor;
     tem.setAlpha(icon_shadow_alpha);
@@ -233,7 +234,7 @@ void ED_Block::ed_update()
 void ED_Block::onShiftContextMenu(QContextMenuEvent *event)
 {
     qDebug()<<filePath;
-    ContextMenu::show(QStringList() << filePath, (void *)pmw->winId(), event->globalPos());
+    ContextMenu::show(QStringList() << filePath, (void *)pls->winId(), event->globalPos());
 }
 void ED_Block::whenSimpleModeChange(bool val){
     lb->setVisible(!val);

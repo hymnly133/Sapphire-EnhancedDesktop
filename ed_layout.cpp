@@ -4,7 +4,9 @@
 #include "qtimer.h"
 #include<algorithm>
 #include"QFuture"
+#include "screenfunc.h"
 #include<QtConcurrent/QtConcurrent>
+
 
 int cmp(const ED_Unit* a,const ED_Unit* b)
 {
@@ -64,6 +66,7 @@ void ED_Layout::putUnit(ED_Unit *aim, int xind, int yind, bool animated)
     aim->indY = yind;
 
     aim->layout = this;
+    aim->setPMW(pmw);
 
 
     //setRect
@@ -116,38 +119,34 @@ void ED_Layout::putUnit(ED_Unit *aim, QPoint ind, bool animated)
 
 void ED_Layout::RemoveAUnit(ED_Unit *aim)
 {
-    QPoint tempos = aim->mapToGlobal(QPoint(0,0));
+    QPoint tempos = aim->mapTo(pmw,QPoint(0,0));
     int indx = aim->indX;
     int indy = aim->indY;
 
     updateBeforeRemove(aim,indx,indy);
+
     aim->indX = -1;
     aim->indY = -1;
     aim->layout = nullptr;
-    aim->setParent(pmw);
+    if(enable_global_move)
+    aim->setParent(pls);
+    else
+    aim->setParent(pmws[screenInd(aim)]);
     aim->move(tempos);
     aim->setEnabled(true);
     aim->setVisible(true);
+    pls->raise();
     aim->raise();
     auto s = std::find(contents->begin(), contents->end(), aim);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
     if (s != contents->end())//如果找到，就输出这个元素
     {
         contents->erase(s);
     }
-    else//如果没找到
-    {
-        qDebug() << "not find!";
-    }
-
     if(aim->alwaysShow){
         auto s = std::find(contents_AlwaysShow->begin(), contents_AlwaysShow->end(), aim);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
         if (s != contents_AlwaysShow->end())//如果找到，就输出这个元素
         {
             contents_AlwaysShow->erase(s);
-        }
-        else//如果没找到
-        {
-            qDebug() << "not find!";
         }
     }
     else{
@@ -156,17 +155,11 @@ void ED_Layout::RemoveAUnit(ED_Unit *aim)
         {
             contents_Show->erase(s);
         }
-        else//如果没找到
-        {
-            qDebug() << "not find!";
-        }
     }
-
-
 
     updateAfterRemove(aim,indx,indy);
 
-    UpdateRegion();
+    // UpdateRegion();
 }
 
 void ED_Layout::clearPut(ED_Unit *aim,bool animated)
@@ -281,11 +274,14 @@ void ED_Layout::updateBeforeRemove(ED_Unit *, int, int)
 void ED_Layout::load_json(QJsonObject rootObject)
 {
     contents->clear();
-    QJsonArray contentArray = rootObject.value("contents").toArray();
+    contents_AlwaysShow->clear();
+    contents_Show->clear();
+
+    QJsonArray contentsArray = rootObject.value("contents").toArray();
     QVector<ED_Unit*> tem;
-    foreach (QJsonValue contentValue , (contentArray)) {
+    foreach (QJsonValue contentValue , (contentsArray)) {
         QJsonObject contentObject = contentValue.toObject();
-        ED_Unit* unit = from_json(contentObject);
+        ED_Unit* unit = from_json(contentObject,pmw);
         tem.append(unit);
     }
     std::sort(tem.begin(),tem.end(),cmp);
@@ -297,12 +293,12 @@ void ED_Layout::load_json(QJsonObject rootObject)
 QJsonObject ED_Layout::to_json()
 {
     QJsonObject rootObject;
-    QJsonArray contentArray;
+    QJsonArray contentsArray;
     // std::sort(contents->begin(),contents->end());
 
     foreach (ED_Unit* content, *(contents)) {
-        contentArray.append(content->to_json());
+        contentsArray.append(content->to_json());
     }
-    rootObject.insert("contents",contentArray);
+    rootObject.insert("contents",contentsArray);
     return rootObject;
 }
