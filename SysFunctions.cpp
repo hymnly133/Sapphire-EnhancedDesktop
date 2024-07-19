@@ -262,10 +262,8 @@ void InitMouseHook(){
 void Init(MainWindow* mainwindow){
     //初始化
     qDebug()<<"Initing";
-    //无边框全屏
 
-    //注入壁纸
-    inplace((QWidget* )mainwindow);
+    inplace(mainwindow);
 
     qDebug()<<"Initing done";
 }
@@ -301,9 +299,6 @@ void inplace(QWidget* aim) {
                         break; // 结束循环
                     }
                 }
-
-
-
             }
         }
     } while (worker != NULL);

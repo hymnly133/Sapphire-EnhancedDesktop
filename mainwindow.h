@@ -92,31 +92,15 @@ public: signals:
 
     // QWidget interface
 protected:
+
     void dropEvent(QDropEvent *event) override;
-
-    // QWidget interface
-protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
-
-    // QWidget interface
-protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void closeEvent( QCloseEvent * event ) override;
-
-
-    // QWidget interface
-protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
-
-    // QWidget interface
-protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
-
-
-    // QWidget interface
-protected:
     void wheelEvent(QWheelEvent *event) override;
 };
 

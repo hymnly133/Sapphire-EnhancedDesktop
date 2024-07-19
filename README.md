@@ -8,7 +8,7 @@
 - **环境**：使用 Windows API 和 Qt 框架，mingw64 编译，只保证兼容 Windows 11。
 - 由原项目`Enhanced-desktop`接续开发，使用`Sapphire`作为新的软件名与原项目进行区别。
 
-- README 文件对应版本：`V1.2.3.2`
+- README 文件对应版本：`V1.2.3.1`
 
 # 项目特点
 
@@ -177,7 +177,7 @@ _斜体_ 表示已在可视化组件中给出
 
 - bilibili私信
 
-- bilibili私信专栏评论区
+- bilibili专栏评论区
 
 
 
