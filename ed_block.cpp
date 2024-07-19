@@ -83,6 +83,7 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
         QString tem =  QFileDialog::getOpenFileName(pmw,tr("open a file."),"D:/");
         if(!tem.isEmpty()){
             setIcon(tem);
+            writeJson();
         }
     })
 }
@@ -206,7 +207,7 @@ void ED_Block::load_json(QJsonObject rootObject)
 {
     ED_Unit::load_json(rootObject);
     loadFromPath(rootObject.value("path").toString());
-    requireIcon = rootObject.value("path").toBool();
+    requireIcon = rootObject.value("requireIcon").toBool();
     if(requireIcon){
         setIcon(rootObject.value("iconPath").toString());
     }
