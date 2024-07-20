@@ -216,10 +216,7 @@ void ED_Unit::mouseMoveEvent(QMouseEvent *event)
     if (moving)
     {
         move(mapTo(pmw,event->pos())-relativeP);
-        if(enable_global_move)
-            pls->update();
-        else
-            update();
+        update();
     }
     else if(premove){
         auto tem = event->pos();

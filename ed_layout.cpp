@@ -128,9 +128,6 @@ void ED_Layout::RemoveAUnit(ED_Unit *aim)
     aim->indX = -1;
     aim->indY = -1;
     aim->layout = nullptr;
-    if(enable_global_move)
-    aim->setParent(pls);
-    else
     aim->setParent(pmws[screenInd(aim)]);
     aim->move(tempos);
     aim->setEnabled(true);

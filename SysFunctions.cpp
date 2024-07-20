@@ -92,33 +92,8 @@ void SetUp()
     qDebug()<<"Find"<<screenNum<<"Screens";
 
 
-    // if(jsonNum>screenNum){
-    //     QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！").arg(jsonNum).arg(screenNum));
-    //     for(int i=0;i<screenNum;i++){
-    //         pmws[i] = new MainWindow(nullptr,i);
-    //         pmws[i]->load_json(jsons[i]);
-    //     }
-    // }
-    // else if(jsonNum<screenNum){
-    //     QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将初始化新布局！").arg(jsonNum).arg(screenNum));
-    //     for(int i=0;i<jsonNum;i++){
-    //         pmws[i] = new MainWindow(nullptr,i);
-    //         pmws[i]->load_json(jsons[i]);
-    //     }
-    //     for(int i=jsonNum;i<screenNum;i++){
-    //         pmws[i] = new MainWindow(nullptr,i);
-    //         if
-    //         pmws[i]->Init(false);
-    //     }
-    // }
-    // else{
-    //     for(int i=0;i<screenNum;i++){
-    //         pmws[i] = new MainWindow(nullptr,i);
-    //         pmws[i]->load_json(jsons[i]);
-    //     }
-    // }
     if(jsonNum<screenNum)
-    QMessageBox::about(nullptr,"注意！",QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化").arg(jsonNum).arg(screenNum));
+    QMessageBox::about(nullptr,"注意！",QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化\n请注意弹出窗口！").arg(jsonNum).arg(screenNum));
     if(jsonNum>screenNum){
         QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！多余的桌面数据不会被清理").arg(jsonNum).arg(screenNum));
         for(int i=screenNum;i<jsonNum;i++){
@@ -725,7 +700,7 @@ QMap<int,QJsonObject> readJson(){
     QFile file("content.json");
 
     if(!file.exists()){
-        QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化");
+    QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化~");
         return res;
     }
 

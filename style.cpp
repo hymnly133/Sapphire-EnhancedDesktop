@@ -42,7 +42,7 @@ int default_steam_icon_type =1;
 double scale_fix_ratio = 1.3;
 bool enable_lnk_redirect = 1;
 
-bool enable_global_move = 0;
+
 #define ADD(TYPE,NAME,MIN,MAX)\
 Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
 
@@ -89,7 +89,6 @@ StyleHelper::StyleHelper()
     ADD(Preference,scale_fix_ratio,1,2);
     ADD(Preference,enable_lnk_redirect,0,0);
 
-    ADD(Preference,enable_global_move,0,0);
     psh = this;
 }
 
