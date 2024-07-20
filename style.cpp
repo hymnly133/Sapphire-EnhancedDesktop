@@ -42,7 +42,7 @@ int default_steam_icon_type =1;
 double scale_fix_ratio = 1.3;
 bool enable_lnk_redirect = 1;
 
-bool enable_global_move = 1;
+bool enable_global_move = 0;
 #define ADD(TYPE,NAME,MIN,MAX)\
 Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
 

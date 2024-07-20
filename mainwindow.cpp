@@ -450,7 +450,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    appendPoints(event->pos());
+    appendPoints(event->globalPos());
     pls->update();
 }
 
@@ -574,7 +574,7 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 
 void MainWindow::mousePressEvent(QMouseEvent* event){
 
-    appendPoints(event->pos());
+    appendPoints(event->globalPos());
     qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos());
     raise();
     pls->raise();

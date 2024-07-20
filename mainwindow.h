@@ -43,8 +43,7 @@ public:
     int screenInd;
     void InitAUnit(ED_Unit* aim, bool animated=false);
     void paintEvent(QPaintEvent * ev) override;
-    void mouseDoubleClickEvent(QMouseEvent* ev) override;
-    void mousePressEvent(QMouseEvent* ev) override;
+
 
 
     QPushButton *selectBackgroundButton;  // 新增：选择背景按钮
@@ -96,11 +95,15 @@ public: signals:
 
     // QWidget interface
 protected:
+    void mouseDoubleClickEvent(QMouseEvent* ev) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent* ev) override;
+
 
     void dropEvent(QDropEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
+
     void closeEvent( QCloseEvent * event ) override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
