@@ -361,8 +361,8 @@ QString toLinuxPath(QString const& windowsPath)
 void inplace(QWidget* aim) {
     // 接入到图标层
     qDebug()<<"Star Inplacing";
+    qDebug()<<"Using Inplacing Func1";
     HWND background = NULL;
-    HWND hwnd = FindWindowA("Progman", "Program Manager");
     HWND worker = NULL;
 
     qDebug()<<"Entering Loop";
@@ -383,7 +383,7 @@ void inplace(QWidget* aim) {
                         qDebug()<<"Right!";
 
                         // 找到了正确的WorkerW窗口
-                        background = worker;
+                        background = shelldlldefview;
                         break; // 结束循环
                     }
                 }
@@ -399,7 +399,39 @@ void inplace(QWidget* aim) {
         SetFocus((HWND)aim->winId());
     } else {
         // 如果没有找到合适的WorkerW窗口，可以在这里处理错误
-        qDebug() << "未能找到合适的WorkerW窗口";
+        qDebug() << "Unable to find proper WorkerW,trying to use Fuc 2";
+
+        HWND pPM = FindWindowA("Progman", "Program Manager");
+        if(pPM!=NULL){
+            qDebug()<<"Find Program Manager";
+            // 尝试找到SHELLDLL_DefView窗口
+            HWND shelldlldefview = FindWindowExA(worker, NULL, "SHELLDLL_DefView", NULL);
+            if(shelldlldefview!=NULL){
+                qDebug()<<"Find SHELLDLL_DefView";
+                // 检查SHELLDLL_DefView的父窗口是否为当前的WorkerW窗口
+                HWND parent = GetParent(shelldlldefview);
+                if(parent!=NULL){
+                    qDebug()<<"Find SHELLDLL_DefView's Parent";
+                    if (parent == pPM) {
+                        qDebug()<<"Right!";
+
+                        // 找到了正确的WorkerW窗口
+                        background = shelldlldefview;// 结束循环
+                    }
+                }
+
+
+            }
+        }
+        if (background != NULL) {
+            SetParent((HWND)aim->winId(), background);
+            SetWindowPos((HWND)aim->winId(), HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+            SetWindowPos((HWND)aim->winId(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+            SetFocus((HWND)aim->winId());
+        }
+        else{
+            qDebug() << "Unable to find proper Program manager,Inplacing failed";
+        }
     }
 }
 

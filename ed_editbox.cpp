@@ -84,6 +84,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
     });
     overall->addWidget(checkBox7);
 
+#ifdef QT_DEBUG
     QCheckBox *checkBox8 = new QCheckBox("即时重绘",this);
     checkBox8->setChecked(enable_intime_repaint);
     connect(checkBox8, &QCheckBox::clicked, this, [this](bool checked) {
@@ -91,6 +92,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         pmw->repaint();
     });
     paint->addWidget(checkBox8);
+#endif
 
     scale_Slider = new QSlider(this);
     scale_Slider->setRange(0, 100);

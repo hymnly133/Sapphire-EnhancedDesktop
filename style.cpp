@@ -25,7 +25,7 @@ int icon_shadow_alpha = 180;
 int icon_shadow_blur_radius = 40;
 
 int unit_shadow_alpha = 120;
-int unit_shadow_blur_radius = 15;
+int unit_shadow_blur_radius = 8;
 
 int unit_radius = 30;
 int position_animation_time = 100;

@@ -21,8 +21,10 @@ CONFIG += c++17
 
 SOURCES += \
     ContextMenu/contextmenu.cpp \
+    ContextMenu/desktopmenu.cpp \
     ContextMenu/shellitem.cpp \
     ContextMenu/shellmemmanager.cpp \
+    ContextMenu/shellmenuitem.cpp \
     SysFunctions.cpp \
     ed_bgshower.cpp \
     ed_block.cpp \
@@ -52,8 +54,10 @@ SOURCES += \
 
 HEADERS += \
     ContextMenu/contextmenu.h \
+    ContextMenu/desktopmenu.h \
     ContextMenu/shellitem.h \
     ContextMenu/shellmemmanager.h \
+    ContextMenu/shellmenuitem.h \
     SysFunctions.h \
     ed_bgshower.h \
     ed_block.h \

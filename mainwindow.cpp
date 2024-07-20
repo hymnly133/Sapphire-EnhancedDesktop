@@ -1,5 +1,7 @@
 #include "mainwindow.h"
+#include "ContextMenu/shellmenuitem.h"
 #include "ed_bgshower.h"
+#include"ContextMenu/desktopmenu.h"
 #include "ed_blockcontainer.h"
 #include "ed_block.h"
 #include "ed_dock.h"
@@ -509,6 +511,42 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     if(event->modifiers() == Qt::ShiftModifier){
         StyleSettingWindow* k = new StyleSettingWindow();
         k->show();
+        // QMenu menu;
+        // static bool isSwitch = false;
+        // ShellMenuItems items;
+        // if(isSwitch)
+        //     items = DesktopMenu::computerShellItems();
+        // else
+        //     items = DesktopMenu::desktopMenuItems();
+        // isSwitch = !isSwitch;
+
+        // foreach(auto item, items)
+        // {
+        //     ShellMenuItems childItems;
+
+        //     DesktopMenu::shellSubMenuItems(item, childItems, true);
+        //     if(childItems.isEmpty())
+        //     {
+        //         menu.addAction(item.icon, item.caption, this, [=](){
+        //             item.exec();
+        //         });
+        //     }
+        //     else
+        //     {
+        //         QMenu *subMenu = new QMenu(item.caption);
+        //         foreach(auto childItem, childItems)
+        //         {
+        //             subMenu->addAction(childItem.icon, childItem.caption, this, [=](){
+        //                 QPoint p = QCursor::pos();
+        //                 childItem.pItem->contextMenu((void *)winId(), p.x(), p.y());
+        //             });
+        //         }
+        //         QAction* action = subMenu->menuAction();
+        //         action->setIcon(item.icon);
+        //         menu.addMenu(subMenu);
+        //     }
+        // }
+        // menu.exec(QCursor::pos());
         // ContextMenu::show(QStringList()<<toLinuxPath(*UserDesktopPath),(HWND*)winId(),event->globalPos());
     }
     else
