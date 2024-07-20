@@ -45,6 +45,19 @@ void LayerShower::paintEvent(QPaintEvent *event)
             painter.drawRect(x, y, w, h);  // 画长方形
         }
     }
+
+
+#ifdef QT_DEBUG
+
+    if(pMovingUnit!=nullptr){
+        qDebug()<<"Repaint!";
+        QPainter painter(this);
+        auto tem = mapToGlobal(pMovingUnit->pos());
+        painter.drawRect(tem.x(),tem.y(),pMovingUnit->width(),pMovingUnit->height());
+    }
+
+#endif
+
 }
 
 

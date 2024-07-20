@@ -15,6 +15,7 @@
 #include"QDesktopWidget"
 #include "qscreen.h"
 #include "qsharedmemory.h"
+#include "repaintcounterunit.h"
 
 
 int main(int argc, char *argv[])
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<ED_HideTextBlock>();
     qRegisterMetaType<ED_Dock>();
     qRegisterMetaType<ED_EditBox>();
+    qRegisterMetaType<RepaintCounterUnit>();
 
     QSurfaceFormat format;
     format.setDepthBufferSize(24);

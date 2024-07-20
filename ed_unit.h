@@ -175,7 +175,7 @@ public:
     QSize MySize(){
         return layout->ind2Size(indX,indY);
     }
-
+    virtual void whenDragedOut();
     virtual void preSetInLayout(bool animated);
     virtual void setInLayout(bool animated);
     virtual void updateInLayout();

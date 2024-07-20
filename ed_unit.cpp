@@ -7,7 +7,9 @@
 #include"SysFunctions.h"
 #include"ed_blockcontainer.h"
 #include "qeventloop.h"
+#include "qfuture.h"
 #include "qgraphicseffect.h"
+#include "qtconcurrentrun.h"
 #include "screenfunc.h"
 #include "style.h"
 #include"QPropertyAnimation"
@@ -217,18 +219,13 @@ void ED_Unit::mouseMoveEvent(QMouseEvent *event)
     {
         move(mapTo(pmw,event->pos())-relativeP);
         update();
+        pls->update();
     }
     else if(premove){
         auto tem = event->pos();
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
         if(dis>=2){
-            QPoint usedp = mapTo(pmw,QPoint(0,0));
-            positionAnimations->stop();
-            if(layout)
-                removeFromLayout();
-            move(usedp);
-            pMovingUnit = this;
-            moving = true;
+            whenDragedOut();
         }
     }
 
@@ -447,10 +444,24 @@ void ED_Unit::updatePositionAnimation()
     positionAnimations->start();
 }
 
+void ED_Unit::whenDragedOut()
+{
+    QPoint usedp = mapTo(pmw,QPoint(0,0));
+    positionAnimations->stop();
+    if(layout)
+        removeFromLayout();
+    move(usedp);
+    pMovingUnit = this;
+    moving = true;
+    setVisible(false);
+    // pmw->setFrozen(true);
+    setVisible(true);
+}
+
 void ED_Unit::preSetInLayout(bool animated)
 {
     raise();
-
+    pmw->setFrozen(false);
     if(animated){
         moveto(layout->pContainer->mapTo(pmw,MyPos_Centual()),MySize());
     }
@@ -470,10 +481,8 @@ void ED_Unit::setInLayout(bool animated)
 
     move(dis);
     setVisible(true);
-
     if(!layout->isMain)
     parentWidget()->update();
-
     update();
 
 }

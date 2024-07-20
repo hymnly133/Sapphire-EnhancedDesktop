@@ -31,6 +31,7 @@ public:
     ED_BlockLayout* inside;
     QPixmap bg;
     QPixmap buffer;
+    bool isfrozen;
     roundShower* changeShower;
     QSize showerSize;
     QList<QPoint> drawParamList;
@@ -50,7 +51,7 @@ public:
     void setTransparent(bool val);
     void setBlur(bool val);
     void ed_update();
-
+    void setFrozen(bool val);
     void capture();
     void updateBG();
     void setShoweredVisibal(bool val);
@@ -86,6 +87,7 @@ public slots:;
     void setScale(double Scale);
     void onSelectBackground();  // 新增：选择背景文件槽函数
     void updatePer01second();
+    void whenFrozenThreadDone();
 
 public: signals:
     void showerSize_changed(QSize);

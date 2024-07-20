@@ -7,9 +7,11 @@
 #include "ed_editbox.h"
 #include "ed_hidetextblock.h"
 #include "filefunc.h"
+#include "frozenthread.h"
 #include "qgraphicseffect.h"
 #include "qmimedata.h"
 #include "qpainter.h"
+#include "repaintcounterunit.h"
 #include "roundshower.h"
 #include "ui_mainwindow.h"
 #include "SysFunctions.h"
@@ -107,6 +109,12 @@ void MainWindow::setupActions()
         InitAUnit(dock);
     })
 
+#ifdef QT_DEBUG
+    SET_ANCTION(act11,新建重绘盒,{
+        auto dock = new RepaintCounterUnit(this);
+        InitAUnit(dock);
+    })
+#endif
 }
 void MainWindow::setupUnits()
 {
@@ -257,6 +265,19 @@ void MainWindow::ed_update()
     }
 }
 
+void MainWindow::setFrozen(bool val)
+{
+
+    if(val){
+        FrozenThread* pft = new FrozenThread(this);
+        pft->start();
+    }
+    else{
+        isfrozen = val;
+        inside->setVisible(true);
+    }
+}
+
 void MainWindow::Init()
 {
     // 获取图标
@@ -287,13 +308,9 @@ void MainWindow::Init()
 
 void MainWindow::capture()
 {
-    inside->setVisible(false,true);
-    repaint();
-    QThread::msleep(100);
-    QScreen *screen = QGuiApplication::primaryScreen();
-    bgshower->captrued = screen->grabWindow(0).copy(rect());
-    bgshower->cap = true;
-    inside->setVisible(true,true);
+    update();
+    buffer = QPixmap();
+    buffer = grab(rect());
 }
 
 void MainWindow::updateBG()
@@ -315,7 +332,7 @@ void MainWindow::setShoweredVisibal(bool val){
             content->setVisible(false);
         }
 
-        buffer = this->grab(rect());
+        capture();
 
         foreach (ED_Unit* content,*(inside->contents_AlwaysShow)) {
             content->setVisible(true);
@@ -411,6 +428,12 @@ void MainWindow::updatePer01second()
         repaint();
 
     // qDebug()<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0));
+}
+
+void MainWindow::whenFrozenThreadDone()
+{
+    isfrozen = true;
+    inside->setVisible(false,true);
 }
 
 void MainWindow::dropEvent(QDropEvent *e)
@@ -559,6 +582,11 @@ void MainWindow::paintEvent(QPaintEvent *ev)
 
     if((!showeredVisibal)||(showeredVisibal&&showerAnimations->state()==QAnimationGroup::Running)){
         QPainter painter(this);
+        painter.drawPixmap(rect(), buffer);
+    }
+    else if(isfrozen){
+        QPainter painter(this);
+        // painter.fillRect(rect(),QColor(0,0,0,0));
         painter.drawPixmap(rect(), buffer);
     }
 
