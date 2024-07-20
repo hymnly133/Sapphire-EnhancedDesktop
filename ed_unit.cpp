@@ -166,11 +166,12 @@ void ED_Unit::mousePressEvent(QMouseEvent *event)
         relativeP = event->pos();
     }
     event->accept();
-    qDebug()<<"press"<<event->pos()<<event->globalPos()<<mapTo(pmw,event->pos());
+    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(pmw,event->pos());
 }
 
 void ED_Unit::mouseReleaseEvent(QMouseEvent *event)
 {
+    qDebug()<<objectName()<<"Release"<<event->pos()<<event->globalPos()<<mapTo(pmw,event->pos());
     releaseMouse();
     mouse_release_action();
     if(moving){
@@ -211,9 +212,9 @@ void ED_Unit::mouseDoubleClickEvent(QMouseEvent *event)
 void ED_Unit::mouseMoveEvent(QMouseEvent *event)
 {
     mouse_move_action();
+    qDebug()<<"Moving"<<cursor().pos()<<moving;
     if (moving)
     {
-        int screenind =screenInd(this);
         move(mapTo(pmw,event->pos())-relativeP);
         if(enable_global_move)
             pls->update();
@@ -233,7 +234,8 @@ void ED_Unit::mouseMoveEvent(QMouseEvent *event)
             moving = true;
         }
     }
-    event->accept();
+
+    // event->accept();
 }
 
 void ED_Unit::updateInLayout()
@@ -286,21 +288,23 @@ void ED_Unit::leaveEvent(QEvent *event){
     if(!(layout->isMain)){
         layout->pContainer->update();
     }
-    premove = false;
-    moving = false;
+
 }
 
 void ED_Unit::setBlockSize(int w,int h){
     ED_Layout* tem = nullptr;
     if(layout!=nullptr){
         tem = layout;
-        removeFromLayout();
-        ED_Unit temu(nullptr,w,h);
+
+        ED_Unit temu(layout->pContainer,w,h);
+        temu.setPMW(pmw);
+        temu.move(pos());
         if(tem->OKForClearPut(&temu)){
+            removeFromLayout();
             sizeX = w;
             sizeY = h;
+            tem->clearPut(this,true);
         }
-        tem->clearPut(this,true);
     }
     else{
         sizeX = w;

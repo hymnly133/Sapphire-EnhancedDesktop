@@ -500,6 +500,54 @@ void MainWindow::wheelEvent(QWheelEvent *event)
     }
 }
 
+void MainWindow::focusInEvent(QFocusEvent *event)
+{
+    qDebug()<<objectName()<<"FoucusIn";
+}
+
+void MainWindow::focusOutEvent(QFocusEvent *event)
+{
+    qDebug()<<objectName()<<"FoucusOut";
+}
+
+void MainWindow::enterEvent(QEvent *event)
+{
+    qDebug()<<objectName()<<"Enter";
+    raise();
+    pls->raise();
+}
+
+void MainWindow::leaveEvent(QEvent *event)
+{
+    qDebug()<<objectName()<<"Leave"<<cursor().pos()<<rect()<<geometry();
+    if(screenNum>1){
+        //多屏切换
+        foreach(auto pmw,pmws){
+            if(pmw->geometry().contains(cursor().pos()) && pmw!=this){
+                qDebug()<<"ScreenChange! "<<pmw->objectName()<<"Should Be The Aim";
+                if(pMovingUnit!=nullptr){
+                    auto globalPos = mapToGlobal(pMovingUnit->pos());
+                    auto aimPos = pmw->mapFromGlobal(globalPos);
+                    pMovingUnit->releaseMouse();
+                    pMovingUnit->setParent(pmw);
+                    pMovingUnit->setPMW(pmw);
+                    pMovingUnit->move(aimPos);
+                    pMovingUnit->setVisible(true);
+                    pMovingUnit->setEnabled(true);
+                    pmw->setFocus();
+                    qDebug()<<pmw->objectName()<<"Acitive:"<<pmw->isActiveWindow();
+                    pmw->raise();
+                    pMovingUnit->raise();
+                    pls->raise();
+                    pMovingUnit->setFocus();
+                    pMovingUnit->grabMouse();
+                }
+            }
+        }
+
+    }
+}
+
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
     if (!enable_background_transparent)
@@ -527,12 +575,12 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 void MainWindow::mousePressEvent(QMouseEvent* event){
 
     appendPoints(event->pos());
-    printf("mousePressEvent \n");
-    qDebug()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos());
+    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos());
+    raise();
     pls->raise();
-    foreach(auto content,*(inside->contents)){
-        qDebug()<<content->pos()<<content->parentWidget()->objectName()<<content->isVisible();
-    }
+    // foreach(auto content,*(inside->contents)){
+    //     qDebug()<<content->pos()<<content->parentWidget()->objectName()<<content->isVisible();
+    // }
 }
 
 void MainWindow::onSelectBackground()

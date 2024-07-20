@@ -79,7 +79,7 @@ void ED_BlockLayout::updateAfterRemove(ED_Unit *aim, int indx, int indy)
 
 QPoint ED_BlockLayout::clearPutableInd(ED_Unit *aim)
 {
-    auto pos = pContainer->mapFrom(pmw,aim->pos());
+    auto pos = pContainer->mapFrom(aim->parentWidget(),aim->pos());
     int posx = pos.x();
     int posy = pos.y();
     int mindeltaw=W_Container();

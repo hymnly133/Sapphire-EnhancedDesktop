@@ -38,6 +38,7 @@ static QMutex mutex;;
 QMap<int,MainWindow*> pmws;
 QMap<int,QScreen*> pscs;
 int screenNum;
+int jsonNum;
 StyleHelper* psh;
 LayerShower* pls;
 QDesktopWidget* pdt;
@@ -45,7 +46,7 @@ QString* UserDesktopPath;
 QString* PublicDesktopPath;
 ED_Unit* pMovingUnit;
 
-
+QMap<int,QJsonObject> UnusedJsons;
 
 QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
@@ -85,7 +86,7 @@ void SetUp()
 
 
     QMap<int,QJsonObject> jsons = readJson();
-    int jsonNum = jsons.size();
+    jsonNum = jsons.size();
 
     qDebug()<<"Find"<<jsonNum<<"Jsons";
     qDebug()<<"Find"<<screenNum<<"Screens";
@@ -118,8 +119,13 @@ void SetUp()
     // }
     if(jsonNum<screenNum)
     QMessageBox::about(nullptr,"注意！",QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化").arg(jsonNum).arg(screenNum));
-    if(jsonNum>screenNum)
-    QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！").arg(jsonNum).arg(screenNum));
+    if(jsonNum>screenNum){
+        QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！多余的桌面数据不会被清理").arg(jsonNum).arg(screenNum));
+        for(int i=screenNum;i<jsonNum;i++){
+            UnusedJsons[i] = jsons[i];
+        }
+    }
+
 
     for(int i=0;i<screenNum;i++){
         qDebug()<<"Processing Mainwindow"<<i;
@@ -685,8 +691,13 @@ QMap<int,QPixmap> path2Icon(QString path,int size){
 void writeJson(){
     QJsonArray rootArrar;
     foreach (auto pmw, pmws) {
+        qDebug()<<"Writing"<<pmw->objectName();
         QJsonObject rootObj =  pmw->to_json();
         rootArrar.append(rootObj);
+    }
+    for(int i=screenNum;i<jsonNum;i++){
+        qDebug()<<"Writing Unused Json"<<i;
+        rootArrar.append(UnusedJsons[i]);
     }
 
     QJsonDocument document;
@@ -765,33 +776,3 @@ MyFileInfo::MyFileInfo(QString path, int size)
 MyFileInfo::MyFileInfo(QFileInfo qfi, int size):MyFileInfo(qfi.filePath(),size)
 {
 }
-
-
-
-// void HighDpiAdapt()
-// {
-//     // 获取当前显示器的数目
-//     int numbers = GetSystemMetrics(SM_CMONITORS);
-//     std::string scale_name = "";
-//     for (int i = 0; i < numbers; ++i)
-//     {
-//         DISPLAY_DEVICEW device;
-//         device.cb = sizeof(device);
-//         BOOL result = EnumDisplayDevicesW(NULL, i, &device, 0);
-//         DEVMODEW device_mode;
-//         device_mode.dmSize = sizeof(device_mode);
-//         device_mode.dmDriverExtra = 0;
-//         result = EnumDisplaySettingsExW(device.DeviceName, ENUM_CURRENT_SETTINGS, &device_mode, 0);
-//         std::string screen_name = WStringToAnsiString(device.DeviceName);
-//         scale_name += screen_name;
-//         scale_name += (device_mode.dmPelsWidth > 1920) ? "=1.5;" : "=1;";  //设置不同的缩放比例系数
-//     }
-//     scale_name[scale_name.size() - 1] = '\0';
-//     qputenv("QT_SCREEN_SCALE_FACTORS", scale_name.c_str());
-//     //处理图像模糊问题
-//     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-//     //禁止高缩放支持
-//     //QGuiApplication::setAttribute(Qt::AA_DisableHighDpiScaling);   //AA_EnableHighDpiScaling
-//     //程序保持默认的尺寸，不缩放
-//     QGuiApplication::setAttribute(Qt::AA_Use96Dpi);
-// }
