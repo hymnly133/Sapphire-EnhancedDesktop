@@ -3,7 +3,6 @@
 
 #include "SysFunctions.h"
 #include "ed_unit.h"
-#include "filepreviewwidget.h"
 #include "picturebox.h"
 #include "qboxlayout.h"
 #include "qlabel.h"

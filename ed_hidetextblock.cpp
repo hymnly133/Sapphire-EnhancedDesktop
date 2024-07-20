@@ -1,6 +1,7 @@
 #include "ed_hidetextblock.h"
 #include"QDesktopServices"
 #include "SysFunctions.h"
+#include "filefunc.h"
 
 ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, int sizex, int sizey) : ED_Block(parent, sizex, sizey)
 {

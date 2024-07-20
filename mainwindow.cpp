@@ -6,6 +6,7 @@
 #include"QInputDialog"
 #include "ed_editbox.h"
 #include "ed_hidetextblock.h"
+#include "filefunc.h"
 #include "qgraphicseffect.h"
 #include "qmimedata.h"
 #include "qpainter.h"

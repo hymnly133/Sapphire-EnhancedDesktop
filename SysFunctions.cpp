@@ -1,7 +1,9 @@
 #include<windows.h>
+#include "filefunc.h"
 #include"mainwindow.h"
 #include "layershower.h"
 #include "qapplication.h"
+#include "qbitmap.h"
 #include "qpainter.h"
 #include "qpainterpath.h"
 #include "qscreen.h"
@@ -582,86 +584,8 @@ QString  getDesktopPath()
     return QString(szDir);
 }
 
-QString path2Name(QString path){
-    return QFileInfo(path).baseName();
-}
-
-QMap<int,QPixmap> path2Icon(QString path,int size){
-    QMap<int,QPixmap> res;
-    QFileInfo qfileinfo(path);
-    QFileIconProvider iconProvider;
-    // qDebug()<<x.suffix().toLower()<<x.symLinkTarget();
-    if (qfileinfo.suffix().toLower() == "lnk" && enable_lnk_redirect)
-    {
-        // 处理快捷方式（.lnk 文件）
-        QString target = qfileinfo.symLinkTarget();
-        if (!target.isEmpty())
-        {
-            qDebug()<<"redirect"<<target<<"success";
-            res[0]=(iconProvider.icon(QFileInfo(target)).pixmap(size));
-        }
-    }
-    else
-    {
-        res[0]=(iconProvider.icon(path).pixmap(size));
-    }
-    //针对steam游戏
-    QSettings shortcut(qfileinfo.filePath(), QSettings::IniFormat);
-    QString target = shortcut.value("InternetShortcut/URL").toString();
-    QRegularExpression re("steam://rungameid/(\\d+)");
-    QRegularExpressionMatch match = re.match(target);
-    if (match.hasMatch())
-    {
-        QString gameId = match.captured(1);
-        QString steamPath;
-        QSettings reg("HKEY_CURRENT_USER\\Software\\Valve\\Steam", QSettings::NativeFormat);// 你的Steam安装路径
-        steamPath = reg.value("SteamPath").toString()+"/appcache/librarycache";
-        QDir directory(steamPath);
-        QStringList steamfileList=directory.entryList(QDir::Files);
 
 
-
-        steamfileList=directory.entryList(QDir::Files);
-
-
-        foreach(const QString& steamfilename,steamfileList)
-        {
-            QRegularExpression regex;
-
-            //小图标版本
-
-            regex = QRegularExpression(gameId+"_icon");
-            if(regex.match(steamfilename).hasMatch())
-            {
-                res[0]=(QPixmap(directory.absoluteFilePath(steamfilename)));
-                qDebug()<<"Find Little";
-            }
-
-
-            //长竖图标版本
-            regex = QRegularExpression(gameId+"_library_600x900");
-            if(regex.match(steamfilename).hasMatch())
-            {
-                res[1]=(QPixmap(directory.absoluteFilePath(steamfilename)));
-                qDebug()<<"Find Verti";
-            }
-
-            //长横图标版本
-
-            regex = QRegularExpression(gameId+"_header");
-            if(regex.match(steamfilename).hasMatch())
-            {
-                res[2]=(QPixmap(directory.absoluteFilePath(steamfilename)));
-                qDebug()<<"Find Hori";
-            }
-        }
-
-    // qDebug()<<QString::fromLocal8Bit(x.absoluteFilePath().toLocal8Bit())<<files.size();
-
-    }
-    qDebug()<<"get"<<res.size()<<"icons";
-    return res;
-}
 
 void writeJson(){
     QJsonArray rootArrar;
@@ -733,9 +657,7 @@ QMap<int,QJsonObject> readJson(){
     return res;
 }
 
-MyFileInfo path2MyFI(QString path,int size){
-    return MyFileInfo(path,size);
-}
+
 
 MyFileInfo::MyFileInfo(QString path, int size)
 {
@@ -751,3 +673,4 @@ MyFileInfo::MyFileInfo(QString path, int size)
 MyFileInfo::MyFileInfo(QFileInfo qfi, int size):MyFileInfo(qfi.filePath(),size)
 {
 }
+

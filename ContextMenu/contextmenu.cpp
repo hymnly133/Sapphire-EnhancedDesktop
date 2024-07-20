@@ -2,7 +2,6 @@
 #include "SysFunctions.h"
 #include "qdebug.h"
 #include "shellitem.h"
-
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>

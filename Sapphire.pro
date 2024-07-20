@@ -2,16 +2,18 @@ QT += core gui widgets winextras network concurrent quick qml
 win32 {
 LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
-LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi
+LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi -lcomctl32
 }
 msvc:QMAKE_CXXFLAGS += -execution-charset:utf-8
 msvc:QMAKE_CXXFLAGS += -source-charset:utf-8
 
 VERSION = 1.2.5.1
-QMAKE_PROJECT_DEPTH = 0
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
+
+# INCLUDEPATH += ContextMenu/
+# INCLUDEPATH += FuncRes/
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -33,6 +35,7 @@ SOURCES += \
     ed_layout.cpp \
     ed_linearlayout.cpp \
     ed_unit.cpp \
+    filefunc.cpp \
     filepreviewwidget.cpp \
     hitokoto.cpp \
     layershower.cpp \
@@ -61,6 +64,7 @@ HEADERS += \
     ed_layout.h \
     ed_linearlayout.h \
     ed_unit.h \
+    filefunc.h \
     filepreviewwidget.h \
     hitokoto.h \
     layershower.h \

@@ -2,6 +2,7 @@
 #include "SysFunctions.h"
 #include "QWidget"
 #include"QProcess"
+#include "filefunc.h"
 #include "qboxlayout.h"
 #include"SysFunctions.h"
 #include "qevent.h"

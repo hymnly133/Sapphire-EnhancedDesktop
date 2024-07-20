@@ -289,19 +289,19 @@ void ED_Unit::leaveEvent(QEvent *event){
 }
 
 void ED_Unit::setBlockSize(int w,int h){
-    ED_Layout* tem = nullptr;
+    ED_Layout* tem_layout;
     if(layout!=nullptr){
-        tem = layout;
-
-        ED_Unit temu(layout->pContainer,w,h);
+        ED_Unit temu(pmw,w,h);
+        tem_layout = layout;
+        temu.setParent(pmw);
         temu.setPMW(pmw);
-        temu.move(pos());
-        if(tem->OKForClearPut(&temu)){
-            removeFromLayout();
+        temu.move(mapTo(pmw,QPoint(0,0)));
+        removeFromLayout();
+        if(tem_layout->OKForClearPut(&temu)){
             sizeX = w;
             sizeY = h;
-            tem->clearPut(this,true);
         }
+        tem_layout->clearPut(this,true);
     }
     else{
         sizeX = w;

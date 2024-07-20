@@ -150,5 +150,5 @@ extern int default_steam_icon_type;
 
 extern double scale_fix_ratio;
 
-extern bool enable_lnk_redirect;
+extern bool enable_highdef_icon;
 #endif // STYLE_H

@@ -37,10 +37,10 @@ bool enable_light_track = false;
 bool enable_intime_repaint = false;
 
 bool enable_image_fill=false;
+bool enable_highdef_icon =0;
 
 int default_steam_icon_type =1;
 double scale_fix_ratio = 1.3;
-bool enable_lnk_redirect = 1;
 
 
 #define ADD(TYPE,NAME,MIN,MAX)\
@@ -84,10 +84,11 @@ StyleHelper::StyleHelper()
     ADD(Render,enable_intime_repaint,0,0);
 
     ADD(Preference,enable_image_fill,0,0);
+    ADD(Preference,enable_highdef_icon,0,0);
+
     ADD(Preference,default_steam_icon_type,0,2);
 
     ADD(Preference,scale_fix_ratio,1,2);
-    ADD(Preference,enable_lnk_redirect,0,0);
 
     psh = this;
 }

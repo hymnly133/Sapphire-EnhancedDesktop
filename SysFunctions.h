@@ -30,42 +30,18 @@ extern QString* PublicDesktopPath;
 
 
 
-struct MyFileInfo
-{
-    //定义返回的结构体
-    enum TYPE{
-        SINGLE = 0,
-        MULTI =1
-    };
-    TYPE type;
-    QString name;
-    QString filePath;
-    QMap<int,QPixmap> icons;
-    bool operator<(MyFileInfo& another) const{
-        return type<another.type;
-    }
-    MyFileInfo(QString path,int size=512);
-    MyFileInfo(QFileInfo qfi,int size = 512);
-    QPixmap aimIcon(){
-        if(okForAim())
-            return icons[default_steam_icon_type];
-        else{
-            qDebug()<<"No aim icon!,use default";
-            return icons[0];
-        }
-    }
-    bool okForAim(){
-        return icons.contains(default_steam_icon_type);
-    }
-};
+
 
 QVector<MyFileInfo> scanalldesktopfiles();
 QVector<MyFileInfo>getFormFileInfo(QFileInfo x);
+
 void paintRect(QWidget* aim,QColor color);
 void repaintAround(QWidget* aim);
+
 void inplace(QWidget* aim);
 void inplace2(QWidget* aim);
 QString  getDesktopPath();
+
 QColor pixmapMainColor(QPixmap p, double bright);
 void paintSide(QWidget* aim,QColor color);
 void paintLight(QWidget* aim,QColor color);
@@ -81,7 +57,5 @@ QColor GetWindowsThemeColor();
 QString toWindowsPath(QString const& linuxPath);
 QString toLinuxPath(QString const& windowsPath);
 
-MyFileInfo path2MyFI(QString path,int size=512);
-QMap<int,QPixmap> path2Icon(QString path,int size=512);
-QString path2Name(QString path);
+
 #endif // SYSFUNCTIONS_H
