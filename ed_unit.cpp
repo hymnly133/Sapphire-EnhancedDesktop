@@ -6,10 +6,8 @@
 #include "qevent.h"
 #include"SysFunctions.h"
 #include"ed_blockcontainer.h"
-#include "qeventloop.h"
-#include "qfuture.h"
 #include "qgraphicseffect.h"
-#include "qtconcurrentrun.h"
+#include "qtimer.h"
 #include "screenfunc.h"
 #include "style.h"
 #include"QPropertyAnimation"
@@ -17,6 +15,27 @@
 #include "QBitmap"
 
 
+
+void ED_Unit::edmove(QPoint dis){
+    qDebug()<<"ED_MOVE from"<<dis;
+    QPoint red = dis;
+    if(parentWidget()!=layout->pContainer){
+        red = parentWidget()->mapFrom(pmw,layout->pContainer->mapTo(pmw,dis));
+    }
+    qDebug()<<"redirected::"<<red<<"Global"<<parentWidget()->mapTo(pmw,red);
+    move(red);
+}
+
+QPoint ED_Unit::edpos()
+{
+    // if(parentWidget()!=layout->pContainer){
+    //     layout->pContainer->mapFrom(pmw,parentWidget()->mapTo(pmw,pos()));
+    // }
+    // else{
+    //     return pos();
+    // }
+    return layout->pContainer->mapFrom(pmw,mapTo(pmw,QPoint(0,0)));
+}
 
 ED_Unit::ED_Unit(): ED_Unit(nullptr,1,1){
 
@@ -37,32 +56,33 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
     shadow_main_color->setBlurRadius(unit_shadow_blur_radius);   //模糊半径
     shadow_main_color->setOffset(0);      //偏移量
     shadow_main_color->setEnabled(true);
+
     setGraphicsEffect(shadow_main_color);
 
     setMainColor(GetWindowsThemeColor());
 
-    colorAlpha = aim_alpha();
+    colorAlpha = aim_colorAlpha();
 
     focusAnimations = new QParallelAnimationGroup(this);
     positionAnimations = new QParallelAnimationGroup(this);
+    longFocusAnimations = new QParallelAnimationGroup(this);
 
-    SET_ANIMATION(alphaAnimation,colorAlpha,focusAnimations,100);
+    SET_ANIMATION(alphaAnimation,colorAlpha,focusAnimations,focus_animation_time);
 
-    SET_ANIMATION(scaleFixAnimation,scaleFix,focusAnimations,100);
+    SET_ANIMATION(scaleFixAnimation,scaleFix,focusAnimations,focus_animation_time);
 
-    SET_ANIMATION(padRatioAnimation,nowPadRatio,focusAnimations,100);
+    SET_ANIMATION(padRatioAnimation,nowPadRatio,focusAnimations,focus_animation_time);
 
     SET_ANIMATION(sizeAnimation,nowSize,positionAnimations,position_animation_time);
 
     SET_ANIMATION(posAnimation,nowPos,positionAnimations,position_animation_time);
 
-
+    longFocusTimer = new QTimer(this);
+    connect(longFocusTimer, SIGNAL(timeout()), this, SLOT(longFocusTimeoutSlot()));
 
     // setMouseTracking(true);
-
-    connect(this,&ED_Unit::alpha_changed,this,[=](int val){
-        update();
-        // qDebug()<<nowPadRatio;
+    connect(this,&ED_Unit::colorAlpha_changed,this,[=](int val){
+        whenFocusAnimationChange();
     });
 
     connect(this,&ED_Unit::scale_changed,this,[=](double val){
@@ -70,11 +90,11 @@ ED_Unit::ED_Unit(QWidget *parent,int sizex,int sizey): QWidget{parent}
     });
 
     connect(this,&ED_Unit::scaleFix_changed,this,[=](double val){
-        whenScaleChange(val*scale);
+        whenFocusAnimationChange();
     });
 
     connect(this,&ED_Unit::nowPos_changed,this,[=](QPoint val){
-        move(val);
+        edmove(val);
     });
 
     connect(this,&ED_Unit::nowSize_changed,this,[=](QSize val){
@@ -97,6 +117,7 @@ void ED_Unit::double_click_action(){
 void ED_Unit::mouse_enter_action(){
 
 }
+
 void ED_Unit::mouse_leave_action(){
 }
 
@@ -211,37 +232,86 @@ void ED_Unit::mouseDoubleClickEvent(QMouseEvent *event)
     double_click_action();
 }
 
+
+
 void ED_Unit::mouseMoveEvent(QMouseEvent *event)
 {
     mouse_move_action();
-    qDebug()<<"Moving"<<cursor().pos()<<moving;
+    event->accept();
     if (moving)
     {
-        move(mapTo(pmw,event->pos())-relativeP);
+
+        QPoint pmwPos = mapTo(pmw,event->pos());
+        move(pmwPos-relativeP);
+        QPoint ind = pmw->inside->ED_Layout::pos2Ind(pmwPos);
+        ED_Unit* aim = pmw->inside->ED_Layout::ind2Unit(ind);
+        if(aim!=nullptr){
+            aim->setPreLongFocus(true);
+        }
+        foreach (ED_Unit* tem, *(pmw->inside->contents)) {
+            if(tem!=aim &&tem->preLongFocus){
+                tem->setPreLongFocus(false);
+            }
+        }
         update();
-        pls->update();
+
+        tryToSwitch(event);
     }
     else if(premove){
         auto tem = event->pos();
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
         if(dis>=2){
-            whenDragedOut();
+            whenDragedOut(event);
         }
     }
-
-    // event->accept();
 }
 
-void ED_Unit::updateInLayout()
+void ED_Unit::enterEvent(QEvent *event){
+    onmouse = true  ;
+    raise();
+    mouse_enter_action();
+    updataFocusAnimation();
+    event->accept();
+    if(layout!=nullptr)
+        if(!layout->isMain){
+            layout->pContainer->update();
+        }
+    setPreLongFocus(true);
+
+    update();
+}
+
+void ED_Unit::leaveEvent(QEvent *event){
+    onmouse = false  ;
+    setPreLongFocus(false);
+    // qDebug()<<type;
+    mouse_leave_action();
+    updataFocusAnimation();
+    if(layout!=nullptr)
+        if(!(layout->isMain)){
+            layout->pContainer->update();
+        }
+
+}
+
+void ED_Unit::updateInLayout(bool animated)
 {
     //当Layout改变大小等调用（不包含初次放置）
-    moveto(MyPos_Centual(),MySize());
+    if(animated)
+        moveto(MyPos_Centual(),MySize());
+    else{
+        move(MyPos_Centual());
+        setFixedSize(MySize());
+    }
 }
 
 void ED_Unit::moveto(QPoint pos, QSize size)
 {
+    //传入相对于Layou-pContainer的坐标
+
     aim_pos = pos;
-    aim_size = (size);
+    aim_size = size;
+
     updatePositionAnimation();
     // updataFocusAnimation();
 }
@@ -261,48 +331,30 @@ void ED_Unit::contextMenuEvent(QContextMenuEvent *event)
         onContextMenu(event);
 }
 
-void ED_Unit::enterEvent(QEvent *event){
-    onmouse = true  ;
-    mouse_enter_action();
-    updataFocusAnimation();
-    event->accept();
-    if(layout!=nullptr)
-    if(!layout->isMain){
-        layout->pContainer->update();
-    }
-    update();
-}
-
-void ED_Unit::leaveEvent(QEvent *event){
-    onmouse = false  ;
-    // qDebug()<<type;
-    mouse_leave_action();
-    updataFocusAnimation();
-    if(layout!=nullptr)
-    if(!(layout->isMain)){
-        layout->pContainer->update();
-    }
-
-}
-
-void ED_Unit::setBlockSize(int w,int h){
+bool ED_Unit::setBlockSize(int w,int h){
+    if(w<=0)return false;
+    if(h<=0)return false;
     ED_Layout* tem_layout;
     if(layout!=nullptr){
         ED_Unit temu(pmw,w,h);
         tem_layout = layout;
         temu.setParent(pmw);
         temu.setPMW(pmw);
+        bool res = false;
         temu.move(mapTo(pmw,QPoint(0,0)));
         removeFromLayout();
         if(tem_layout->OKForClearPut(&temu)){
             sizeX = w;
             sizeY = h;
+            res = true;
         }
         tem_layout->clearPut(this,true);
+        return res;
     }
     else{
         sizeX = w;
         sizeY = h;
+        return true;
     }
 }
 
@@ -319,6 +371,36 @@ void ED_Unit::onShiftContextMenu(QContextMenuEvent *event)
 void ED_Unit::setSimpleMode(bool val){
     simpleMode = val;
     whenSimpleModeChange(val);
+}
+
+void ED_Unit::setLongFocus(bool val)
+{
+    qDebug()<<"Long Focus"<<val;
+    onLongFocus = val;
+    updateLongFocusAnimation();
+}
+
+void ED_Unit::setPreLongFocus(bool val)
+{
+    qDebug()<<"pre set"<<val<<"now focus"<<onLongFocus<<"now pre"<<preLongFocus;
+
+    if(val == onLongFocus){
+        longFocusTimer->stop();
+    }
+    else{
+        if(val == preLongFocus)return;
+        else{
+
+            longFocusTimer->stop();
+            preLongFocus = val;
+            if(val)
+            longFocusTimer->start(long_focus_in_delta_time);
+            else
+            longFocusTimer->start(long_focus_out_delta_time);
+        }
+
+    }
+    preLongFocus = val;
 }
 
 void ED_Unit::changeSimpleMode(){
@@ -405,6 +487,29 @@ void ED_Unit::paintEvent(QPaintEvent *event)
     paintLight(this,mainColor);
 }
 
+void ED_Unit::wheelEvent(QWheelEvent *event)
+{
+    if(event->modifiers() ==Qt::ShiftModifier){
+        int tem = event->angleDelta().y();
+        qDebug()<<event->angleDelta();
+        if(tem>0){
+            if(!setBlockSize(sizeX+1,sizeY+1)){
+                if(!setBlockSize(sizeX,sizeY+1)){
+                    setBlockSize(sizeX+1,sizeY);
+                }
+            }
+        }
+        else{
+            if(!setBlockSize(sizeX-1,sizeY-1)){
+                if(!setBlockSize(sizeX,sizeY-1)){
+                    setBlockSize(sizeX-1,sizeY);
+                }
+            }
+        }
+        event->accept();
+    }
+}
+
 void ED_Unit::ed_update(){
     rs->updateDisplay();
     rs->raise();
@@ -417,12 +522,47 @@ QColor ED_Unit::mainColor_Alphaed(){
     return tem;
 }
 
+void ED_Unit::tryToSwitch(QMouseEvent *event)
+{
+    if(screenNum>1){
+        //多屏切换
+        qDebug()<<"try to scan for switch pmw";
+        foreach(auto pmw,pmws){
+            if(pmw->geometry().contains(cursor().pos()) && pmw!=this->pmw){
+                qDebug()<<"ScreenChange! "<<pmw->objectName()<<"Should Be The Aim";
+
+                auto globalPos = mapToGlobal(pos());
+                auto aimPos = pmw->mapFromGlobal(globalPos);
+                releaseMouse();
+                setParent(pmw);
+                setPMW(pmw);
+                move(aimPos);
+                setVisible(true);
+                setEnabled(true);
+                pmw->setFocus();
+                qDebug()<<pmw->objectName()<<"Acitive:"<<pmw->isActiveWindow();
+                pmw->raise();
+                raise();
+                pls->raise();
+                setFocus();
+                grabMouse();
+
+            }
+        }
+    }
+}
+
+void ED_Unit::updateLongFocusAnimation()
+{
+
+}
+
 void ED_Unit::updataFocusAnimation()
 {
     focusAnimations->stop();
 
     alphaAnimation->setStartValue(colorAlpha);
-    alphaAnimation->setEndValue(aim_alpha());
+    alphaAnimation->setEndValue(aim_colorAlpha());
 
     padRatioAnimation->setStartValue(nowPadRatio);
     padRatioAnimation->setEndValue(aim_padRatio());
@@ -436,7 +576,7 @@ void ED_Unit::updataFocusAnimation()
 void ED_Unit::updatePositionAnimation()
 {
     positionAnimations->stop();
-    posAnimation->setStartValue(pos());
+    posAnimation->setStartValue(edpos());
     posAnimation->setEndValue(aim_pos);
 
     sizeAnimation->setStartValue(size());
@@ -444,18 +584,18 @@ void ED_Unit::updatePositionAnimation()
     positionAnimations->start();
 }
 
-void ED_Unit::whenDragedOut()
+void ED_Unit::whenDragedOut(QMouseEvent *event)
 {
+    setPreLongFocus(false);
     QPoint usedp = mapTo(pmw,QPoint(0,0));
     positionAnimations->stop();
+    if(!layout->isMain)layout->pContainer->update();
     if(layout)
         removeFromLayout();
     move(usedp);
     pMovingUnit = this;
     moving = true;
-    setVisible(false);
-    // pmw->setFrozen(true);
-    setVisible(true);
+
 }
 
 void ED_Unit::preSetInLayout(bool animated)
@@ -463,23 +603,46 @@ void ED_Unit::preSetInLayout(bool animated)
     raise();
     pmw->setFrozen(false);
     if(animated){
-        moveto(layout->pContainer->mapTo(pmw,MyPos_Centual()),MySize());
+        moveto(MyPos_Centual(),MySize());
+        connect(positionAnimations,&QParallelAnimationGroup::finished,this,&::ED_Unit::setInLayoutAniSlot,Qt::UniqueConnection);
+        connect(positionAnimations,&QParallelAnimationGroup::currentLoopChanged,this,[=](){
+            qDebug()<<"CurrentLoop Changed";
+            disconnect(positionAnimations,SIGNAL(finished()), 0, 0);
+        });
     }
     else{
         move(layout->pContainer->mapTo(pmw,MyPos_Centual()));
         setFixedSize(MySize());
+        setInLayout(animated);
     }
+
+}
+
+void ED_Unit::setInLayoutAniSlot()
+{
+    qDebug()<<"anilayout called";
+    setInLayout(true);
+}
+
+void ED_Unit::longFocusTimeoutSlot()
+{
+    qDebug()<<"long focus timer out";
+    longFocusTimer->stop();
+
+    setLongFocus(preLongFocus);
 
 }
 
 void ED_Unit::setInLayout(bool animated)
 {
-    QPoint dis = layout->pContainer->mapFrom(pmw, mapTo(pmw,QPoint(0,0)));
+    QPoint tem = edpos();
     // qDebug()<<tem<<dis;
     nowPadRatio = aim_padRatio();
+    qDebug()<<"before"<<edpos();
     setParent(layout->pContainer);
+    qDebug()<<"after"<<edpos();
 
-    move(dis);
+    edmove(tem);
     setVisible(true);
     if(!layout->isMain)
     parentWidget()->update();
@@ -528,4 +691,15 @@ void ED_Unit::whenMainColorChange(QColor val){
 void ED_Unit::afterResize(QResizeEvent* event)
 {
 
+}
+
+void ED_Unit::whenLongFocusAnimationChange()
+{
+
+}
+
+void ED_Unit::whenFocusAnimationChange()
+{
+    whenScaleChange(scale*scaleFix);
+    update();
 }

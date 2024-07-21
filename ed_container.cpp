@@ -2,7 +2,7 @@
 
 ED_Container::ED_Container(QWidget *parent, int sizeX, int sizeY):ED_Unit(parent,sizeX,sizeY)
 {
-        type = Container;
+    type = Container;
 }
 void ED_Container::setSimpleMode(bool val){
     ED_Unit::setSimpleMode(val);
@@ -27,7 +27,7 @@ void ED_Container::ed_update(){
 
 
 void ED_Container::afterResize(QResizeEvent *event){
-    inside->UpdateContentPositon();
+    inside->UpdateContentPositon(false);
 }
 
 QJsonObject ED_Container::to_json()

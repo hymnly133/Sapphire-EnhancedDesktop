@@ -22,6 +22,12 @@ ED_Layout::ED_Layout(QWidget *father)
     pContainer = father;
 }
 
+void ED_Layout::setStandalongRect(QRect rect)
+{
+    useStandaloneRect = true;
+    standaloneRect = rect;
+}
+
 QPoint ED_Layout::pos2Ind(QPoint point)
 {
     return pos2Ind(point.x(),point.y());
@@ -92,24 +98,6 @@ void ED_Layout::putUnit(ED_Unit *aim, int xind, int yind, bool animated)
     updateBeforePutAnimation(aim,xind,yind);
 
     if(enable_background_blur) UpdateRegion();
-
-    if(animated){
-        QTimer *pTimer = new QTimer(pContainer);
-        pTimer->singleShot(position_animation_time*2,[=](){
-            if(aim->layout!=nullptr){
-                aim->setInLayout(true);
-                updateAfterPut(aim,xind,yind);
-                qDebug()<<"timer setted end";
-            }
-            // qDebug()<<"timer end";
-        });
-    }
-    else{
-        aim->setInLayout(false);
-        updateAfterPut(aim,xind,yind);
-    }
-
-    QFuture<void> future = QtConcurrent::run(writeJson);
 }
 
 void ED_Layout::putUnit(ED_Unit *aim, QPoint ind, bool animated)
@@ -236,10 +224,10 @@ void ED_Layout::UpdateRegion()
     qDebug()<<"Region count"<<countt;
 }
 
-void ED_Layout::UpdateContentPositon()
+void ED_Layout::UpdateContentPositon(bool animated)
 {
     foreach (ED_Unit* content, *contents) {
-        content->updateInLayout();
+        content->updateInLayout(animated);
     }
 }
 
@@ -276,11 +264,24 @@ void ED_Layout::load_json(QJsonObject rootObject)
 
     QJsonArray contentsArray = rootObject.value("contents").toArray();
     QVector<ED_Unit*> tem;
+    if(rootObject.contains("useStandaloneRect")) useStandaloneRect = rootObject.value("useStandaloneRect").toBool();
+    if(useStandaloneRect){
+        if(rootObject.contains("x"))
+        standaloneRect.setX(rootObject.value("x").toInt());
+        if(rootObject.contains("y"))
+        standaloneRect.setY(rootObject.value("y").toInt());
+        if(rootObject.contains("w"))
+        standaloneRect.setWidth(rootObject.value("w").toInt());
+        if(rootObject.contains("h"))
+        standaloneRect.setHeight(rootObject.value("h").toInt());
+    }
+
     foreach (QJsonValue contentValue , (contentsArray)) {
         QJsonObject contentObject = contentValue.toObject();
         ED_Unit* unit = from_json(contentObject,pmw);
         tem.append(unit);
     }
+
     std::sort(tem.begin(),tem.end(),cmp);
     foreach (ED_Unit* aim , tem) {
         putUnit(aim,aim->indX,aim->indY,false);
@@ -291,11 +292,19 @@ QJsonObject ED_Layout::to_json()
 {
     QJsonObject rootObject;
     QJsonArray contentsArray;
-    // std::sort(contents->begin(),contents->end());
 
     foreach (ED_Unit* content, *(contents)) {
         contentsArray.append(content->to_json());
     }
+
     rootObject.insert("contents",contentsArray);
+    rootObject.insert("useStandaloneRect",useStandaloneRect);
+    if(useStandaloneRect){
+        rootObject.insert("x",standaloneRect.x());
+        rootObject.insert("y",standaloneRect.y());
+        rootObject.insert("w",standaloneRect.width());
+        rootObject.insert("h",standaloneRect.height());
+    }
+
     return rootObject;
 }

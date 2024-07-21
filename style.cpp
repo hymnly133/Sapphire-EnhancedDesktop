@@ -29,8 +29,8 @@ int unit_shadow_blur_radius = 8;
 
 int unit_radius = 30;
 int position_animation_time = 100;
+int focus_animation_time = 100;
 
-bool enable_background_transparent = true;
 bool enable_background_blur = false;
 bool enable_light_track = false;
 
@@ -38,8 +38,14 @@ bool enable_intime_repaint = false;
 
 bool enable_image_fill=false;
 bool enable_highdef_icon =0;
+bool dark_mode = 0;
 
 int default_steam_icon_type =1;
+
+int long_focus_in_delta_time = 500;
+int long_focus_out_delta_time = 1000;
+double long_focus_container_fix_ratio = 1.71;
+
 double scale_fix_ratio = 1.3;
 
 
@@ -71,6 +77,7 @@ StyleHelper::StyleHelper()
     ADD(Effect,unit_shadow_blur_radius,0,100);
 
     ADD(Effect,position_animation_time,0,200);
+    ADD(Effect,focus_animation_time,0,200);
 
     ADD(Render,unit_radius,0,100);
 
@@ -78,7 +85,6 @@ StyleHelper::StyleHelper()
     ADD(Render,ShowSide,0,0);
     ADD(Render,ShowLight,0,0);
 
-    ADD(Render,enable_background_transparent,0,0);
     ADD(Render,enable_background_blur,0,0);
     ADD(Render,enable_light_track,0,0);
     ADD(Render,enable_intime_repaint,0,0);
@@ -89,6 +95,10 @@ StyleHelper::StyleHelper()
     ADD(Preference,default_steam_icon_type,0,2);
 
     ADD(Preference,scale_fix_ratio,1,2);
+
+    ADD(Preference,long_focus_in_delta_time,30,1000);
+    ADD(Preference,long_focus_out_delta_time,200,2000);
+    ADD(Preference,long_focus_container_fix_ratio,1.1,3.0);
 
     psh = this;
 }
@@ -253,3 +263,20 @@ void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *conte
 }
 
 
+
+QColor GetWindowsThemeColor()
+{
+    DWORD crColorization;
+    BOOL fOpaqueBlend;
+    QColor res;
+    HRESULT result = DwmGetColorizationColor(&crColorization, &fOpaqueBlend);
+    if (result == S_OK)
+    {
+        BYTE r, g, b;
+        r = (crColorization >> 16) % 256;
+        g = (crColorization >> 8) % 256;
+        b = crColorization % 256;
+        res = QColor(r, g, b);
+    }
+    return res;
+}

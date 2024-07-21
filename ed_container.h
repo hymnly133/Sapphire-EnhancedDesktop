@@ -6,7 +6,7 @@
 
 class ED_Container : public ED_Unit
 {
-    Q_OBJECT
+
 public:
 
     explicit ED_Container(QWidget *parent = nullptr,int sizeX=3,int sizeY=3);

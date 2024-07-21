@@ -22,7 +22,7 @@ class ED_BlockLayout:public ED_Layout
         };
         bool occupied;
         ED_BlockLayout* playout;
-        ED_Unit* content;
+        ED_Unit* content = nullptr;
         int CenterX(){
             return posX() +w()/2;
         }
@@ -39,10 +39,20 @@ public:
     int row;
     int col;
     int W_Container(){
-        return pContainer->width()-2*space;
+        if(useStandaloneRect){
+            return standaloneRect.width()-2*space;
+        }
+        else{
+            return pContainer->width()-2*space;
+        }
     };
     int H_Container(){
-        return pContainer->height()-2*space;
+        if(useStandaloneRect){
+            return standaloneRect.height()-2*space;
+        }
+        else{
+            return pContainer->height()-2*space;
+        }
     };
     int W_Block_Clean(){
         return (W_Container()-(row-1)*spaceX)/row;

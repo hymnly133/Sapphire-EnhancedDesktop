@@ -30,8 +30,6 @@ extern QString* PublicDesktopPath;
 
 
 
-
-
 QVector<MyFileInfo> scanalldesktopfiles();
 QVector<MyFileInfo>getFormFileInfo(QFileInfo x);
 
@@ -53,7 +51,6 @@ void writeJson();
 QMap<int,QJsonObject> readJson();
 void setMyAppAutoRun(bool isStart);
 ED_Unit* from_json(QJsonObject data, MainWindow *parent);
-QColor GetWindowsThemeColor();
 QString toWindowsPath(QString const& linuxPath);
 QString toLinuxPath(QString const& windowsPath);
 

@@ -19,7 +19,9 @@ ED_BlockLayout::ED_BlockLayout(QWidget *father, int row, int col, int borad_spac
 }
 
 QPoint ED_BlockLayout::pos2Ind(int posx,int posy){
-    return QPoint((posx-space)/(W_Block_Clean()+spaceX),(posy-space)/(H_Block_Clean()+spaceY));
+    int tem1 =W_Block_Clean();
+    int tem2 = H_Block_Clean();
+    return QPoint((posx-space)/(tem1+spaceX),(posy-space)/(tem2+spaceY));
 }
 
 //从Block序号获取中心坐标
@@ -146,6 +148,8 @@ bool ED_BlockLayout::OKForUnit(ED_Unit* aim,int xind,int yind){
 
 ED_Unit *ED_BlockLayout::ind2Unit(int xind, int yind)
 {
+    if(xind>=row||xind<0) return nullptr;
+    else if (yind>=col||yind<0) return nullptr;
     return blocks[xind][yind]->content;
 }
 

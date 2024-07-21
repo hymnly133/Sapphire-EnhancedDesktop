@@ -29,6 +29,7 @@ public:
     bool onShift = false;
     QMenu* myMenu;
     ED_BlockLayout* inside;
+    bool transparent = true;
     QPixmap bg;
     QPixmap buffer;
     bool isfrozen;
@@ -83,7 +84,7 @@ private:
     void setupUnits();
     void setupLayout(int x,int y);
 
-public slots:;
+public slots:
     void setScale(double Scale);
     void onSelectBackground();  // 新增：选择背景文件槽函数
     void updatePer01second();

@@ -12,6 +12,9 @@
 #include"QObject"
 #include"qmap"
 #include "qwindowdefs.h"
+#include <minwindef.h>
+#include <winerror.h>
+#include "dwmapi.h"
 
 struct boolVal{
     bool* pval;
@@ -19,8 +22,14 @@ struct boolVal{
     bool& val(){return *pval;};
     boolVal(QString fullname,bool *pval,bool ,bool):pval(pval),fullname(fullname){};
     void read(QSettings *styleIni){
-        val() = styleIni->value(fullname).toBool();
-        qDebug() <<"Read"<< fullname << ":" << val();
+        if(styleIni->contains(fullname)){
+            val() = styleIni->value(fullname).toBool();
+            qDebug() <<"Read"<< fullname << ":" << val();
+        }
+        else{
+            qDebug() <<"No exist"<< fullname << ",use default" << val();
+        }
+
     }
     void write(QSettings *styleIni){
         styleIni->setValue(fullname, QString::number(val()));
@@ -43,8 +52,13 @@ struct intVal{
     int& val(){return *pval;};
     intVal(QString fullname,int *pval,int min,int max):pval(pval),fullname(fullname),min(min),max(max){};
     void read(QSettings *styleIni){
-        val() = styleIni->value( fullname).toInt();
-        qDebug() <<"Read"<< fullname << ":" << val();
+        if(styleIni->contains(fullname)){
+            val() = styleIni->value(fullname).toInt();
+            qDebug() <<"Read"<< fullname << ":" << val();
+        }
+        else{
+            qDebug() <<"No exist"<< fullname << ",use default" << val();
+        }
     }
     void write(QSettings *styleIni){
         styleIni->setValue(fullname, QString::number(val()));
@@ -68,8 +82,13 @@ struct doubleVal{
     double& val(){return *pval;};
     doubleVal(QString fullname,double *pval,double min,double max):pval(pval),fullname(fullname),min(min),max(max){};
     void read(QSettings *styleIni){
-        val() = styleIni->value( fullname).toDouble();
-        qDebug() <<"Read"<< fullname << ":" << val();
+        if(styleIni->contains(fullname)){
+            val() = styleIni->value(fullname).toDouble();
+            qDebug() <<"Read"<< fullname << ":" << val();
+        }
+        else{
+            qDebug() <<"No exist"<< fullname << ",use default" << val();
+        }
     }
     void write(QSettings *styleIni){
         styleIni->setValue(fullname, QString::number(val()));
@@ -84,6 +103,9 @@ struct doubleVal{
     QSlider* slider;
 };
 
+
+QColor GetWindowsThemeColor();
+
 class StyleHelper{
 public:
 
@@ -92,12 +114,16 @@ public:
     QVector<boolVal*> boolStyles;
 
     StyleHelper();
+
     void Add(QString,bool*,bool,bool);
     void Add(QString name, int * pval,int min,int max);
     void Add(QString, double*, double min, double max);
     void readStyleIni();
     void writeStyleIni();
     void showSetting();
+    QColor themeColor();
+
+
 };extern StyleHelper* psh;
 
 
@@ -137,8 +163,8 @@ extern int unit_shadow_blur_radius;
 
 extern int unit_radius;
 extern int position_animation_time;
+extern int focus_animation_time;
 
-extern bool enable_background_transparent;
 extern bool enable_background_blur;
 extern bool enable_light_track;
 
@@ -146,7 +172,13 @@ extern bool enable_intime_repaint;
 
 extern bool enable_image_fill;
 
+
+
 extern int default_steam_icon_type;
+
+extern int long_focus_in_delta_time;
+extern int long_focus_out_delta_time;
+extern double long_focus_container_fix_ratio;
 
 extern double scale_fix_ratio;
 

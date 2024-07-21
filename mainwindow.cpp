@@ -15,6 +15,7 @@
 #include "qpainter.h"
 #include "repaintcounterunit.h"
 #include "roundshower.h"
+#include "screenfunc.h"
 #include "ui_mainwindow.h"
 #include "SysFunctions.h"
 #include <QMouseEvent>
@@ -137,7 +138,6 @@ void MainWindow::setupUnits()
     bg = QPixmap(":/images/background");
 
     setVisible(true);
-    inside->UpdateRegion();
     update();
     // bgshower->update();
 }
@@ -147,6 +147,8 @@ void MainWindow::setupLayout(int x, int y)
     inside = new ED_BlockLayout(this, x, y, 5, 10, 10);
     inside->isMain = true;
     inside->pmw =this;
+    QRect tem = QRect(0,0,pscs[screenInd]->availableSize().width(),pscs[screenInd]->availableSize().height());
+    inside->setStandalongRect(tem);
 }
 
 MainWindow::MainWindow(QWidget *parent, int screenInd)
@@ -159,17 +161,26 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
     setAttribute(Qt::WA_TranslucentBackground);
     setAcceptDrops(true);
     inplace(this);
-
     setFixedSize(pscs[screenInd]->availableSize());
-    move(pscs[screenInd]->geometry().x(),pscs[screenInd]->geometry().y());
+
+    //shift:Windows主屏幕位于全局的位置;
+
+    move(pscs[screenInd]->geometry().topLeft()+Shift_Global);
+
+
+    qDebug()<<"Moved"<<mapToGlobal(QPoint(0,0));
+
+
+    qDebug()<<"Screen Information"<<pscs[screenInd]->availableGeometry()<<pscs[screenInd]->geometry()<<pscs[screenInd]->availableSize();
 
     qDebug()<<"MainWindow"<<screenInd<<"Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0))<<mapFromGlobal(QPoint(0,0)) ;
-    auto geopos = geometry().topLeft();
-    move(2*pos()-geopos);
 
-    qDebug()<<"MainWindow"<<screenInd<<"Information Fixed:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0))<<mapToGlobal(QPoint(0,0))<<mapFromGlobal(QPoint(0,0)) ;
-    setupLayout(10,10);
+    move(2*pos()-geometry().topLeft());
+
+    qDebug()<<"MainWindow"<<screenInd<<"Information Fixed:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0))<<mapFromGlobal(QPoint(0,0)) ;
+
     setupUnits();
+    setupLayout(10,10);
     setupActions();
 
     QTimer *timer = new QTimer(this);
@@ -208,9 +219,11 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
         }
     });
 
+    setTransparent(true);
+
     setShoweredVisibal(true);
-    ed_update();
     updateBG();
+
 }
 
 void MainWindow::InitAUnit(ED_Unit *aim,bool animated)
@@ -317,7 +330,7 @@ void MainWindow::capture()
 
 void MainWindow::updateBG()
 {
-    if(enable_background_transparent){
+    if(transparent){
         if(!bgshower->cap)
         capture();
     }
@@ -466,6 +479,8 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *e)
     }
 }
 
+
+
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     appendPoints(event->pos());
@@ -476,7 +491,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    appendPoints(event->globalPos());
+    appendPoints(event->pos());
     pls->update();
 }
 
@@ -487,6 +502,8 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
     psh->writeStyleIni();
     writeJson();
 }
+
+
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
@@ -505,6 +522,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
     // }
     event->accept();
 }
+
+
 
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
@@ -562,6 +581,8 @@ void MainWindow::wheelEvent(QWheelEvent *event)
     }
 }
 
+
+
 void MainWindow::focusInEvent(QFocusEvent *event)
 {
     qDebug()<<objectName()<<"FoucusIn";
@@ -571,6 +592,8 @@ void MainWindow::focusOutEvent(QFocusEvent *event)
 {
     qDebug()<<objectName()<<"FoucusOut";
 }
+
+
 
 void MainWindow::enterEvent(QEvent *event)
 {
@@ -582,37 +605,13 @@ void MainWindow::enterEvent(QEvent *event)
 void MainWindow::leaveEvent(QEvent *event)
 {
     qDebug()<<objectName()<<"Leave"<<cursor().pos()<<rect()<<geometry();
-    if(screenNum>1){
-        //多屏切换
-        foreach(auto pmw,pmws){
-            if(pmw->geometry().contains(cursor().pos()) && pmw!=this){
-                qDebug()<<"ScreenChange! "<<pmw->objectName()<<"Should Be The Aim";
-                if(pMovingUnit!=nullptr){
-                    auto globalPos = mapToGlobal(pMovingUnit->pos());
-                    auto aimPos = pmw->mapFromGlobal(globalPos);
-                    pMovingUnit->releaseMouse();
-                    pMovingUnit->setParent(pmw);
-                    pMovingUnit->setPMW(pmw);
-                    pMovingUnit->move(aimPos);
-                    pMovingUnit->setVisible(true);
-                    pMovingUnit->setEnabled(true);
-                    pmw->setFocus();
-                    qDebug()<<pmw->objectName()<<"Acitive:"<<pmw->isActiveWindow();
-                    pmw->raise();
-                    pMovingUnit->raise();
-                    pls->raise();
-                    pMovingUnit->setFocus();
-                    pMovingUnit->grabMouse();
-                }
-            }
-        }
-
-    }
 }
+
+
 
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
-    if (!enable_background_transparent)
+    if (!transparent)
     {
         QPainter painter(this);
         painter.drawPixmap(rect(), bg);
@@ -632,6 +631,8 @@ void MainWindow::paintEvent(QPaintEvent *ev)
     Q_UNUSED(ev);
 }
 
+
+
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 {
     setShoweredVisibal(!showeredVisibal);
@@ -640,15 +641,14 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 }
 
 void MainWindow::mousePressEvent(QMouseEvent* event){
-
-    appendPoints(event->globalPos());
-    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos());
+    appendPoints(event->pos());
+    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
+    qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
     raise();
     pls->raise();
-    // foreach(auto content,*(inside->contents)){
-    //     qDebug()<<content->pos()<<content->parentWidget()->objectName()<<content->isVisible();
-    // }
 }
+
+
 
 void MainWindow::onSelectBackground()
 {
@@ -676,14 +676,22 @@ void MainWindow::onSelectBackground()
 
 void MainWindow::setTransparent(bool val)
 {
-    enable_background_transparent = val;
+    transparent = val;
     if (enable_background_blur)
     {
         bgshower->setVisible(!val);
         bgshower->captrued = bg;
     }
+
+    if(val){
+        setFixedSize(pscs[screenInd]->availableSize());
+    }
+    else{
+            // setFixedSize(pscs[screenInd]->size()-QSize(10,10));
+            setFixedSize(pscs[screenInd]->availableSize());
+    }
+    update();
     updateBG();
-    // qDebug()<<transparent<<val;
 }
 
 void MainWindow::setBlur(bool val)

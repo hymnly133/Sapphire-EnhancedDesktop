@@ -1,7 +1,7 @@
 #include "screenfunc.h"
 #include "SysFunctions.h"
 #include "qscreen.h"
-
+QPoint Shift_Global;
 
 int screenInd(QWidget *aim){
     return pdt->screenNumber (aim);

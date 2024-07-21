@@ -70,8 +70,12 @@ void SetUp()
     qDebug()<<"Public Desktop:"<<*PublicDesktopPath;
 
     pdt = QApplication::desktop();
-
     pscs[0]=QGuiApplication::primaryScreen();
+
+    Shift_Global = -pscs[0]->virtualGeometry().topLeft();
+
+
+
     // 通过循环可以遍历每个显示器
     QList<QScreen *> list_screen = QGuiApplication::screens();
     screenNum = list_screen.size();
@@ -117,26 +121,14 @@ void SetUp()
     for(int i=0;i<screenNum;i++){
         pmws[i]->show();
     }
-    pls->show();
-    pls->raise();
-}
 
-
-QColor GetWindowsThemeColor()
-{
-    DWORD crColorization;
-    BOOL fOpaqueBlend;
-    QColor res;
-    HRESULT result = DwmGetColorizationColor(&crColorization, &fOpaqueBlend);
-    if (result == S_OK)
-    {
-        BYTE r, g, b;
-        r = (crColorization >> 16) % 256;
-        g = (crColorization >> 8) % 256;
-        b = crColorization % 256;
-        res = QColor(r, g, b);
+    qDebug()<<"Final:";
+    qDebug()<<"Layershower"<<pls->mapToGlobal(QPoint(0,0));
+    for(int i=0;i<screenNum;i++){
+        qDebug()<<"Mainwindow"<<i<<pmws[i]->mapToGlobal(QPoint(0,0));
     }
-    return res;
+    pls->move(0,0);
+    pls->raise();
 }
 
 

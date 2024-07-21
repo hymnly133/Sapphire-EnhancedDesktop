@@ -18,7 +18,7 @@ class MainWindow;
 class ED_Unit : public QWidget
 {
     Q_OBJECT
-    Q_PROPERTY(int colorAlpha MEMBER colorAlpha NOTIFY alpha_changed )
+    Q_PROPERTY(int colorAlpha MEMBER colorAlpha NOTIFY colorAlpha_changed )
     Q_PROPERTY(QColor mainColor MEMBER mainColor NOTIFY mainColor_changed WRITE setMainColor)
     Q_PROPERTY(double scale MEMBER scale NOTIFY scale_changed WRITE setScale)
     Q_PROPERTY(double scaleFix MEMBER scaleFix NOTIFY scaleFix_changed WRITE setScaleFix)
@@ -36,8 +36,15 @@ public:
     QPoint aim_pos;
     QSize nowSize;
     QSize aim_size;
-    double nowPadRatio;
 
+    QPoint my_pos_tem;
+    QPoint my_pos_centual_tem;
+    QSize my_size_tem;
+    double nowPadRatio;
+    QTimer* longFocusTimer;
+
+    bool onLongFocus = false;
+    bool preLongFocus = false;
     bool moving = false;
     bool premove = false;
     bool showRect = true;
@@ -60,11 +67,14 @@ public:
     QPropertyAnimation* posAnimation;
     QPropertyAnimation* sizeAnimation;
 
+    QParallelAnimationGroup * longFocusAnimations;
 
+    void edmove(QPoint dis);
+    QPoint edpos();
     int sizeX = 1;
     int sizeY = 1;
     int ind;
-    int aim_alpha(){
+    int aim_colorAlpha(){
         if(onmouse){
             if(deepColor) return active_alpha_deep;
             else return active_alpha;
@@ -93,7 +103,7 @@ public:
         }
     }
 
-    int colorAlpha;
+    int colorAlpha = sleep_alpha;
     bool alwaysShow = false;
     bool simpleMode = false;
 
@@ -128,7 +138,7 @@ public:
     virtual void mouse_release_action();
     virtual void mouse_enter_action();
     virtual void mouse_leave_action();
-    virtual void setBlockSize(int w,int h);
+    virtual bool setBlockSize(int w,int h);
 
     virtual void onContextMenu(QContextMenuEvent* event);
     virtual void onShiftContextMenu(QContextMenuEvent* event);
@@ -138,6 +148,9 @@ public:
     virtual void whenScaleChange(double val);
     virtual void whenMainColorChange(QColor val);
     virtual void afterResize(QResizeEvent* event);
+
+    virtual void whenLongFocusAnimationChange();
+    virtual void whenFocusAnimationChange();
 
 
     virtual void ed_update();
@@ -152,38 +165,58 @@ public:
     void enterEvent(QEvent *) override;                      //进入QWidget瞬间事件
     void leaveEvent(QEvent *) override;                      //离开QWidget瞬间事件
     void paintEvent(QPaintEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+
     void changeSimpleMode();
 
     void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
+    virtual void setLongFocus(bool);
+    virtual void setPreLongFocus(bool);
     virtual void setScale(double val);
     virtual void setScaleFix(double val);
     virtual void setAlwaysShow(bool val);
     virtual void setPMW(MainWindow* pmw);
     QColor mainColor_Alphaed();
 
+    void tryToSwitch(QMouseEvent *event);
 
-    void updataFocusAnimation();
-    void updatePositionAnimation();
+    virtual void updateLongFocusAnimation();
+    virtual void updataFocusAnimation();
+    virtual void updatePositionAnimation();
 
-    QPoint MyPos_Centual(){
-        return layout->ind2Pos_Centual(indX,indY);
+    virtual QPoint MyPos_Centual(){
+        if(layout!=nullptr){
+            my_pos_centual_tem = layout->ind2Pos_Centual(indX,indY);
+        }
+        return my_pos_centual_tem;
+
     }
-    QPoint MyPos(){
-        return layout->ind2Pos(indX,indY);
+    virtual QPoint MyPos(){
+        if(layout!=nullptr){
+            my_pos_tem = layout->ind2Pos(indX,indY);
+        }
+        return my_pos_tem;
     }
-    QSize MySize(){
-        return layout->ind2Size(indX,indY);
+    virtual QSize MySize(){
+        if(layout!=nullptr){
+            my_size_tem = layout->ind2Size(indX,indY);
+        }
+        return my_size_tem;
     }
-    virtual void whenDragedOut();
+    virtual void whenDragedOut(QMouseEvent *event);
     virtual void preSetInLayout(bool animated);
+public slots:
+    void setInLayoutAniSlot();
+    void longFocusTimeoutSlot();
+
     virtual void setInLayout(bool animated);
-    virtual void updateInLayout();
+    virtual void updateInLayout(bool animated = true);
     virtual void moveto(QPoint pos,QSize size);
 
 
 public: signals:
-    void alpha_changed(int);
+    void colorAlpha_changed(int);
     void mainColor_changed(QColor);
     void scale_changed(double);
     void scaleFix_changed(double);
@@ -201,6 +234,9 @@ protected:
     // QWidget interface
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
+
+    // QWidget interface
+
 };
 Q_DECLARE_METATYPE(ED_Unit);
 

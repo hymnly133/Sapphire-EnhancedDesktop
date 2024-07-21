@@ -23,7 +23,7 @@ void ED_BGShower::paintEvent(QPaintEvent * ev){
     auto tem = updateMask();
     QPainter painter(this);
     painter.setClipRegion(tem);
-    if(enable_background_transparent&&cap){
+    if(((MainWindow*)parentWidget())->transparent &&cap){
         painter.drawPixmap(rect(),captrued);
     }
     else{

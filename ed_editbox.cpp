@@ -19,7 +19,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
     settings->addLayout(overall);
 
     QCheckBox *checkBox1 = new QCheckBox("背景透视",this);             //创建QCheckBox对象
-    checkBox1->setChecked(enable_background_transparent);
+    checkBox1->setChecked(true);
     overall->addWidget(checkBox1);
     connect(checkBox1, &QCheckBox::clicked, this, [this](bool checked) {
         pmw->setTransparent(checked);

@@ -10,7 +10,7 @@ PictureBox::PictureBox(QWidget *parent,double m_scale) : QWidget(parent)
     source = nullptr;
     m_brush = QBrush(Qt::white);
     setScale(m_scale);
-    setAttribute(Qt::WA_TransparentForMouseEvents, false);
+    setAttribute(Qt::WA_TransparentForMouseEvents, true);
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     setMinimumSize(10,10);
 }

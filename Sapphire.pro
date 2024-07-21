@@ -7,24 +7,17 @@ LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi -lcomctl32
 msvc:QMAKE_CXXFLAGS += -execution-charset:utf-8
 msvc:QMAKE_CXXFLAGS += -source-charset:utf-8
 
-VERSION = 1.2.6.1
+VERSION = 1.2.6.3
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-# INCLUDEPATH += ContextMenu/
-# INCLUDEPATH += FuncRes/
-
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
     ContextMenu/contextmenu.cpp \
     ContextMenu/desktopmenu.cpp \
     ContextMenu/shellitem.cpp \
     ContextMenu/shellmemmanager.cpp \
-    ContextMenu/shellmenuitem.cpp \
     SysFunctions.cpp \
     ed_bgshower.cpp \
     ed_block.cpp \

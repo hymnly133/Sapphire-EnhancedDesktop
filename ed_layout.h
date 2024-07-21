@@ -10,12 +10,15 @@ void writeJson();
 
 class ED_Layout
 {
+
 public:
     ED_Layout();
     // virtual QSize areaSize() =0;
 
     bool visibal;
     bool isMain = false;
+    bool useStandaloneRect  = false;
+    QRect standaloneRect = QRect(1,1,1,1);
 
     MainWindow* pmw;
 
@@ -24,6 +27,8 @@ public:
     QVector<ED_Unit*>* contents = new QVector<ED_Unit*>;
     QVector<ED_Unit*>* contents_AlwaysShow = new QVector<ED_Unit*>;
     QVector<ED_Unit*>* contents_Show = new QVector<ED_Unit*>;
+
+    void setStandalongRect(QRect rect);
 
 
     ED_Layout(QWidget *father);
@@ -82,7 +87,7 @@ public:
     virtual void setVisible(bool val, bool force = false);
 
     void UpdateRegion();
-    void UpdateContentPositon();
+    void UpdateContentPositon(bool animated =true);
 
 
     virtual void updateAfterPut(ED_Unit*,int,int);
