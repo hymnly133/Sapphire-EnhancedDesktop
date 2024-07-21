@@ -7,6 +7,8 @@ roundShower::roundShower(QWidget *parent)
 {
     setFixedSize(parent->size());
     setAttribute(Qt::WA_TransparentForMouseEvents);
+    setMinimumSize(0,0);
+
 }
 
 void roundShower::distri(QSize* sizedis,int* radiusdis)
@@ -16,9 +18,17 @@ void roundShower::distri(QSize* sizedis,int* radiusdis)
     pRadius = radiusdis;
 }
 
+void roundShower::distriRadius(int *radiusdis)
+{
+    pRadius = radiusdis;
+}
+
+
+
 void roundShower::updateDisplay()
 {
     if(follow){
+        // qDebug()<<parentWidget()->size();
         setFixedSize(parentWidget()->size());
     }
 

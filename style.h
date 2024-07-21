@@ -183,4 +183,6 @@ extern double long_focus_container_fix_ratio;
 extern double scale_fix_ratio;
 
 extern bool enable_highdef_icon;
+
+extern bool enable_tooltip_right_animation;
 #endif // STYLE_H

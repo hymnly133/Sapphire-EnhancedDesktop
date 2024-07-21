@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include "ed_bgshower.h"
+
 #include "ed_blocklayout.h"
 #include <QMainWindow>
 #include <mousehook.h>
@@ -12,9 +13,10 @@
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
+
 }
 QT_END_NAMESPACE
-
+class ED_Block;
 struct MyFileInfo;
 class MainWindow : public QMainWindow
 {
@@ -24,6 +26,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr,int screenInd=0);
     ~MainWindow();
+    ED_Block* processor = nullptr;
     Ui::MainWindow *ui;
     ED_BGShower* bgshower = nullptr;
     bool onShift = false;
@@ -32,7 +35,6 @@ public:
     bool transparent = true;
     QPixmap bg;
     QPixmap buffer;
-    bool isfrozen;
     roundShower* changeShower;
     QSize showerSize;
     QList<QPoint> drawParamList;
@@ -52,7 +54,6 @@ public:
     void setTransparent(bool val);
     void setBlur(bool val);
     void ed_update();
-    void setFrozen(bool val);
     void capture();
     void updateBG();
     void setShoweredVisibal(bool val);
@@ -88,8 +89,6 @@ public slots:
     void setScale(double Scale);
     void onSelectBackground();  // 新增：选择背景文件槽函数
     void updatePer01second();
-    void whenFrozenThreadDone();
-
 public: signals:
     void showerSize_changed(QSize);
     void showerRadius_changed(int);

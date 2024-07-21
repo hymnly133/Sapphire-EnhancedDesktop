@@ -37,7 +37,7 @@ bool enable_light_track = false;
 bool enable_intime_repaint = false;
 
 bool enable_image_fill=false;
-bool enable_highdef_icon =0;
+bool enable_highdef_icon =1;
 bool dark_mode = 0;
 
 int default_steam_icon_type =1;
@@ -48,6 +48,7 @@ double long_focus_container_fix_ratio = 1.71;
 
 double scale_fix_ratio = 1.3;
 
+bool enable_tooltip_right_animation = 0;
 
 #define ADD(TYPE,NAME,MIN,MAX)\
 Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
@@ -99,6 +100,7 @@ StyleHelper::StyleHelper()
     ADD(Preference,long_focus_in_delta_time,30,1000);
     ADD(Preference,long_focus_out_delta_time,200,2000);
     ADD(Preference,long_focus_container_fix_ratio,1.1,3.0);
+    ADD(Preference,enable_tooltip_right_animation,0,0);
 
     psh = this;
 }

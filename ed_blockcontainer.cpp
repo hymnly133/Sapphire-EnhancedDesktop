@@ -7,6 +7,7 @@
 ED_BlockContainer::ED_BlockContainer(QWidget *parent,int sizeX,int sizeY,int row,int cal,int space,int spaceX,int spaceY )
     : ED_Container(parent,sizeX,sizeY)
 {
+    requireLongFocusOutDeltaTime = true;
     int temx,temy;
     if(spaceX == 0)
          temx = space;
@@ -30,7 +31,7 @@ ED_BlockContainer::ED_BlockContainer(QWidget *parent,int sizeX,int sizeY,int row
     QAction *act1 = new QAction("切换长聚焦效果(测试版)");
         myMenu->addAction(act1);
             connect(act1, &QAction::triggered, this, [=](){
-            if(onLongFocus) setPreLongFocus(false);
+            if(onLongFocus) preSetLongFocus(false);
             enableLongFocusEffect = !enableLongFocusEffect;
         });
 }
@@ -75,11 +76,17 @@ void ED_BlockContainer::whenLongFocusAnimationChange()
     move(MyPos());
 }
 
-void ED_BlockContainer::setPreLongFocus(bool val)
+void ED_BlockContainer::preSetLongFocus(bool val)
 {
     if(!enableLongFocusEffect) return;
-    else ED_Unit::setPreLongFocus(val);
+    else ED_Unit::preSetLongFocus(val);
     return;
+}
+
+void ED_BlockContainer::setLongFocus(bool val)
+{
+    ED_Unit::setLongFocus(val);
+    raise();
 }
 
 

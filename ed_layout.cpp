@@ -96,7 +96,8 @@ void ED_Layout::putUnit(ED_Unit *aim, int xind, int yind, bool animated)
     aim->preSetInLayout(animated);
 
     updateBeforePutAnimation(aim,xind,yind);
-
+    if(!onLoading)
+    writeJson();
     if(enable_background_blur) UpdateRegion();
 }
 

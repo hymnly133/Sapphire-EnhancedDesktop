@@ -13,6 +13,7 @@ public:
     explicit PictureBox(QWidget *parent=0,double m_scale =1.0);
     void setScale(double scale);
     ~PictureBox();
+    bool maxFill = false;
     bool requireFill =false;
     bool followSource = false;
     QPixmap* source;

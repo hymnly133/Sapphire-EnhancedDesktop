@@ -27,7 +27,7 @@ QString GetCorrectUnicode(const QByteArray &ba);
 QString elidedLineText(QWidget *pWidget, int nLine, QString strText);
 extern QString* UserDesktopPath;
 extern QString* PublicDesktopPath;
-
+extern bool onLoading;
 
 
 QVector<MyFileInfo> scanalldesktopfiles();
@@ -39,7 +39,7 @@ void repaintAround(QWidget* aim);
 void inplace(QWidget* aim);
 void inplace2(QWidget* aim);
 QString  getDesktopPath();
-
+void sentToWallpaper(QPoint winpos);
 QColor pixmapMainColor(QPixmap p, double bright);
 void paintSide(QWidget* aim,QColor color);
 void paintLight(QWidget* aim,QColor color);

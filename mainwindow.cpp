@@ -2,6 +2,7 @@
 #include "ContextMenu/shellmenuitem.h"
 #include "ed_bgshower.h"
 #include"ContextMenu/desktopmenu.h"
+#include"edtooltip.h"
 #include "ed_blockcontainer.h"
 #include "ed_block.h"
 #include "ed_dock.h"
@@ -9,8 +10,8 @@
 #include "ed_editbox.h"
 #include "ed_hidetextblock.h"
 #include "filefunc.h"
-#include "frozenthread.h"
 #include "qgraphicseffect.h"
+#include "qmessagebox.h"
 #include "qmimedata.h"
 #include "qpainter.h"
 #include "repaintcounterunit.h"
@@ -280,18 +281,7 @@ void MainWindow::ed_update()
     }
 }
 
-void MainWindow::setFrozen(bool val)
-{
 
-    if(val){
-        FrozenThread* pft = new FrozenThread(this);
-        pft->start();
-    }
-    else{
-        isfrozen = val;
-        inside->setVisible(true);
-    }
-}
 
 void MainWindow::Init()
 {
@@ -445,20 +435,36 @@ void MainWindow::updatePer01second()
     // qDebug()<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0));
 }
 
-void MainWindow::whenFrozenThreadDone()
-{
-    isfrozen = true;
-    inside->setVisible(false,true);
-}
 
 void MainWindow::dropEvent(QDropEvent *e)
 {
     if(e->mimeData()->hasUrls())//处理期望数据类型
     {
+        bool move =false;
+        QMessageBox::StandardButton box;
+        box = QMessageBox::question(this, "你拖入了文件", "创建映射（是）/ 移动文件（否）?", QMessageBox::Yes|QMessageBox::No);
+        if(box==QMessageBox::No){
+            move  =true;
+        }
+
         QList<QUrl> list = e->mimeData()->urls();//获取数据并保存到链表中
         for(int i = 0; i < list.count(); i++)
         {
-            addAIcon( list[i].toLocalFile());
+            QString path = list[i].toLocalFile();
+
+            if(move){
+                QString newName =  (*UserDesktopPath)+"/"+QFileInfo(path).fileName();
+                bool removed = QFile::rename(path,newName);
+                    qDebug()<<"move"<<newName;
+                if(removed){
+                    qDebug()<<"moved";
+                }
+                addAIcon(newName);
+            }
+            else{
+                addAIcon(path);
+            }
+
         }
     }
     else
@@ -477,6 +483,28 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *e)
     {
         e->ignore();//忽略
     }
+}
+
+
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+    setShoweredVisibal(!showeredVisibal);
+    pdt->activateWindow();
+    Q_UNUSED(ev);
+}
+
+void MainWindow::mousePressEvent(QMouseEvent* event){
+    appendPoints(event->pos());
+    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
+    qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
+    sentToWallpaper(event->globalPos());
+    pls->Clear();
+
+#ifdef QT_DEBUG
+    EDToolTip::Tip(this,event->pos(),"样例文本");
+#endif
+    raise();
+    pls->raise();
 }
 
 
@@ -616,37 +644,17 @@ void MainWindow::paintEvent(QPaintEvent *ev)
         QPainter painter(this);
         painter.drawPixmap(rect(), bg);
     }
-
+    // qDebug()<<showeredVisibal;
+    // qDebug()<<(showerAnimations->state()==QAnimationGroup::Running);
     if((!showeredVisibal)||(showeredVisibal&&showerAnimations->state()==QAnimationGroup::Running)){
         QPainter painter(this);
         painter.drawPixmap(rect(), buffer);
     }
-    else if(isfrozen){
-        QPainter painter(this);
-        // painter.fillRect(rect(),QColor(0,0,0,0));
-        painter.drawPixmap(rect(), buffer);
-    }
 
 
     Q_UNUSED(ev);
 }
 
-
-
-void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
-{
-    setShoweredVisibal(!showeredVisibal);
-    pdt->activateWindow();
-    Q_UNUSED(ev);
-}
-
-void MainWindow::mousePressEvent(QMouseEvent* event){
-    appendPoints(event->pos());
-    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
-    qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
-    raise();
-    pls->raise();
-}
 
 
 

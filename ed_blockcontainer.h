@@ -45,8 +45,6 @@ public:
     // ED_Unit interface
 public:
     void updateLongFocusAnimation() override;
-
-
     void whenLongFocusAnimationChange() override;
 public:
     QPoint refine(QPoint dis,QSize size){
@@ -72,7 +70,12 @@ public:
 
     // ED_Unit interface
 public:
-    void setPreLongFocus(bool) override;
+    void preSetLongFocus(bool) override;
+
+
+    // ED_Unit interface
+public:
+    void setLongFocus(bool) override;
 };
 Q_DECLARE_METATYPE(ED_BlockContainer)
 

@@ -44,8 +44,19 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         pmw->update();
     });
 
+
+    QCheckBox *checkBoxIcon = new QCheckBox("超清图标(需重启）",this);
+    checkBoxIcon->setChecked(enable_highdef_icon);
+    overall->addWidget(checkBoxIcon);
+    connect(checkBoxIcon, &QCheckBox::clicked, this, [](bool checked) {
+        enable_highdef_icon = checked;
+    });
+
+
+
     paint =  new QVBoxLayout();
     settings->addLayout(paint);
+
 
 
 #ifdef QT_DEBUG
@@ -76,6 +87,13 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         pmw->repaint();
     });
 
+    QCheckBox *checkBoxTooltip = new QCheckBox("标签向右消失",this);
+    checkBoxTooltip->setChecked(enable_tooltip_right_animation);
+    paint->addWidget(checkBoxTooltip);
+    connect(checkBoxTooltip, &QCheckBox::clicked, this, [](bool checked) {
+        enable_tooltip_right_animation = checked;
+    });
+
     QCheckBox *checkBox7 = new QCheckBox("大图标填充",this);
     checkBox7->setChecked(enable_image_fill);
     connect(checkBox7, &QCheckBox::clicked, this, [this](bool checked) {
@@ -83,6 +101,7 @@ ED_EditBox::ED_EditBox(QWidget *parent)
         pmw->ed_update();
     });
     overall->addWidget(checkBox7);
+
 
 #ifdef QT_DEBUG
     QCheckBox *checkBox8 = new QCheckBox("即时重绘",this);

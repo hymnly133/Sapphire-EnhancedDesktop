@@ -7,9 +7,10 @@ ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, int sizex, int sizey) : ED_B
 {
     deepColor =true;
     lb->setVisible(false);
-    setScale(1.0);
     vl->setMargin(0);
     gv->requireFill = true;
+    gv->maxFill = true;
+    gv->setScale(1.0);
 }
 ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, QPixmap image, QString _name, QString filepath, int sizex, int sizey):ED_HideTextBlock(parent,sizex,sizey){
     filePath = filepath;

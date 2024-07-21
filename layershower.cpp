@@ -8,6 +8,7 @@
 #include "QScreen"
 #include "QThread"
 #include"QStyle"
+#include "edtooltip.h"
 #include "qapplication.h"
 #include "qpainter.h"
 #include "screenfunc.h"
@@ -37,6 +38,14 @@ LayerShower::LayerShower(QWidget *parent)
     move(2*pos()-geometry().topLeft());
     qDebug()<<"Layer Shower Information Fixed:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
 
+}
+
+void LayerShower::Clear()
+{
+    QList<EDToolTip*> list = pls->findChildren<EDToolTip*>();
+    foreach (auto tem, list) {
+        tem->end();
+    }
 }
 
 void LayerShower::paintEvent(QPaintEvent *event)

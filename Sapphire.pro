@@ -7,7 +7,7 @@ LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi -lcomctl32
 msvc:QMAKE_CXXFLAGS += -execution-charset:utf-8
 msvc:QMAKE_CXXFLAGS += -source-charset:utf-8
 
-VERSION = 1.2.6.3
+VERSION = 1.2.7.1
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
@@ -30,9 +30,9 @@ SOURCES += \
     ed_layout.cpp \
     ed_linearlayout.cpp \
     ed_unit.cpp \
+    edtooltip.cpp \
     filefunc.cpp \
     filepreviewwidget.cpp \
-    frozenthread.cpp \
     hitokoto.cpp \
     layershower.cpp \
     main.cpp \
@@ -63,9 +63,9 @@ HEADERS += \
     ed_layout.h \
     ed_linearlayout.h \
     ed_unit.h \
+    edtooltip.h \
     filefunc.h \
     filepreviewwidget.h \
-    frozenthread.h \
     hitokoto.h \
     layershower.h \
     mainwindow.h \

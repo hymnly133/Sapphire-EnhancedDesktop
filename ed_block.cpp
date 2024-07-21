@@ -12,10 +12,12 @@
 #include"QUrl"
 #include"QDesktopServices"
 #include"QTextCodec"
+#include "qmimedata.h"
 #include "qpainter.h"
 #include"QGraphicsDropShadowEffect"
 #include"ContextMenu/contextmenu.h"
 #include"QFileDialog"
+#include"edtooltip.h"
 
 #define SET_ANCTION(NAME,TEXT,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\
@@ -23,10 +25,29 @@ QAction *NAME = new QAction(#TEXT);\
     connect(NAME, &QAction::triggered, this, [=]()FUCTION);
 
 
-int ED_Block::default_size = 48;
+void ED_Block::updateDefaultScale()
+{
+    double aimScale;
+    if(layout!=nullptr&&!(layout->isMain)){
+        aimScale =  0.65;
+    }
+    else{
+        aimScale =  0.5;
+    }
+
+    defaultScaleAnimation->stop();
+    defaultScaleAnimation->setStartValue(nowDefaultScale);
+    defaultScaleAnimation->setEndValue(aimScale);
+    defaultScaleAnimation->start();
+}
+
 ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex, sizey){
     filePath = "empty";
     name = "empty";
+
+    defaultScaleAnimation = new QPropertyAnimation(this,"nowDefaultScale");
+    defaultScaleAnimation->setDuration(200);
+    defaultScaleAnimation->setEasingCurve(QEasingCurve::InOutQuad);
 
     // 初始化内部组件
     vl = new QVBoxLayout(this);
@@ -78,7 +99,6 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
     text_shadow->setBlurRadius(icon_shadow_blur_radius);   // 模糊半径
     text_shadow->setOffset(0, 0);      // 偏移量
     gv->setGraphicsEffect(text_shadow);
-    setScale(1.0);
 
     SET_ANCTION(act1,选择图标,{
         QString tem =  QFileDialog::getOpenFileName(pls,tr("open a file."),"D:/");
@@ -88,14 +108,24 @@ ED_Block::ED_Block(QWidget *parent, int sizex, int sizey):ED_Unit(parent, sizex,
         }
     })
 
+
+    connect(this,&ED_Block::nowDefaultScale_changed,this,[=](){
+        update();
+        gv->setScale(scaleFix*scale*nowDefaultScale);
+    });
+
     ed_update();
+
 }
 
 ED_Block::ED_Block(QWidget *parent, QPixmap image, QString _name, QString filepath, int sizex, int sizey)
     : ED_Block(parent, sizex, sizey)
 {
+    setAcceptDrops(true);
     filePath = filepath;
+    if(QFileInfo(filepath).isDir()) isDir = true;
     name = _name;
+    setObjectName("EDBlock-"+name);
     // 初始化内部组件
     // 显示图标
     iconmap=image;
@@ -126,6 +156,7 @@ void ED_Block::afterResize(QResizeEvent* event){
     lb->setText(elidedLineText(lb,4,name));
     gv->updateDispaly();
 }
+
 void ED_Block::mouse_enter_action(){
     ED_Unit::mouse_enter_action();
     mainColor = pixmapMainColor(iconmap, active_color_ratio);
@@ -182,7 +213,6 @@ void ED_Block::mouse_leave_action(){
 
 void ED_Block::double_click_action(){
     //最终双击执行
-    ED_Unit::double_click_action();
     QString cmd= QString("file:///")+filePath;
     qDebug("cmd = %s",qPrintable(cmd));
     QDesktopServices::openUrl(QUrl(cmd));
@@ -229,7 +259,45 @@ void ED_Block::whenMainColorChange(QColor val)
 void ED_Block::ed_update()
 {
     ED_Unit::ed_update();
-    whenScaleChange(scale*scaleFix);
+    whenScaleChange(scale);
+}
+
+void ED_Block::setLongFocus(bool val)
+{
+    ED_Unit::setLongFocus(val);
+    bool set = false;
+
+    if(val&&pMovingUnit!=nullptr&&pMovingUnit!=this){
+        pmw->processor = this;
+        set = true;
+        qDebug()<<"set Processor"<<filePath;
+    }
+    else{
+        if(pmw->processor!=nullptr){
+            if(pmw->processor==this){
+                qDebug()<<"release Processor"<<filePath;
+                pmw->processor = nullptr;
+            }
+            else{
+
+            }
+        }
+    }
+    if(val){
+        if(set)
+            tip();
+        else
+            EDToolTip::Tip(name);
+    }
+
+}
+
+void ED_Block::tip()
+{
+    if(isDir)
+        EDToolTip::Tip("移动至“"+name+"”");
+    else
+        EDToolTip::Tip("用“"+name+"”打开");;
 }
 
 void ED_Block::onShiftContextMenu(QContextMenuEvent *event)
@@ -237,12 +305,92 @@ void ED_Block::onShiftContextMenu(QContextMenuEvent *event)
     qDebug()<<filePath;
     ContextMenu::show(QStringList() << filePath, (void *)pls->winId(), event->globalPos());
 }
+
+void ED_Block::onProcessAnother(ED_Unit *another)
+{
+    if(another->inherits("ED_Block")){
+        if(ProcessPath(((ED_Block*)another)->filePath)){
+            another->removeFromLayout();
+            another->deleteLater();
+        };
+    }
+    if(pmw->processor!=nullptr){
+        pmw->processor = nullptr;
+    }
+}
+
+bool ED_Block::ProcessPath(QString path)
+{
+    qDebug()<<path<<filePath;
+    bool removed = false;
+    if(isDir){
+        QString newName =  filePath+"/"+QFileInfo(path).fileName();
+        removed = QFile::rename(path,newName);
+        qDebug()<<"new name"<<newName;
+
+    }
+    else{
+        QProcess* CalcPro = new QProcess(this);;
+        CalcPro->start("cmd",QStringList()<<"/c"<<filePath<<path);
+    }
+    return removed;
+}
+
+void ED_Block::dragEnterEvent(QDragEnterEvent *event)
+{
+    qDebug()<<objectName()<<"DragEnter";
+    tip();
+    if(event->mimeData()->hasUrls())//判断数据类型
+    {
+        event->acceptProposedAction();//接收该数据类型拖拽事件
+    }
+    else
+    {
+        event->ignore();//忽略
+    }
+}
+
+void ED_Block::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    qDebug()<<objectName()<<"DragLeave";
+    pls->Clear();
+}
+
+void ED_Block::dropEvent(QDropEvent *event)
+{
+    qDebug()<<objectName()<<"Drop";
+    if(event->mimeData()->hasUrls())//处理期望数据类型
+    {
+        QList<QUrl> list = event->mimeData()->urls();//获取数据并保存到链表中
+        for(int i = 0; i < list.count(); i++)
+        {
+            ProcessPath(list[i].toLocalFile());
+        }
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
+void ED_Block::onDragedOut(QMouseEvent *event)
+{
+    ED_Unit::onDragedOut(event);
+    updateDefaultScale();
+}
+
+void ED_Block::preSetInLayout(bool animated)
+{
+    ED_Unit::preSetInLayout(animated);
+    updateDefaultScale();
+}
+
 void ED_Block::whenSimpleModeChange(bool val){
     lb->setVisible(!val);
 }
 
 void ED_Block::whenScaleChange(double val){
-    gv->setScale(val*default_scale);
+    gv->setScale(val*nowDefaultScale);
 }
 
 void ED_Block::setIcon(QString iconPath)
@@ -254,7 +402,9 @@ void ED_Block::setIcon(QString iconPath)
 
 void ED_Block::loadFromMyFI(MyFileInfo info){
     filePath = info.filePath;
+    if(QFileInfo(filePath).isDir()) isDir = true;
     name = info.name;
+    setObjectName("EDBlock-"+name);
     iconmap=info.icons[0];
     requireIcon = false;
 

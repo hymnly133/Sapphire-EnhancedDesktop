@@ -9,10 +9,10 @@ PictureBox::PictureBox(QWidget *parent,double m_scale) : QWidget(parent)
 {
     source = nullptr;
     m_brush = QBrush(Qt::white);
-    setScale(m_scale);
     setAttribute(Qt::WA_TransparentForMouseEvents, true);
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     setMinimumSize(10,10);
+    setScale(m_scale);
 }
 
 void PictureBox::setBackground(QBrush brush)
@@ -23,8 +23,12 @@ void PictureBox::setBackground(QBrush brush)
 
 
 void PictureBox::setScale(double scale){
-
-    m_scale = qBound(0.01, scale, 2.0);
+    if(maxFill){
+        m_scale = qMax(scale,1.0);
+    }
+    else{
+        m_scale = qBound(0.01, scale, 2.0);
+    }
     updateDispaly();
 }
 

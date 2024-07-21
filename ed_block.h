@@ -13,17 +13,19 @@
 class ED_Block : public ED_Unit
 {
     Q_OBJECT;
-
+    Q_PROPERTY(double nowDefaultScale MEMBER nowDefaultScale NOTIFY nowDefaultScale_changed)
 public:
     QLabel* lb ;
     QPixmap iconmap;
     QString filePath;
     bool requireIcon = false;
+    bool isDir = false;
     QString iconPath;
-    double default_scale = 0.5;
-    static int default_size;
+    void updateDefaultScale();
+    double nowDefaultScale = 0.5;
     QString name;
     PictureBox* gv ;
+
     QVBoxLayout* vl;
     QGraphicsDropShadowEffect* icon_shadow;
     QGraphicsDropShadowEffect* text_shadow;
@@ -31,6 +33,8 @@ public:
     explicit ED_Block(QWidget *parent, int sizex =1, int sizey=1);
     explicit ED_Block(QWidget *parent, QPixmap image, QString _name, QString _cmd, int sizex=1, int sizey=1);
     explicit ED_Block(QWidget *parent,QString path,int sizeX = 1,int sizeY = 1);
+
+    QPropertyAnimation* defaultScaleAnimation;
 
     ED_Block(const ED_Block& other):ED_Block(other.parentWidget(),other.iconmap,other.name,other.filePath,other.sizeX,other.sizeY){};
 
@@ -48,19 +52,40 @@ public:
     virtual void loadFromMyFI(MyFileInfo info);
     void double_click_action() override;
     void paintEvent(QPaintEvent *event) override;
-    // FilePreviewWidget *previewWidget;
-    QVBoxLayout *layout; // 新增 QVBoxLayout 成员
+
     QJsonObject to_json() override;
     void load_json(QJsonObject rootObject) override;
     void whenMainColorChange(QColor val) override;
     virtual void ed_update() override;
+    virtual void setLongFocus(bool val) override;
 
 
+
+    void tip();
 
 
     // ED_Unit interface
 public:
     void onShiftContextMenu(QContextMenuEvent *event) override;
+
+    // ED_Unit interface
+public:
+    void onProcessAnother(ED_Unit *another) override;
+    bool ProcessPath(QString path);
+
+    // QWidget interface
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
+    // ED_Unit interface
+public:
+    void onDragedOut(QMouseEvent *event) override;
+    void preSetInLayout(bool animated) override;
+
+public:signals:
+    void nowDefaultScale_changed(double val);
 };
 
 Q_DECLARE_METATYPE(ED_Block)

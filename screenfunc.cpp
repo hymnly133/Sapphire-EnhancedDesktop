@@ -15,3 +15,10 @@ int cursorScreenInd(){
     }
     return 0;
 }
+
+QPoint mapToLS(QWidget *aim, QPoint dis)
+{
+
+    return pls->mapFromGlobal(aim->mapToGlobal(dis));
+
+}

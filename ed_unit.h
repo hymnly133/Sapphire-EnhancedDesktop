@@ -45,6 +45,7 @@ public:
 
     bool onLongFocus = false;
     bool preLongFocus = false;
+    bool requireLongFocusOutDeltaTime = false;
     bool moving = false;
     bool premove = false;
     bool showRect = true;
@@ -74,34 +75,9 @@ public:
     int sizeX = 1;
     int sizeY = 1;
     int ind;
-    int aim_colorAlpha(){
-        if(onmouse){
-            if(deepColor) return active_alpha_deep;
-            else return active_alpha;
-        }
-        else{
-            if(deepColor) return sleep_alpha_deep;
-            else return sleep_alpha;
-        }
-    }
-    double aim_scaleFix(){
-        if(onmouse){
-            return scale_fix_ratio;
-        }
-        else{
-            return 1.0;
-        }
-    }
-    double aim_padRatio(){
-        if(layout==nullptr) return 1.0;
-        else{
-            if(layout->isMain) return 1.0;
-            else{
-                if(onmouse) return 1.0;
-                else return 0.0;
-            }
-        }
-    }
+    int aim_colorAlpha();
+    double aim_scaleFix();
+    double aim_padRatio();
 
     int colorAlpha = sleep_alpha;
     bool alwaysShow = false;
@@ -115,16 +91,9 @@ public:
 
     explicit ED_Unit();
     explicit ED_Unit(QWidget *parent,int sizex,int sizey);
-    ED_Unit(const ED_Unit &other)
-        :ED_Unit(other.parentWidget(),other.sizeX,other.sizeY)
-    {
+    ED_Unit(const ED_Unit &other);
 
-    }
-
-    bool operator<(const ED_Unit& another) const{
-        if(indX!=another.indX) return indX<another.indX;
-        else return indY<another.indY;
-    }
+    bool operator<(const ED_Unit& another) const;
 
     void removeFromLayout();
 
@@ -142,12 +111,13 @@ public:
 
     virtual void onContextMenu(QContextMenuEvent* event);
     virtual void onShiftContextMenu(QContextMenuEvent* event);
-
+    virtual void onProcessAnother(ED_Unit* another);
 
     virtual void whenSimpleModeChange(bool val);
     virtual void whenScaleChange(double val);
     virtual void whenMainColorChange(QColor val);
-    virtual void afterResize(QResizeEvent* event);
+
+
 
     virtual void whenLongFocusAnimationChange();
     virtual void whenFocusAnimationChange();
@@ -167,16 +137,22 @@ public:
     void paintEvent(QPaintEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
+    void resizeEvent(QResizeEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent *event) override;
+
+    virtual void afterResize(QResizeEvent* event);
+
     void changeSimpleMode();
 
     void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
     virtual void setLongFocus(bool);
-    virtual void setPreLongFocus(bool);
+    virtual void preSetLongFocus(bool);
     virtual void setScale(double val);
     virtual void setScaleFix(double val);
     virtual void setAlwaysShow(bool val);
     virtual void setPMW(MainWindow* pmw);
+
     QColor mainColor_Alphaed();
 
     void tryToSwitch(QMouseEvent *event);
@@ -185,26 +161,10 @@ public:
     virtual void updataFocusAnimation();
     virtual void updatePositionAnimation();
 
-    virtual QPoint MyPos_Centual(){
-        if(layout!=nullptr){
-            my_pos_centual_tem = layout->ind2Pos_Centual(indX,indY);
-        }
-        return my_pos_centual_tem;
-
-    }
-    virtual QPoint MyPos(){
-        if(layout!=nullptr){
-            my_pos_tem = layout->ind2Pos(indX,indY);
-        }
-        return my_pos_tem;
-    }
-    virtual QSize MySize(){
-        if(layout!=nullptr){
-            my_size_tem = layout->ind2Size(indX,indY);
-        }
-        return my_size_tem;
-    }
-    virtual void whenDragedOut(QMouseEvent *event);
+    virtual QPoint MyPos_Centual();
+    virtual QPoint MyPos();
+    virtual QSize MySize();
+    virtual void onDragedOut(QMouseEvent *event);
     virtual void preSetInLayout(bool animated);
 public slots:
     void setInLayoutAniSlot();
@@ -227,17 +187,71 @@ public: signals:
     // QOpenGLWidget interface
 
 
-    // QWidget interface
-protected:
-    void resizeEvent(QResizeEvent *event) override;
-
-    // QWidget interface
-protected:
-    void contextMenuEvent(QContextMenuEvent *event) override;
-
-    // QWidget interface
-
 };
+
+inline int ED_Unit::aim_colorAlpha(){
+    if(onmouse){
+        if(deepColor) return active_alpha_deep;
+        else return active_alpha;
+    }
+    else{
+        if(deepColor) return sleep_alpha_deep;
+        else return sleep_alpha;
+    }
+}
+
+inline double ED_Unit::aim_scaleFix(){
+    if(onmouse){
+        return scale_fix_ratio;
+    }
+    else{
+        return 1.0;
+    }
+}
+
+inline double ED_Unit::aim_padRatio(){
+    if(layout==nullptr) return 1.0;
+    else{
+        if(layout->isMain) return 1.0;
+        else{
+            if(onmouse) return 1.0;
+            else return 0.0;
+        }
+    }
+}
+
+inline ED_Unit::ED_Unit(const ED_Unit &other)
+    :ED_Unit(other.parentWidget(),other.sizeX,other.sizeY)
+{
+
+}
+
+inline bool ED_Unit::operator<(const ED_Unit &another) const{
+    if(indX!=another.indX) return indX<another.indX;
+    else return indY<another.indY;
+}
+
+inline QPoint ED_Unit::MyPos_Centual(){
+    if(layout!=nullptr){
+        my_pos_centual_tem = layout->ind2Pos_Centual(indX,indY);
+    }
+    return my_pos_centual_tem;
+
+}
+
+inline QPoint ED_Unit::MyPos(){
+    if(layout!=nullptr){
+        my_pos_tem = layout->ind2Pos(indX,indY);
+    }
+    return my_pos_tem;
+}
+
+inline QSize ED_Unit::MySize(){
+    if(layout!=nullptr){
+        my_size_tem = layout->ind2Size(indX,indY);
+    }
+    return my_size_tem;
+}
 Q_DECLARE_METATYPE(ED_Unit);
 
 #endif // ED_UNIT_H

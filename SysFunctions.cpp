@@ -47,13 +47,15 @@ QDesktopWidget* pdt;
 QString* UserDesktopPath;
 QString* PublicDesktopPath;
 ED_Unit* pMovingUnit;
+bool onLoading = true;
+
 
 QMap<int,QJsonObject> UnusedJsons;
 
 QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
 
-
+HWND shelldlldefview = NULL;
 
 
 #define AUTO_RUN_KEY	"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
@@ -129,6 +131,8 @@ void SetUp()
     }
     pls->move(0,0);
     pls->raise();
+    onLoading  =false;
+    qDebug()<<"started";
 }
 
 
@@ -384,20 +388,15 @@ void inplace(QWidget* aim) {
     } while (worker != NULL);
 
     // 如果找到了正确的WorkerW窗口，设置父窗口
-    if (background != NULL) {
-        SetParent((HWND)aim->winId(), background);
-        SetWindowPos((HWND)aim->winId(), HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-        SetWindowPos((HWND)aim->winId(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-        SetFocus((HWND)aim->winId());
-    } else {
-        // 如果没有找到合适的WorkerW窗口，可以在这里处理错误
+    if (background == NULL)
+    {
         qDebug() << "Unable to find proper WorkerW,trying to use Fuc 2";
 
         HWND pPM = FindWindowA("Progman", "Program Manager");
         if(pPM!=NULL){
             qDebug()<<"Find Program Manager";
             // 尝试找到SHELLDLL_DefView窗口
-            HWND shelldlldefview = FindWindowExA(worker, NULL, "SHELLDLL_DefView", NULL);
+            HWND shelldlldefview = FindWindowExA(pPM, NULL, "SHELLDLL_DefView", NULL);
             if(shelldlldefview!=NULL){
                 qDebug()<<"Find SHELLDLL_DefView";
                 // 检查SHELLDLL_DefView的父窗口是否为当前的WorkerW窗口
@@ -406,24 +405,24 @@ void inplace(QWidget* aim) {
                     qDebug()<<"Find SHELLDLL_DefView's Parent";
                     if (parent == pPM) {
                         qDebug()<<"Right!";
-
                         // 找到了正确的WorkerW窗口
                         background = shelldlldefview;// 结束循环
                     }
                 }
-
-
             }
         }
-        if (background != NULL) {
-            SetParent((HWND)aim->winId(), background);
-            SetWindowPos((HWND)aim->winId(), HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-            SetWindowPos((HWND)aim->winId(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-            SetFocus((HWND)aim->winId());
-        }
-        else{
-            qDebug() << "Unable to find proper Program manager,Inplacing failed";
-        }
+    }
+
+
+    if (background != NULL) {
+        SetParent((HWND)aim->winId(), background);
+        SetWindowPos((HWND)aim->winId(), HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetWindowPos((HWND)aim->winId(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetFocus((HWND)aim->winId());
+        shelldlldefview = background;
+    }
+    else{
+        qDebug() << "Unable to find proper Program manager,Inplacing failed";
     }
 }
 
@@ -608,7 +607,49 @@ QString  getDesktopPath()
     return QString(szDir);
 }
 
+void sentToWallpaper(QPoint winpos){
+    HWND wallpaper = NULL;
+    HWND worker = NULL;
 
+    qDebug()<<"Entering Loop";
+    // 循环查找WorkerW窗口
+    do {
+        worker = FindWindowExA(NULL, worker, "WorkerW", NULL);
+        if (worker != NULL) {
+            qDebug()<<"Find WokerW";
+            // 尝试找到SHELLDLL_DefView窗口
+            HWND _wallpaper = FindWindowExA(worker, NULL, NULL, "WPELiveWallpaper");
+            if (_wallpaper != NULL) {
+                qDebug()<<"Find WPELiveWallpaper";
+                // 检查SHELLDLL_DefView的父窗口是否为当前的WorkerW窗口
+                HWND parent = GetParent(_wallpaper);
+                if (parent != NULL) {
+                    qDebug()<<"Find WPELiveWallpaper's Parent";
+                    if (parent == worker) {
+                        qDebug()<<"Right!";
+
+                        // 找到了正确的WorkerW窗口
+                        wallpaper = _wallpaper;
+                        break; // 结束循环
+                    }
+                }
+            }
+        }
+    } while (worker != NULL);
+    LPARAM lParam=MAKELPARAM(winpos.x(),winpos.y());
+    if(wallpaper!=NULL){
+        qDebug()<<"sent"<<(int*)wallpaper;
+        PostMessage (wallpaper, WM_LBUTTONDOWN, VK_LBUTTON, lParam);
+        // mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+    }
+
+    if(shelldlldefview!=NULL){
+        qDebug()<<"sent"<<(int*)shelldlldefview;
+            PostMessage (shelldlldefview, WM_LBUTTONDOWN, VK_LBUTTON, lParam);
+        // mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+    }
+    return;
+}
 
 
 void writeJson(){

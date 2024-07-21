@@ -10,10 +10,11 @@ class roundShower : public QWidget
 public:
     explicit roundShower(QWidget *parent = nullptr);
     QSize* pSize;
-    int* pRadius;
+    int* pRadius = nullptr;
     bool follow = true;
 
     void distri(QSize* sizedis,int* radiusdis);
+    void distriRadius(int* radiusdis);
 
     QSize aim_size(){
         if(follow) return parentWidget()->size();
@@ -23,7 +24,7 @@ public:
     void updateDisplay();
 
     int aim_radius(){
-        if(follow) return unit_radius;
+        if(pRadius==nullptr) return unit_radius;
         else return *pRadius;
     }
 signals:

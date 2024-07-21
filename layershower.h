@@ -9,6 +9,7 @@ class LayerShower : public QWidget
 public:
     explicit LayerShower(QWidget *parent = nullptr);
 
+    void Clear();
 signals:
 
     // QWidget interface
