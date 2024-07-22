@@ -27,13 +27,25 @@ QAction *NAME = new QAction(#TEXT);\
 
 void ED_Block::updateDefaultScale()
 {
-    double aimScale;
-    if(layout!=nullptr&&!(layout->isMain)){
-        aimScale =  0.65;
+    double aimScale = 0.0;
+
+    if(simpleMode){
+        // qDebug()<<"SimpleModeFix";
+        aimScale =  0.60;
     }
     else{
         aimScale =  0.5;
+        // qDebug()<<"NoSimpleModeFix";
+
     }
+    if(layout!=nullptr&&!(layout->isMain)){
+        aimScale*=1.1;
+    }
+    else{
+
+    }
+
+
 
     defaultScaleAnimation->stop();
     defaultScaleAnimation->setStartValue(nowDefaultScale);
@@ -134,7 +146,7 @@ ED_Block::ED_Block(QWidget *parent, QPixmap image, QString _name, QString filepa
     ((QGraphicsDropShadowEffect*)graphicsEffect())->setColor(mainColor);
 
     gv->follow(&iconmap);
-
+    gv->limitInisde = true;
     lb->setText(elidedLineText(lb, 3, name));
 
     auto tem = mainColor;
@@ -385,7 +397,8 @@ void ED_Block::preSetInLayout(bool animated)
     updateDefaultScale();
 }
 
-void ED_Block::whenSimpleModeChange(bool val){
+void ED_Block::onSimpleModeChange(bool val){
+    updateDefaultScale();
     lb->setVisible(!val);
 }
 
@@ -413,6 +426,7 @@ void ED_Block::loadFromMyFI(MyFileInfo info){
 
     ((QGraphicsDropShadowEffect*)graphicsEffect())->setColor(mainColor);
     gv->follow(&iconmap);
+    gv->limitInisde = true;
     lb->setText(elidedLineText(lb, 3, name));
 
     auto tem = mainColor;

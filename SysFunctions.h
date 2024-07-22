@@ -15,6 +15,7 @@ extern LayerShower* pls;
 extern StyleHelper* psh;
 extern ED_Unit* pMovingUnit;
 extern int screenNum;
+extern QMap<int,QJsonObject> UnusedJsons;
 
 // static void HighDpiAdapt();
 

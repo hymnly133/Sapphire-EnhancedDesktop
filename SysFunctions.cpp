@@ -132,6 +132,10 @@ void SetUp()
     pls->move(0,0);
     pls->raise();
     onLoading  =false;
+
+    for(int i=0;i<screenNum;i++){
+        pmws[i]->ed_update();
+    }
     qDebug()<<"started";
 }
 

@@ -9,5 +9,7 @@ int screenInd(QWidget* aim);
 
 int cursorScreenInd();
 
+void updateScreen();
+
 QPoint mapToLS(QWidget* aim,QPoint dis);
 #endif // SCREENFUNC_H

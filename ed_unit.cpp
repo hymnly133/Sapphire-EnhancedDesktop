@@ -159,7 +159,7 @@ void ED_Unit::setupMenu()
             setBlockSize(sizeX,sizeY-1);
     });
 
-    SET_ANCTION(act5,切换复杂度,{
+    SET_ANCTION(act5,切换精简,{
         changeSimpleMode();
     });
 
@@ -373,7 +373,7 @@ void ED_Unit::onProcessAnother(ED_Unit *another)
 
 void ED_Unit::setSimpleMode(bool val){
     simpleMode = val;
-    whenSimpleModeChange(val);
+    onSimpleModeChange(val);
 }
 
 void ED_Unit::setLongFocus(bool val)
@@ -434,7 +434,7 @@ void ED_Unit::setMainColor(QColor val)
     emit mainColor_changed(val);
 }
 
-void ED_Unit::whenSimpleModeChange(bool val){}
+void ED_Unit::onSimpleModeChange(bool val){}
 
 void ED_Unit::whenScaleChange(double val){}
 
@@ -689,7 +689,7 @@ void ED_Unit::load_json(QJsonObject rootObject)
     showRect = rootObject.value("showRect").toBool();
     showLight = rootObject.value("showLight").toBool();
     showSide = rootObject.value("showSide").toBool();
-    whenSimpleModeChange(simpleMode);
+    onSimpleModeChange(simpleMode);
 }
 
 void ED_Unit::whenMainColorChange(QColor val){

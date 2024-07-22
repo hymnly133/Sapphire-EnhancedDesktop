@@ -14,6 +14,7 @@ public:
     void setScale(double scale);
     ~PictureBox();
     bool maxFill = false;
+    bool limitInisde = false;
     bool requireFill =false;
     bool followSource = false;
     QPixmap* source;

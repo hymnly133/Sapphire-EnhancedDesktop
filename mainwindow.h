@@ -31,7 +31,7 @@ public:
     ED_BGShower* bgshower = nullptr;
     bool onShift = false;
     QMenu* myMenu;
-    ED_BlockLayout* inside;
+    ED_BlockLayout* inside = nullptr;
     bool transparent = true;
     QPixmap bg;
     QPixmap buffer;
@@ -112,12 +112,20 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
+
     // QWidget interface
 protected:
     void focusInEvent(QFocusEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
     void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
+
+
+
+
+    // QWidget interface
+protected:
+    void showEvent(QShowEvent *event) override;
 };
 
 #endif // MAINWINDOW_H

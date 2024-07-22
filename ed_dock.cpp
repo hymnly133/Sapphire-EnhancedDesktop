@@ -5,12 +5,20 @@
 #include"QPainterPath"
 #include"QPainter"
 #include"QJsonObject"
+
+#define SET_ANCTION(NAME,TEXT,FUCTION)\
+QAction *NAME = new QAction(#TEXT);\
+    myMenu->addAction(NAME);\
+    connect(NAME, &QAction::triggered, this, [=]()FUCTION);
 ED_Dock::ED_Dock(QWidget *parent,int outSizeX,int outSizeY)
     : ED_Container(parent,outSizeX,outSizeY)
 {
     alwaysShow = true;
     setMainColor(QColor(79,98,124));
     inside = new ED_LinearLayout(this);
+    SET_ANCTION(accc,"ED_Update",{
+        ed_update();
+    })
 }
 
 
@@ -57,4 +65,11 @@ void ED_Dock::paintEvent(QPaintEvent *event){
 
     // paintLight(this,mainColor);
 
+}
+
+void ED_Dock::ed_update()
+{
+    ED_Container::ed_update();
+    qDebug()<<"ed_update called";
+    inside->UpdateContentPositon(false);
 }

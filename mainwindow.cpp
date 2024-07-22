@@ -162,10 +162,8 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
     setAttribute(Qt::WA_TranslucentBackground);
     setAcceptDrops(true);
     inplace(this);
+
     setFixedSize(pscs[screenInd]->availableSize());
-
-    //shift:Windows主屏幕位于全局的位置;
-
     move(pscs[screenInd]->geometry().topLeft()+Shift_Global);
 
 
@@ -225,6 +223,7 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
     setShoweredVisibal(true);
     updateBG();
 
+
 }
 
 void MainWindow::InitAUnit(ED_Unit *aim,bool animated)
@@ -275,6 +274,7 @@ void MainWindow::load_json(QJsonObject rootObject)
 
 void MainWindow::ed_update()
 {
+    if(inside!=nullptr)
     foreach(ED_Unit *content , *(inside->contents))
     {
         content->ed_update();
@@ -292,8 +292,8 @@ void MainWindow::Init()
     else name+= "副屏幕";
 
     name+="初始化";
-    int sizeX = QInputDialog::getInt(nullptr,name,"请输入布局宽度(根据屏幕大小)",20,1,1000,2);
-    int sizeY = QInputDialog::getInt(nullptr,name,"请输入布局高度(根据屏幕大小)",12,1,1000,2);
+    int sizeX = QInputDialog::getInt(nullptr,name,"请输入布局列数(根据屏幕宽度)",20,1,1000,2);
+    int sizeY = QInputDialog::getInt(nullptr,name,"请输入布局行数(根据屏幕高度)",12,1,1000,2);
     if(!sizeX) sizeX=10;
     if(!sizeY) sizeY=10;
 
@@ -497,7 +497,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
     appendPoints(event->pos());
     qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
     qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
-    sentToWallpaper(event->globalPos());
+    // sentToWallpaper(event->globalPos());
     pls->Clear();
 
 #ifdef QT_DEBUG
@@ -633,6 +633,13 @@ void MainWindow::enterEvent(QEvent *event)
 void MainWindow::leaveEvent(QEvent *event)
 {
     qDebug()<<objectName()<<"Leave"<<cursor().pos()<<rect()<<geometry();
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+
+    QMainWindow::showEvent(event);
+    ed_update();
 }
 
 

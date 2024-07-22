@@ -34,7 +34,7 @@ ED_HideTextBlock::ED_HideTextBlock(QWidget *parent, QPixmap image, QString _name
     text_shadow->setColor(tem);
 }
 
-void ED_HideTextBlock::whenSimpleModeChange(bool val)
+void ED_HideTextBlock::onSimpleModeChange(bool val)
 {
 
 }

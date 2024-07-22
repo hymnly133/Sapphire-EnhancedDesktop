@@ -113,7 +113,7 @@ public:
     virtual void onShiftContextMenu(QContextMenuEvent* event);
     virtual void onProcessAnother(ED_Unit* another);
 
-    virtual void whenSimpleModeChange(bool val);
+    virtual void onSimpleModeChange(bool val);
     virtual void whenScaleChange(double val);
     virtual void whenMainColorChange(QColor val);
 

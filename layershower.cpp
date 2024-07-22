@@ -16,24 +16,25 @@
 LayerShower::LayerShower(QWidget *parent)
     : QWidget{parent}
 {
-    // setWindowState(Qt::WindowFullScreen);
+    setWindowState(Qt::WindowMaximized   );
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setWindowFlags(Qt::FramelessWindowHint);
     inplace((QWidget* )this);
-    qDebug()<<"DesktopSize"<<pdt->size();
-    // qDebug()<<1;
-    setFixedSize(pdt->size()*2);
-    // qDebug()<<2;
-    // qDebug()<<3;
+
+
     show();
-        // qDebug()<<4;
+
     setVisible(true);
-        // qDebug()<<5;
+
+
+    qDebug()<<"DesktopSize"<<pdt->size();
+    qDebug()<<"availableVirtualSize"<<QGuiApplication::primaryScreen()->availableVirtualSize();
+
+    // qDebug()<<1;
+
     move(0,0);
-    // qDebug()<<6;
-        // setWindowFlags(Qt::MSWindowsFixedSizeDialogHint);
-    // setGeometry(pdt->geometry())
+    setFixedSize( pdt->size()*2);
     qDebug()<<"Layer Shower Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
     move(2*pos()-geometry().topLeft());
     qDebug()<<"Layer Shower Information Fixed:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
@@ -50,9 +51,11 @@ void LayerShower::Clear()
 
 void LayerShower::paintEvent(QPaintEvent *event)
 {
+    // auto tem = QColor("green");
+    // tem.setAlpha(100);
+    // paintRect(this,tem);
     foreach(MainWindow* pmw,pmws){
         QList<QPoint>& drawParamList = pmw->drawParamList;
-
         if (drawParamList.count() >= 2) {
             QPainter painter(this);
             QColor tem = GetWindowsThemeColor();
@@ -84,6 +87,22 @@ void LayerShower::paintEvent(QPaintEvent *event)
 
 #endif
 
+}
+
+bool LayerShower::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    if(eventType == QByteArray("windows_generic_MSG"))
+    {
+        qDebug()<<"Called";
+        MSG *pMsg = reinterpret_cast<MSG*>(message);
+        if(pMsg->message == WM_DEVICECHANGE)
+        {
+            qDebug()<<"Called111";
+            updateScreen();
+            return true;
+        }
+    }
+    return false;
 }
 
 

@@ -17,8 +17,14 @@ public:
 
 
 
+
+
     void paintEvent(QPaintEvent *event);
 signals:
+
+    // ED_Unit interface
+public:
+    void ed_update() override;
 };
 Q_DECLARE_METATYPE(ED_Dock);
 #endif // ED_DOCK_H

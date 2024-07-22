@@ -41,7 +41,7 @@ public:
     void afterResize(QResizeEvent* event) override;
     void mouse_enter_action() override;
     void mouse_leave_action()override;
-    void whenSimpleModeChange(bool) override;
+    void onSimpleModeChange(bool) override;
     void whenScaleChange(double) override;
     void setIcon(QString iconPath);
 

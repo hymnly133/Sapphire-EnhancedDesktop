@@ -12,7 +12,7 @@ public:
     explicit ED_HideTextBlock(QWidget *parent, int sizex = 1, int sizey = 1);
     explicit ED_HideTextBlock(QWidget *parent, QPixmap image, QString _name, QString filepath, int sizex, int sizey);
     ED_HideTextBlock(const ED_HideTextBlock& other):ED_HideTextBlock(other.parentWidget(),other.iconmap,other.name,other.filePath,other.sizeX,other.sizeY){};
-    void whenSimpleModeChange(bool val) override;
+    void onSimpleModeChange(bool val) override;
     void whenScaleChange(double) override;
     // void ed_update() override;
 

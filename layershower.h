@@ -15,6 +15,12 @@ signals:
     // QWidget interface
 protected:
     void paintEvent(QPaintEvent *event) override;
+
+
+
+    // QWidget interface
+protected:
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
 };
 
 #endif // LAYERSHOWER_H

@@ -27,7 +27,12 @@ void PictureBox::setScale(double scale){
         m_scale = qMax(scale,1.0);
     }
     else{
-        m_scale = qBound(0.01, scale, 2.0);
+        if(limitInisde){
+            // qDebug()<<"Limited";
+            m_scale = qBound(0.01, scale, 0.95);
+        }
+        else
+            m_scale = qBound(0.01, scale, 2.0);
     }
     updateDispaly();
 }
