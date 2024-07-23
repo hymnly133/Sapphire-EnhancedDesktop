@@ -26,7 +26,7 @@ public:
     void setScale(double val)override;
     void endUpdate()override;
 
-
+    virtual void Say();
     // ED_Unit interface
 public:
     QJsonObject to_json()override ;
@@ -36,6 +36,7 @@ signals:
     // ED_Unit interface
 public:
     void setPMW(MainWindow *pmw) override;
+
 };
 
 

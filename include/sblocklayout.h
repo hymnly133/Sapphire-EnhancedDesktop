@@ -88,8 +88,8 @@ public:
     // ED_Layout interface
 public:
     // QSize areaSize() override;
-    QPoint ind2CenterPoint(int x, int y) override;
     QSize ind2Size(int xind, int yind) override;
+    QPoint ind2Pos(int xind, int yind) override;
     QPoint defaultPutableInd(SUnit *aim) override;
 
     // ED_Layout interface
@@ -107,8 +107,6 @@ public:
 
 
     // ED_Layout interface
-public:
-    QPoint ind2Pos(int xind, int yind) override;
 };
 
 #endif // SBLOCKLAYOUT_H

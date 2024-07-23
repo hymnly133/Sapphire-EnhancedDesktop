@@ -51,6 +51,16 @@ QPoint SLayout::ind2CenterPoint(QPoint ind)
     return ind2CenterPoint(ind.x(),ind.y());
 }
 
+QPoint SLayout::ind2CenterPoint(int x, int y)
+{
+    QPoint c;
+    QPoint pos = ind2Pos(x,y);
+    QSize size = ind2Size(x,y);
+    c.setX(pos.x()+size.width()/2);
+    c.setY(pos.y()+size.height()/2);
+    return c;
+}
+
 QSize SLayout::ind2Size(QPoint ind)
 {
     return ind2Size(ind.x(),ind.y());
@@ -61,16 +71,7 @@ QPoint SLayout::ind2Pos(QPoint ind)
     return ind2Pos(ind.x(),ind.y());
 }
 
-QPoint SLayout::ind2Pos_Centual(QPoint ind)
-{
-    return ind2Pos_Centual(ind.x(),ind.y());
-}
 
-QPoint SLayout::ind2Pos_Centual(int xind, int yind)
-{
-    QSize size = ind2Size(xind,yind);
-    return ind2CenterPoint(xind,yind)-QPoint(size.width(),size.height())/2;
-}
 
 bool SLayout::Occupied(QPoint ind)
 {
@@ -292,14 +293,14 @@ void SLayout::load_json(QJsonObject rootObject)
 
     foreach (QJsonValue contentValue , (contentsArray)) {
         QJsonObject contentObject = contentValue.toObject();
-        SUnit* unit = from_json(contentObject,pmw);
-        tem.append(unit);
+        SUnit* unit = from_json(contentObject,this);
+        putUnit(unit,unit->indX,unit->indY,false);
     }
 
-    std::sort(tem.begin(),tem.end(),cmp);
-    foreach (SUnit* aim , tem) {
-        putUnit(aim,aim->indX,aim->indY,false);
-    }
+    // std::sort(tem.begin(),tem.end(),cmp);
+    // foreach (SUnit* aim , tem) {
+    //     putUnit(aim,aim->indX,aim->indY,false);
+    // }
 }
 
 QJsonObject SLayout::to_json()
@@ -321,4 +322,9 @@ QJsonObject SLayout::to_json()
     }
 
     return rootObject;
+}
+
+void SLayout::say()
+{
+
 }

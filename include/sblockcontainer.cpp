@@ -88,6 +88,7 @@ void SBlockContainer::updateLongFocusAnimation()
 
 void SBlockContainer::whenLongFocusAnimationChange()
 {
+    SUnit::whenFocusAnimationChange();
     setFixedSize(MySize());
     if(!moving)
     move(MyPos());

@@ -83,6 +83,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
     text_shadow->setEnabled(enable_text_shadow);
     lb->setGraphicsEffect(text_shadow);
 
+
     SET_ANCTION(act1,选择图标,{
         QString tem =  QFileDialog::getOpenFileName(pls,tr("open a file."),"D:/");
         if(!tem.isEmpty()){
@@ -169,7 +170,7 @@ void SMultiFunc::load_json(QJsonObject rootObject)
     if(pixPath!="")
         SMultiFunc::setPix(path2Icon(pixPath)[0]);
 
-    if(rootObject.contains("name")) name = rootObject.value("name").toString();
+    if(rootObject.contains("name")) setname(rootObject.value("name").toString());
     setFullShow(rootObject.value("fullShow").toBool());
 
 }
@@ -358,6 +359,7 @@ void SMultiFunc::setPix(QPixmap pixmap)
 
     setMainColor(pixmapMainColor(pixmap));
 
+    onScaleChange(scale*scaleFix);
     gv->follow(&pix);
     gv->updateDispaly();
     update();
@@ -366,7 +368,7 @@ void SMultiFunc::setPix(QPixmap pixmap)
 void SMultiFunc::setname(QString sname)
 {
     name = sname;
-    setObjectName("SFile-"+name);
+    setObjectName("SMultiFunc-"+name);
     lb->setText(sname);
 }
 

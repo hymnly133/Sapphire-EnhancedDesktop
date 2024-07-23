@@ -54,10 +54,6 @@ public:
         }
         return dis;
     }
-    QPoint MyPos_Centual() override{
-        QPoint tem = QPoint(SUnit::MyPos_Centual().x()-(1.0*SUnit::MySize().width()*(outSizeFix-1)/2),SUnit::MyPos_Centual().y()-(1.0*SUnit::MySize().height()*(outSizeFix-1)/2));
-        return refine(tem,MySize());
-    };
     QPoint MyPos() override{
         QPoint tem = QPoint(SUnit::MyPos().x()-(1.0*SUnit::MySize().width()*(outSizeFix-1)/2),SUnit::MyPos().y()-(1.0*SUnit::MySize().height()*(outSizeFix-1)/2));
         return refine(tem,MySize());

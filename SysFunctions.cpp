@@ -131,12 +131,8 @@ void SetUp()
     }
     pls->move(0,0);
     pls->raise();
-    onLoading  =false;
 
-    for(int i=0;i<screenNum;i++){
-        pmws[i]->endUpdate();
-    }
-    qDebug()<<"started";
+    onLoading  =false;
 }
 
 
@@ -216,28 +212,7 @@ QRect AbsoluteRect(QWidget* aim){
     return QRect(pos.x()+tem.x(),pos.y()+tem.y(),tem.width(),tem.height());
 }
 
-SUnit* from_json(QJsonObject data,MainWindow* parent){
-    QString name = data.value("Class").toString();
-    QString newname = name.replace("ED_","S");
-    int id = QMetaType::type(name.toStdString().c_str());
-    if (id == QMetaType::UnknownType){
-        qDebug()<<"error0";
-        id = QMetaType::type(newname.toStdString().c_str());
-        if(id == QMetaType::UnknownType){
-            qDebug()<<"error1";
-            return nullptr;
-        }
-    }
-    qDebug()<<name;
-    auto k = QMetaType::create(id);
-    SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
-    unit->setParent(parent);
-    unit->setPMW(parent);
-    unit->load_json(data);
 
-    return unit;
-
-}
 
 void paintRect(QWidget* aim,QColor color){
     bool another = true;
@@ -343,13 +318,6 @@ void mouse_off(int x,int y){
 
     qDebug()<<"off"<<x<<y;
 }
-
-// void InitMouseHook(){
-//     pmh = new MouseHook();
-//     pmh->SetMouseMoveCallBack(mouse_move);
-//     pmh->SetMouseOffCallBack(mouse_off);
-//     pmh->SetMouseOnCallBack(mouse_on);
-// }
 
 
 QString toWindowsPath(QString const& linuxPath)
@@ -748,4 +716,81 @@ bool isPic(QString pah)
         fi.close();
     }
     return bRet;
+}
+
+SUnit *from_json(QJsonObject data, SLayout *layout)
+{
+    QString name = data.value("Class").toString();
+    QString newname = name.replace("ED_","S");
+    int id = QMetaType::type(name.toStdString().c_str());
+    if (id == QMetaType::UnknownType){
+        qDebug()<<"error0";
+        id = QMetaType::type(newname.toStdString().c_str());
+        if(id == QMetaType::UnknownType){
+            qDebug()<<"error1";
+            return nullptr;
+        }
+    }
+    qDebug()<<name;
+    // auto k = QMetaType::create(id);
+    SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
+    unit->setPMW(layout->pmw);
+    unit->setParent(layout->pContainer);
+    unit->load_json(data);
+    return unit;
+}
+
+QList<SUnit *> units(){
+    QList<SUnit*> res;
+    foreach(auto pmw,pmws){
+        res.append(pmw->findChildren<SUnit*>());
+    }
+    return res;
+}
+
+QString shellrun(QString filename, QString para)
+{
+    HINSTANCE hNewExe = ShellExecuteA(NULL, "open", filename.toLocal8Bit(), para.toLocal8Bit(), NULL, SW_SHOW);
+    long long code = (long long)hNewExe;
+    if(code>32) return "Success!";
+    QString sRet;
+    switch(code)
+    {
+    case 0:
+        sRet = QString("memory lack.");
+        break;
+    case 2:
+        sRet = QString("filename is error.");
+        break;
+    case 3:
+        sRet = QString("file path is error.");
+        break;
+    case 11:
+        sRet = QString("exe is invaliable.");
+        break;
+    case 26:
+        sRet = QString("shared error.");
+        break;
+    case 27:
+        sRet = QString("file is error or be short.");
+        break;
+    case 28:
+        sRet = QString("open time out.");
+        break;
+    case 29:
+        sRet = QString("DDE task failed.");
+        break;
+    case 30:
+        sRet = QString("undering other's DDE");
+        break;
+    case 31:
+        sRet = QString("no linked process.");
+        break;
+    default:
+        sRet = QString("unknow error.");
+        break;
+    }
+
+    return sRet;
+
 }

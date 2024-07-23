@@ -25,6 +25,11 @@ void SContainer::endUpdate(){
     }
 }
 
+void SContainer::Say()
+{
+
+}
+
 
 void SContainer::afterResize(QResizeEvent *event){
     inside->UpdateContentPositon(false);

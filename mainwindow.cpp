@@ -34,9 +34,9 @@
 
 
 
-#define SET_ANCTION(NAME,TEXT,FUCTION)\
+#define SET_ANCTION(NAME,TEXT,MENU,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\
-myMenu->addAction(NAME);\
+MENU->addAction(NAME);\
 connect(NAME, &QAction::triggered, this, [=]()FUCTION);
 
 void MainWindow::setupActions()
@@ -46,17 +46,17 @@ void MainWindow::setupActions()
     myMenu = new QMenu(this);
     // 给当前窗口添加QAction对象
 
-    SET_ANCTION(act1,改变可见,
+    SET_ANCTION(act1,改变可见,myMenu,
     { setShoweredVisibal(!showeredVisibal); })
 
-    SET_ANCTION(act2,切换精简,
+    SET_ANCTION(act2,切换精简,myMenu,
     {
     for(SUnit* content:*(inside->contents)){
         content->changeSimpleMode();
     }})
 
 
-    SET_ANCTION(act3,新增文件,
+    SET_ANCTION(act3,新增文件,myMenu,
     {
         QFileDialog* fd = new QFileDialog();
         QStringList filePaths =QFileDialog::getOpenFileNames(this, QStringLiteral("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
@@ -65,7 +65,7 @@ void MainWindow::setupActions()
         }
     })
 
-    SET_ANCTION(act4,退出程序,
+    SET_ANCTION(act4,退出程序,myMenu,
     {
 
     foreach(auto pmw,pmws){
@@ -75,42 +75,49 @@ void MainWindow::setupActions()
 
     })
 
+    QAction *creatNewAction = new QAction(myMenu);
+    creatNewAction->setText("新建");
+    myMenu->addAction(creatNewAction);
+
+    QMenu *creatNewMenu = new QMenu();
+    creatNewAction->setMenu(creatNewMenu);
+
 
     #ifdef QT_DEBUG
 
-    SET_ANCTION(act5,获取背景,{
+    SET_ANCTION(act5,获取背景,myMenu,{
         capture();
     })
 
     #endif
 
 
-    SET_ANCTION(act6,新建小型格子,{
+    SET_ANCTION(act6,新建小型格子,creatNewMenu,{
         auto bc = new SBlockContainer(inside,2,2,2,2,5,10,10);
         // InitAUnit(bc);
     })
 
 
 
-    SET_ANCTION(act7,新建中型格子,{
+    SET_ANCTION(act7,新建中型格子,creatNewMenu,{
         auto bc = new SBlockContainer(inside,3,3,3,3,5,15,15);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act8,新建大型格子,{
+    SET_ANCTION(act8,新建大型格子,creatNewMenu,{
         auto bc = new SBlockContainer(inside,4,4,4,4,5,20,20);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act9,新建Dock栏,{
+    SET_ANCTION(act9,新建Dock栏,creatNewMenu,{
         auto dock = new SDock(inside);
         // InitAUnit(dock);
     })
 
 
-    SET_ANCTION(act10,新建设置箱,{
+    SET_ANCTION(act10,新建设置箱,creatNewMenu,{
         auto dock = new SEditBox(inside);
         // InitAUnit(dock);
     })
@@ -118,12 +125,16 @@ void MainWindow::setupActions()
 
 #ifdef QT_DEBUG
 
-    SET_ANCTION(act11,新建重绘盒,{
+    SET_ANCTION(act11,新建重绘盒,creatNewMenu,{
         auto dock = new RepaintCounterUnit(inside);
         // InitAUnit(dock);
     })
 #endif
 
+    SET_ANCTION(act12,新建系统盒子,creatNewMenu,{
+        auto dock = new SShellFuncUnit(inside);
+        // InitAUnit(dock);
+    })
 }
 void MainWindow::setupUnits()
 {
@@ -144,7 +155,7 @@ void MainWindow::setupUnits()
     bg = QPixmap(":/images/background");
 
     setVisible(true);
-    update();
+    // update();
     // bgshower->update();
 }
 
@@ -229,13 +240,7 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
 
 }
 
-// void MainWindow::InitAUnit(SUnit *aim,bool animated)
-// {
-//     aim->setPMW(this);
-//     // connect(aim, &ED_Unit::sendSelf, this, &MainWindow::getObject);
-//     inside->defaultPut(aim,animated);
-//     // aim->ed_update();
-// }
+
 
 MainWindow::~MainWindow()
 {
@@ -269,11 +274,10 @@ QJsonObject MainWindow::to_json(){
 
 void MainWindow::load_json(QJsonObject rootObject)
 {
-    qDebug()<<"MainWindow Loading json";
+    qDebug()<<objectName()<<"Loading json";
     screenInd = rootObject.value("ind").toInt();
     setupLayout(10,10);
     inside->load_json(rootObject.value("content").toObject());
-
     endUpdate();
 }
 
@@ -306,6 +310,7 @@ void MainWindow::Init()
 
     if(screenInd==0){
         qDebug()<<"Scaning";
+        auto su = new SShellFuncUnit(inside);
         QVector<MyFileInfo> iconns = scanalldesktopfiles();
         foreach (MyFileInfo content, iconns) {
             addAIcon(content);
@@ -476,9 +481,6 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
     appendPoints(event->pos());
     qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
     qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
-    // foreach (auto k , *(inside->contents)) {
-    //     k->updataFocusAnimation();
-    // }
     pls->Clear();
 
 #ifdef QT_DEBUG
@@ -621,7 +623,6 @@ void MainWindow::leaveEvent(QEvent *event)
 
 void MainWindow::showEvent(QShowEvent *event)
 {
-
     QMainWindow::showEvent(event);
     endUpdate();
 }

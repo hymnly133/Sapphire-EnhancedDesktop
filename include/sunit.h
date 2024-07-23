@@ -42,7 +42,6 @@ public:
     double aim_mainColorRatio();
 
     QPoint my_pos_tem;
-    QPoint my_pos_centual_tem;
     QSize my_size_tem;
 
     double nowPadRatio = 1;
@@ -185,7 +184,6 @@ public:
     virtual void updataFocusAnimation();
     virtual void updatePositionAnimation();
 
-    virtual QPoint MyPos_Centual();
     virtual QPoint MyPos();
     virtual QSize MySize();
     virtual void onDragedOut(QMouseEvent *event);
@@ -193,7 +191,6 @@ public:
 public slots:
     void setInLayoutAniSlot();
     void longFocusTimeoutSlot();
-
     virtual void setInLayout(bool animated);
     virtual void updateInLayout(bool animated = true);
     virtual void moveto(QPoint pos,QSize size);
@@ -254,17 +251,13 @@ inline bool SUnit::operator<(const SUnit &another) const{
     else return indY<another.indY;
 }
 
-inline QPoint SUnit::MyPos_Centual(){
-    if(layout!=nullptr){
-        my_pos_centual_tem = layout->ind2Pos_Centual(indX,indY);
-    }
-    return my_pos_centual_tem;
-
-}
 
 inline QPoint SUnit::MyPos(){
     if(layout!=nullptr){
         my_pos_tem = layout->ind2Pos(indX,indY);
+    }
+    else{
+        qDebug()<<"Use Temp Pos"<<my_pos_tem;
     }
     return my_pos_tem;
 }
@@ -272,6 +265,9 @@ inline QPoint SUnit::MyPos(){
 inline QSize SUnit::MySize(){
     if(layout!=nullptr){
         my_size_tem = layout->ind2Size(indX,indY);
+    }
+    else{
+        qDebug()<<"Use Temp Size"<<my_size_tem;
     }
     return my_size_tem;
 }

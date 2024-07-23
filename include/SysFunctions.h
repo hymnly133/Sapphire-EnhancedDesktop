@@ -31,6 +31,7 @@ extern QString* UserDesktopPath;
 extern QString* PublicDesktopPath;
 extern bool onLoading;
 
+QList<SUnit*> units();
 
 QVector<MyFileInfo> scanalldesktopfiles();
 QVector<MyFileInfo>getFormFileInfo(QFileInfo x);
@@ -52,10 +53,12 @@ void customMessageHandler(QtMsgType type,
 void writeJson();
 QMap<int,QJsonObject> readJson();
 void setMyAppAutoRun(bool isStart);
-SUnit* from_json(QJsonObject data, MainWindow *parent);
+SUnit* from_json(QJsonObject data, SLayout *parent);
 QString toWindowsPath(QString const& linuxPath);
 QString toLinuxPath(QString const& windowsPath);
 
 bool isPic(QString pah);
+
+QString shellrun(QString path,QString para = "");
 
 #endif // SYSFUNCTIONS_H

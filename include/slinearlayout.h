@@ -10,32 +10,21 @@ class SLinearLayout : public SLayout
 {
 public:
     explicit SLinearLayout(QWidget *parent = nullptr);
-    int num(){
-        return contents->size();
-    }
-    int maxSize = 10;
+    int nowNum=0;
+    QList<SUnit*> list;
     int insideHeight(){
+        // qDebug()<<pContainer->height();
         return pContainer->height()*0.9;
     }
-    struct littleBlock{
-        int ind;
-        SUnit* content;
-        littleBlock(int ind,SUnit* content):ind(ind),content(content){};
-        void setInd(int ind){
-            this->ind = ind;
-            content->indX = ind;
-        }
-    };
 
-    littleBlock* blocks[100];
     double disToCursor(int posx){
         return abs(pContainer->mapFromGlobal(pContainer->cursor().pos()).x()-posx);
     }
 
     double fixedDis(){
-        if(num())
-            return ((double)pContainer->width())/num();
-        else return 1;
+        if(contents->size())
+            return ((double)pContainer->width())/contents->size();
+        else return pContainer->width();
     }
 
     void refresh();
@@ -49,9 +38,9 @@ signals:
 public:
     //采用（x，0）作为索引
     QPoint pos2Ind(int posx, int posy) override;
-    QPoint ind2CenterPoint(int x, int y) override;
     QSize ind2Size(int xind, int yind) override;
     QPoint ind2Pos(int xind, int yind) override;
+
     bool Occupied(int x, int y) override;
     SUnit *ind2Unit(int xind, int yind) override;
     QPoint defaultPutableInd(SUnit *aim) override;
@@ -76,6 +65,16 @@ public:
     // ED_Layout interface
 public:
     void updateBeforePutAnimation(SUnit *, int, int) override;
+
+
+
+    // SLayout interface
+public:
+    void say() override;
+
+    // SLayout interface
+public:
+    QJsonObject to_json() override;
 };
 
 #endif // SLINEARLAYOUT_H

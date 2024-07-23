@@ -92,7 +92,7 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
     });
 
     connect(this,&SUnit::nowMainColorRatio_changed,this,[=](double val){
-        qDebug()<<val;
+        // qDebug()<<val;
         whenFocusAnimationChange();
     });
 
@@ -134,7 +134,6 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
 
     if(dis!= nullptr)
     dis->defaultPut(this,false);
-    endUpdate();
 };
 
 
@@ -153,6 +152,7 @@ void SUnit::mouse_enter_action(){
         qDebug()<<"null";
     else
         qDebug()<<"have";
+
 }
 
 void SUnit::mouse_leave_action(){
@@ -302,6 +302,7 @@ void SUnit::mouseMoveEvent(QMouseEvent *event)
 
 void SUnit::enterEvent(QEvent *event){
     qDebug()<<objectName()<<"enter";
+    qDebug()<<"enter"<<size();
     onmouse = true;
     mouse_enter_action();
     updataFocusAnimation();
@@ -309,6 +310,7 @@ void SUnit::enterEvent(QEvent *event){
     if(layout!=nullptr)
         if(!layout->isMain){
             layout->pContainer->update();
+            layout->pContainer->repaint();
         }
     if(!moving)
     preSetLongFocus(true);
@@ -324,6 +326,7 @@ void SUnit::leaveEvent(QEvent *event){
     if(layout!=nullptr)
         if(!(layout->isMain)){
             layout->pContainer->update();
+            layout->pContainer->repaint();
         }
 
 }
@@ -332,9 +335,9 @@ void SUnit::updateInLayout(bool animated)
 {
     //当Layout改变大小等调用（不包含初次放置）
     if(animated)
-        moveto(MyPos_Centual(),MySize());
+        moveto(MyPos(),MySize());
     else{
-        move(MyPos_Centual());
+        move(MyPos());
         setFixedSize(MySize());
     }
 }
@@ -575,7 +578,9 @@ void SUnit::endUpdate(){
     nowPadRatio = aim_padRatio();
     scaleFix = aim_scaleFix();
     nowMainColorRatio = aim_mainColorRatio();
-
+    if(layout!=nullptr){
+        updateInLayout(false);
+    }
     rs->updateDisplay();
     rs->raise();
     update();
@@ -621,19 +626,19 @@ void SUnit::updataFocusAnimation()
 {
     focusAnimations->stop();
 
-    qDebug()<<"colorAlpha Update: now:"<<colorAlpha<<"aim"<<aim_colorAlpha();
+    // qDebug()<<"colorAlpha Update: now:"<<colorAlpha<<"aim"<<aim_colorAlpha();
     alphaAnimation->setStartValue(colorAlpha);
     alphaAnimation->setEndValue(aim_colorAlpha());
 
-    qDebug()<<"nowPadRatio Update: now:"<<nowPadRatio<<"aim"<<aim_padRatio();
+    // qDebug()<<"nowPadRatio Update: now:"<<nowPadRatio<<"aim"<<aim_padRatio();
     padRatioAnimation->setStartValue(nowPadRatio);
     padRatioAnimation->setEndValue(aim_padRatio());
 
-    qDebug()<<"nowMainColorRatio Update: now:"<<nowMainColorRatio<<"aim"<<aim_mainColorRatio();
+    // qDebug()<<"nowMainColorRatio Update: now:"<<nowMainColorRatio<<"aim"<<aim_mainColorRatio();
     mainColorRatioAnimation->setStartValue(nowMainColorRatio);
     mainColorRatioAnimation->setEndValue(aim_mainColorRatio());
 
-    qDebug()<<"scaleFix Update: now:"<<scaleFix<<"aim"<<aim_scaleFix();
+    // qDebug()<<"scaleFix Update: now:"<<scaleFix<<"aim"<<aim_scaleFix();
     scaleFixAnimation->setStartValue(scaleFix);
     scaleFixAnimation->setEndValue(aim_scaleFix());
 
@@ -672,7 +677,7 @@ void SUnit::preSetInLayout(bool animated)
     pMovingUnit = nullptr;
     raise();
     if(animated){
-        moveto(MyPos_Centual(),MySize());
+        moveto(MyPos(),MySize());
         connect(positionAnimations,&QParallelAnimationGroup::finished,this,&::SUnit::setInLayoutAniSlot,Qt::UniqueConnection);
         connect(positionAnimations,&QParallelAnimationGroup::currentLoopChanged,this,[=](){
             qDebug()<<"CurrentLoop Changed";
@@ -680,7 +685,7 @@ void SUnit::preSetInLayout(bool animated)
         });
     }
     else{
-        move(layout->pContainer->mapTo(pmw,MyPos_Centual()));
+        edmove(MyPos());
         setFixedSize(MySize());
         setInLayout(animated);
     }
@@ -700,18 +705,15 @@ void SUnit::longFocusTimeoutSlot()
 }
 
 
+
+
 void SUnit::setInLayout(bool animated)
 {
     QPoint tem = edpos();
     // qDebug()<<tem<<dis;
-
-
     setParent(layout->pContainer);
-
     edmove(tem);
     setVisible(true);
-    // if(!layout->isMain)
-    // parentWidget()->update();
     update();
 
 }
@@ -735,7 +737,6 @@ QJsonObject SUnit::to_json(){
 
 void SUnit::load_json(QJsonObject rootObject)
 {
-    SUnit* tem = nullptr;
     type = (SUnit::STYPE)rootObject.value("type").toInt();
     sizeX = rootObject.value("sizeX").toInt();
     sizeY = rootObject.value("sizeY").toInt();
@@ -747,7 +748,6 @@ void SUnit::load_json(QJsonObject rootObject)
     showRect = rootObject.value("showRect").toBool();
     showLight = rootObject.value("showLight").toBool();
     showSide = rootObject.value("showSide").toBool();
-    onSimpleModeChange(simpleMode);
 }
 
 void SUnit::onMainColorChange(QColor val){
@@ -767,7 +767,12 @@ void SUnit::whenLongFocusAnimationChange()
 void SUnit::whenFocusAnimationChange()
 {
     onScaleChange(scale*scaleFix);
-    update();
+    if(layout && layout->pContainer->inherits("SDock")){
+        layout->pContainer->update();
+    }
+    else{
+        update();
+    }
 }
 
 double SUnit::aim_padRatio(){

@@ -97,7 +97,7 @@ bool LayerShower::nativeEvent(const QByteArray &eventType, void *message, long *
         MSG *pMsg = reinterpret_cast<MSG*>(message);
         if(pMsg->message == WM_DEVICECHANGE)
         {
-            qDebug()<<"Called111";
+            // qDebug()<<"Called111";
             updateScreen();
             return true;
         }

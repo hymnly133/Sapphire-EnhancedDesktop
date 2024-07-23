@@ -1,7 +1,6 @@
 #include "sdock.h"
 #include "slinearlayout.h"
 #include"sunit.h"
-#include "qdebug.h"
 #include"QPainterPath"
 #include"QPainter"
 #include"QJsonObject"
@@ -18,9 +17,6 @@ SDock::SDock(SLayout *dis, int outSizeX, int outSizeY): SContainer(dis,outSizeX,
     alwaysShow = true;
     setMainColor(GetWindowsThemeColor());
     inside = new SLinearLayout(this);
-    SET_ANCTION(accc,"ED_Update",{
-        endUpdate();
-    })
 }
 
 void SDock::paintEvent(QPaintEvent *event){
@@ -34,13 +30,9 @@ void SDock::paintEvent(QPaintEvent *event){
 
     int count=0;
     SLinearLayout* inside_ = (SLinearLayout*) inside;
-    for(int i=0;i<inside_->num();i++){
-        // for(int i =0;i<10;i++){
-        //     if(inside_->blocks[i]==nullptr) qDebug()<<i<<"No";
-        //     else qDebug()<<i<<"Yes";
-        // }
+    for(int i=0;i<inside_->list.size();i++){
         count++;
-        auto temm = inside->ind2Unit(i,0)->displayColor();
+        auto temm = inside->ind2Unit(i,0)->mainColor;
         float ratio = 1.0*(inside->ind2CenterPoint(i,0).x())/width();
         temm.setAlpha(colorAlpha);
         linearGradient.setColorAt(ratio, temm);
@@ -67,9 +59,14 @@ void SDock::paintEvent(QPaintEvent *event){
 
 }
 
+void SDock::mouse_enter_action()
+{
+    inside->say();
+}
+
 void SDock::endUpdate()
 {
     SContainer::endUpdate();
-    qDebug()<<"ed_update called";
+    ((SLinearLayout*)inside)->refresh();
     inside->UpdateContentPositon(false);
 }

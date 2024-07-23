@@ -26,21 +26,6 @@ QPoint SBlockLayout::pos2Ind(int posx,int posy){
 
 //从Block序号获取中心坐标
 
-QPoint SBlockLayout::ind2CenterPoint(int x,int y){
-    auto aim = ind2Unit(x,y);
-    QPoint size(W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX,H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY);
-    QPoint pos(blocks[x][y]->posX(),blocks[x][y]->posY());
-    return (pos+size/2);
-}
-
-QSize SBlockLayout::ind2Size(int xind, int yind)
-{
-    auto aim = ind2Unit(xind,yind);
-    int w = W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX;
-    int h = H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY;
-
-    return QSize(w,h);
-}
 
 QPoint SBlockLayout::defaultPutableInd(SUnit *aim)
 {
@@ -114,6 +99,16 @@ void SBlockLayout::updateBeforePut(SUnit * aim, int indx, int indy)
     }
 }
 
+
+
+QSize SBlockLayout::ind2Size(int xind, int yind)
+{
+    auto aim = ind2Unit(xind,yind);
+    int w = W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX;
+    int h = H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY;
+
+    return QSize(w,h);
+}
 QPoint SBlockLayout::ind2Pos(int xind, int yind)
 {
     return QPoint(blocks[xind][yind]->posX(),blocks[xind][yind]->posY());

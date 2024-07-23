@@ -39,17 +39,14 @@ public:
 
 
     //从Block序号获取中心坐标
-    QPoint ind2CenterPoint(QPoint ind);
-    virtual QPoint ind2CenterPoint(int x,int y) =0;
+    virtual QPoint ind2CenterPoint(QPoint ind);
+    virtual QPoint ind2CenterPoint(int x,int y);
 
-    QSize ind2Size(QPoint ind);
+    virtual QSize ind2Size(QPoint ind);
     virtual QSize ind2Size(int xind,int yind) = 0;
 
-    QPoint ind2Pos(QPoint ind);
+    virtual QPoint ind2Pos(QPoint ind);
     virtual QPoint ind2Pos(int xind,int yind) = 0;
-
-    QPoint ind2Pos_Centual(QPoint ind);
-    QPoint ind2Pos_Centual(int xind,int yind);
 
     //从Block序号获取是否占用
     bool Occupied(QPoint ind);
@@ -102,6 +99,8 @@ public:
     void saveLayout(){
         writeJson();
     }
+
+    virtual void say();
 };
 
 
