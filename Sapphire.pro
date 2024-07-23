@@ -1,6 +1,6 @@
 QT += core gui widgets winextras network concurrent quick qml
 
-VERSION = 1.2.8.0
+VERSION = 1.2.8.2
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8

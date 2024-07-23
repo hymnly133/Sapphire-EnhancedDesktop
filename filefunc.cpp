@@ -181,7 +181,10 @@ QMap<int,QPixmap> path2Icon(QString path,int size){
     QRegularExpressionMatch match = re.match(target);
     if (match.hasMatch())
     {
+
+        // QString gameId = target.split("/")[-1];
         QString gameId = match.captured(1);
+        qDebug()<<gameId;
         QString steamPath;
         QSettings reg("HKEY_CURRENT_USER\\Software\\Valve\\Steam", QSettings::NativeFormat);// 你的Steam安装路径
         steamPath = reg.value("SteamPath").toString()+"/appcache/librarycache";
@@ -195,30 +198,30 @@ QMap<int,QPixmap> path2Icon(QString path,int size){
 
         foreach(const QString& steamfilename,steamfileList)
         {
-            QRegularExpression regex;
+
 
             //小图标版本
 
-            regex = QRegularExpression(gameId+"_icon");
-            if(regex.match(steamfilename).hasMatch())
-            {
-                res[0]=(QPixmap(directory.absoluteFilePath(steamfilename)));
-                qDebug()<<"Find Little";
-            }
+            QString aim = gameId+"_icon";
+            QString file = steamfilename.split('.')[0];
+
+            if(file.mid(0,gameId.size())!=gameId) continue;
 
 
             //长竖图标版本
-            regex = QRegularExpression(gameId+"_library_600x900");
-            if(regex.match(steamfilename).hasMatch())
+            // regex = QRegularExpression(gameId+"_library_600x900.jpg");
+            aim = gameId+"_library_600x900";
+
+            if(file.contains(aim))
             {
                 res[1]=(QPixmap(directory.absoluteFilePath(steamfilename)));
                 qDebug()<<"Find Verti";
             }
 
             //长横图标版本
-
-            regex = QRegularExpression(gameId+"_header");
-            if(regex.match(steamfilename).hasMatch())
+            aim = gameId+"_header";
+            // regex = QRegularExpression(gameId+"_header.jpg");
+            if(file.contains(aim))
             {
                 res[2]=(QPixmap(directory.absoluteFilePath(steamfilename)));
                 qDebug()<<"Find Hori";
