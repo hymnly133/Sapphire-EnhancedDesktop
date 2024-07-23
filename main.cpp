@@ -1,13 +1,13 @@
 #include "SysFunctions.h"
-#include "ed_block.h"
-#include "ed_blockcontainer.h"
-#include "ed_dock.h"
-#include "ed_editbox.h"
+#include "sfile.h"
+#include "sblockcontainer.h"
+#include "sdock.h"
+#include "seditbox.h"
 #include "layershower.h"
 #include "mainwindow.h"
 #include<windows.h>
 #include <QJsonObject>
-#include"ed_hidetextblock.h"
+#include"shidetextblock.h"
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
@@ -16,17 +16,22 @@
 #include "qscreen.h"
 #include "qsharedmemory.h"
 #include "repaintcounterunit.h"
+#include "sshellfuncunit.h"
 
 
 int main(int argc, char *argv[])
 {
-    // QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-    QApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+
+
+    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+    // 除以96之后即可转换成dpi的数值,以2k屏幕为例,Windows默认dpi是125%,这里的值就是:1.25
+
 
     QApplication a(argc, argv);
-
+    double dpi  = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
+    qDebug()<<dpi;
+    // eApp->init();
     // 获取多显示器,通过list存储当前主机所有显示器
 
 
@@ -38,12 +43,19 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    qRegisterMetaType<ED_Unit>();
-    qRegisterMetaType<ED_Block>();
-    qRegisterMetaType<ED_BlockContainer>();
-    qRegisterMetaType<ED_HideTextBlock>();
-    qRegisterMetaType<ED_Dock>();
-    qRegisterMetaType<ED_EditBox>();
+    QFont font = qApp->font();
+    font.setPointSize(10);
+    // font.setFamily("MiSans");
+    font.setHintingPreference(QFont::PreferNoHinting);
+    qApp->setFont(font);
+
+    qRegisterMetaType<SUnit>();
+    qRegisterMetaType<SFile>();
+    qRegisterMetaType<SContainer>();
+    qRegisterMetaType<SBlockContainer>();
+    qRegisterMetaType<SShellFuncUnit>();
+    qRegisterMetaType<SDock>();
+    qRegisterMetaType<SEditBox>();
     qRegisterMetaType<RepaintCounterUnit>();
 
     QSurfaceFormat format;

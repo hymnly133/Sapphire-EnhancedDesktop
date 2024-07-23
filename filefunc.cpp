@@ -8,6 +8,24 @@
 #include "shellapi.h"
 #include "commoncontrols.h"
 #include "Commctrl.h"
+#include <Shlobj.h>
+
+
+MyFileInfo::MyFileInfo(QString path, int size)
+{
+    type = TYPE::SINGLE;
+    name = path2Name(path);
+    icons = path2Icon(path,size);
+    if(icons.size()>1){
+        type= TYPE::MULTI;
+    }
+    filePath = path;
+}
+
+MyFileInfo::MyFileInfo(QFileInfo qfi, int size):MyFileInfo(qfi.filePath(),size)
+{
+}
+
 MyFileInfo path2MyFI(QString path,int size){
     return MyFileInfo(path,size);
 }
@@ -16,9 +34,7 @@ QString path2Name(QString path){
     return QFileInfo(path).baseName();
 }
 
-
 QPixmap getWinIcon(QString path){
-
 
     QPixmap res ;
     LPCTSTR szFile = (LPCTSTR)path.utf16();
@@ -79,9 +95,9 @@ QPixmap resizeToRect(QPixmap source){
         }
     }
 
-    int end=255;
+    int end=qMax(width,height)-1;
     find = false;
-    for(end=255;end>=47 &&!find;end--){
+    for(;end>=start &&!find;end--){
         //横向扫描
         for(int j=0;j<=end;j++){
             QColor pix = image.pixelColor(QPoint(j,end));
@@ -107,13 +123,55 @@ QPixmap resizeToRect(QPixmap source){
     return res;
 }
 
+QPixmap getWinIcon(int winshelobj){
+
+    QPixmap res;
+    LPITEMIDLIST pidlBin;
+    SHGetSpecialFolderLocation(NULL, winshelobj, &pidlBin);
+    TCHAR szFolderPath[MAX_PATH];
+    SHGetPathFromIDList(pidlBin, szFolderPath);
+    // 将回收站的路径转换为字符串格式
+
+
+    SHFILEINFO sfi;
+    if (!SHGetFileInfoW((LPCTSTR)szFolderPath,0,&sfi,sizeof(sfi), SHGFI_ICON | SHGFI_SYSICONINDEX)){
+        qDebug()<<"failed1";
+        return res;
+    }
+
+    // 获取大号图像列表
+    IImageList *piml;
+    int aim = (enable_highdef_icon)?4:2;
+    if (FAILED(SHGetImageList(aim, IID_PPV_ARGS(&piml)))){
+
+        qDebug()<<"failed2";
+        return res;
+
+    };
+
+    // 提取图标
+    HICON hico;
+    piml->GetIcon(sfi.iIcon, ILD_TRANSPARENT, &hico);
+
+    // 清理资源
+    piml->Release();
+
+    // 返回图标
+    res = QtWin::fromHICON(hico);
+    return res;
+}
+
 QMap<int,QPixmap> path2Icon(QString path,int size){
     QMap<int,QPixmap> res;
     QFileInfo qfileinfo(path);
-    QFileIconProvider iconProvider;
-    // qDebug()<<x.suffix().toLower()<<x.symLinkTarget();
 
-        // res[0]=(iconProvider.icon(path).pixmap(size));
+    if(isPic(path)&&use_pic_as_icon){
+        QImage im;
+        im.load(path);
+        res[0] = QPixmap::fromImage(im);
+    }
+
+    else
     res[0] = resizeToRect(getWinIcon(toWindowsPath(path)));
 
     //针对steam游戏

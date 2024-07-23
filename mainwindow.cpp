@@ -1,14 +1,15 @@
 #include "mainwindow.h"
 #include "ContextMenu/shellmenuitem.h"
-#include "ed_bgshower.h"
+#include "sbgshower.h"
 #include"ContextMenu/desktopmenu.h"
-#include"edtooltip.h"
-#include "ed_blockcontainer.h"
-#include "ed_block.h"
-#include "ed_dock.h"
+#include "sshellfuncunit.h"
+#include"stooltip.h"
+#include "sblockcontainer.h"
+#include "sfile.h"
+#include "sdock.h"
 #include"QInputDialog"
-#include "ed_editbox.h"
-#include "ed_hidetextblock.h"
+#include "seditbox.h"
+#include "shidetextblock.h"
 #include "filefunc.h"
 #include "qgraphicseffect.h"
 #include "qmessagebox.h"
@@ -17,6 +18,7 @@
 #include "repaintcounterunit.h"
 #include "roundshower.h"
 #include "screenfunc.h"
+#include "settingwindow.h"
 #include "ui_mainwindow.h"
 #include "SysFunctions.h"
 #include <QMouseEvent>
@@ -49,7 +51,7 @@ void MainWindow::setupActions()
 
     SET_ANCTION(act2,切换精简,
     {
-    for(ED_Unit* content:*(inside->contents)){
+    for(SUnit* content:*(inside->contents)){
         content->changeSimpleMode();
     }})
 
@@ -84,47 +86,50 @@ void MainWindow::setupActions()
 
 
     SET_ANCTION(act6,新建小型格子,{
-        auto bc = new ED_BlockContainer(this,2,2,2,2,5,10,10);
-        InitAUnit(bc);
+        auto bc = new SBlockContainer(inside,2,2,2,2,5,10,10);
+        // InitAUnit(bc);
     })
 
 
 
     SET_ANCTION(act7,新建中型格子,{
-        auto bc = new ED_BlockContainer(this,3,3,3,3,5,15,15);
-        InitAUnit(bc);
+        auto bc = new SBlockContainer(inside,3,3,3,3,5,15,15);
+        // InitAUnit(bc);
     })
 
 
     SET_ANCTION(act8,新建大型格子,{
-        auto bc = new ED_BlockContainer(this,4,4,4,4,5,20,20);
-        InitAUnit(bc);
+        auto bc = new SBlockContainer(inside,4,4,4,4,5,20,20);
+        // InitAUnit(bc);
     })
 
 
     SET_ANCTION(act9,新建Dock栏,{
-        auto dock = new ED_Dock(this);
-        InitAUnit(dock);
+        auto dock = new SDock(inside);
+        // InitAUnit(dock);
     })
 
 
     SET_ANCTION(act10,新建设置箱,{
-        auto dock = new ED_EditBox(this);
-        InitAUnit(dock);
+        auto dock = new SEditBox(inside);
+        // InitAUnit(dock);
     })
 
+
 #ifdef QT_DEBUG
+
     SET_ANCTION(act11,新建重绘盒,{
-        auto dock = new RepaintCounterUnit(this);
-        InitAUnit(dock);
+        auto dock = new RepaintCounterUnit(inside);
+        // InitAUnit(dock);
     })
 #endif
+
 }
 void MainWindow::setupUnits()
 {
     // setMouseTracking(true);
     // 设置背景
-    bgshower = new ED_BGShower(this);
+    bgshower = new SBGShower(this);
     bgshower->setFixedSize(size());
     bgshower->setVisible(enable_background_blur);
     bgshower->move(0, 0);
@@ -145,9 +150,8 @@ void MainWindow::setupUnits()
 
 void MainWindow::setupLayout(int x, int y)
 {
-    inside = new ED_BlockLayout(this, x, y, 5, 10, 10);
+    inside = new SBlockLayout(this, x, y, 5, 10, 10);
     inside->isMain = true;
-    inside->pmw =this;
     QRect tem = QRect(0,0,pscs[screenInd]->availableSize().width(),pscs[screenInd]->availableSize().height());
     inside->setStandalongRect(tem);
 }
@@ -219,20 +223,19 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
     });
 
     setTransparent(true);
-
     setShoweredVisibal(true);
     updateBG();
 
 
 }
 
-void MainWindow::InitAUnit(ED_Unit *aim,bool animated)
-{
-    aim->setPMW(this);
-    // connect(aim, &ED_Unit::sendSelf, this, &MainWindow::getObject);
-    inside->defaultPut(aim,animated);
-    // aim->ed_update();
-}
+// void MainWindow::InitAUnit(SUnit *aim,bool animated)
+// {
+//     aim->setPMW(this);
+//     // connect(aim, &ED_Unit::sendSelf, this, &MainWindow::getObject);
+//     inside->defaultPut(aim,animated);
+//     // aim->ed_update();
+// }
 
 MainWindow::~MainWindow()
 {
@@ -242,12 +245,12 @@ MainWindow::~MainWindow()
 void MainWindow::setScale(double scale)
 {
     scale = qBound(0.001,scale,1.0);
-    foreach(ED_Unit *content , *(inside->contents))
+    foreach(SUnit *content , *(inside->contents))
     {
         content->setScale(scale);
     }
     globalScale = scale;
-    ED_EditBox *ed = findChild<ED_EditBox *>();
+    SEditBox *ed = findChild<SEditBox *>();
     if(ed!=nullptr){
         if(ed->scale_Slider!=nullptr){
             ed->scale_Slider->blockSignals(true);
@@ -270,14 +273,16 @@ void MainWindow::load_json(QJsonObject rootObject)
     screenInd = rootObject.value("ind").toInt();
     setupLayout(10,10);
     inside->load_json(rootObject.value("content").toObject());
+
+    endUpdate();
 }
 
-void MainWindow::ed_update()
+void MainWindow::endUpdate()
 {
     if(inside!=nullptr)
-    foreach(ED_Unit *content , *(inside->contents))
+    foreach(SUnit *content , *(inside->contents))
     {
-        content->ed_update();
+        content->endUpdate();
     }
 }
 
@@ -305,9 +310,10 @@ void MainWindow::Init()
         foreach (MyFileInfo content, iconns) {
             addAIcon(content);
         }
-        auto eb = new ED_EditBox(this);
-        InitAUnit(eb);
+        auto eb = new SEditBox(inside);
     }
+    endUpdate();
+
     qDebug()<<"Init Done";
 }
 
@@ -333,13 +339,13 @@ void MainWindow::setShoweredVisibal(bool val){
     // changeShower->raise();
 
     if (!val){
-        foreach (ED_Unit* content,*(inside->contents_AlwaysShow)) {
+        foreach (SUnit* content,*(inside->contents_AlwaysShow)) {
             content->setVisible(false);
         }
 
         capture();
 
-        foreach (ED_Unit* content,*(inside->contents_AlwaysShow)) {
+        foreach (SUnit* content,*(inside->contents_AlwaysShow)) {
             content->setVisible(true);
         }
 
@@ -380,40 +386,13 @@ void MainWindow::addAIcon(MyFileInfo info)
 
     qDebug() <<"Adding to Desktop"<< info.name << info.type;
 
-    ED_Block *tem = nullptr;
-
-
-    if (info.type==MyFileInfo::SINGLE)
-    {
-        tem = new ED_Block(this);
-        tem->loadFromMyFI(info);
-    }
-    else
-    {
-        switch (default_steam_icon_type)
-        {
-        case 0:
-                tem = new ED_Block(this, 1, 1);
-                tem->loadFromMyFI(info);
-
-            break;
-        case 1:
-
-                tem = new ED_HideTextBlock(this,1,2);
-                tem->loadFromMyFI(info);
-            break;
-        case 2:
-
-                tem = new ED_HideTextBlock(this,2,1);
-                tem->loadFromMyFI(info);
-            break;
-        }
-    }
-
+    SFile *tem = nullptr;
+    tem = new SFile(inside);
+    tem->loadFromMyFI(info,true);
+    qDebug()<<tem->colorAlpha;
 
     if (tem)
     {
-        InitAUnit(tem);
         tem->raise();
     }
 
@@ -497,11 +476,13 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
     appendPoints(event->pos());
     qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
     qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
-    // sentToWallpaper(event->globalPos());
+    // foreach (auto k , *(inside->contents)) {
+    //     k->updataFocusAnimation();
+    // }
     pls->Clear();
 
 #ifdef QT_DEBUG
-    EDToolTip::Tip(this,event->pos(),"样例文本");
+    SToolTip::Tip(this,event->pos(),"样例文本");
 #endif
     raise();
     pls->raise();
@@ -556,8 +537,11 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     if(event->modifiers() == Qt::ShiftModifier){
-        StyleSettingWindow* k = new StyleSettingWindow();
+        // SettingWindow* k = new SettingWindow();
+        StyleSettingWindow* k = new StyleSettingWindow;
         k->show();
+        // ElaWindow* ttt = new ElaWindow(this);
+        // ttt->show();
         // QMenu menu;
         // static bool isSwitch = false;
         // ShellMenuItems items;
@@ -639,7 +623,7 @@ void MainWindow::showEvent(QShowEvent *event)
 {
 
     QMainWindow::showEvent(event);
-    ed_update();
+    endUpdate();
 }
 
 

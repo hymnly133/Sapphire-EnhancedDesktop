@@ -36,6 +36,8 @@ Thumbs.db
 /.qmake.stash
 
 build/*
+win11 icons/*
+unused/*
 .vs/*
 
 # qtcreator generated files

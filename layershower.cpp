@@ -8,7 +8,7 @@
 #include "QScreen"
 #include "QThread"
 #include"QStyle"
-#include "edtooltip.h"
+#include "stooltip.h"
 #include "qapplication.h"
 #include "qpainter.h"
 #include "screenfunc.h"
@@ -43,7 +43,7 @@ LayerShower::LayerShower(QWidget *parent)
 
 void LayerShower::Clear()
 {
-    QList<EDToolTip*> list = pls->findChildren<EDToolTip*>();
+    QList<SToolTip*> list = pls->findChildren<SToolTip*>();
     foreach (auto tem, list) {
         tem->end();
     }
@@ -93,7 +93,7 @@ bool LayerShower::nativeEvent(const QByteArray &eventType, void *message, long *
 {
     if(eventType == QByteArray("windows_generic_MSG"))
     {
-        qDebug()<<"Called";
+        // qDebug()<<"Called";
         MSG *pMsg = reinterpret_cast<MSG*>(message);
         if(pMsg->message == WM_DEVICECHANGE)
         {

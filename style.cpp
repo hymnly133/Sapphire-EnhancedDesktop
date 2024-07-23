@@ -1,18 +1,20 @@
 #include "style.h"
+#include "ElaSlider.h"
 #include "SysFunctions.h"
 #include "mainwindow.h"
 #include "qfileinfo.h"
 #include "qsettings.h"
+#include"ElaLog.h"
 
 
-int sleep_alpha = 80;
-int active_alpha = 160;
+int sleep_alpha = 130;
+int active_alpha = 220;
 
 int sleep_alpha_deep = 140;
 int active_alpha_deep = 200;
 
-double sleep_color_ratio = 0.9;
-double active_color_ratio = 0.9;
+double sleep_color_ratio = 0.8;
+double active_color_ratio = 0.95;
 
 int light_alpha_start = 120;
 int light_alpha_end = 0;
@@ -50,6 +52,9 @@ double scale_fix_ratio = 1.3;
 
 bool enable_tooltip_right_animation = 0;
 
+bool enable_text_shadow = 0;
+bool use_pic_as_icon = 1;
+
 #define ADD(TYPE,NAME,MIN,MAX)\
 Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
 
@@ -79,6 +84,8 @@ StyleHelper::StyleHelper()
 
     ADD(Effect,position_animation_time,0,200);
     ADD(Effect,focus_animation_time,0,200);
+    ADD(Effect,enable_text_shadow,0,0);
+
 
     ADD(Render,unit_radius,0,100);
 
@@ -101,6 +108,9 @@ StyleHelper::StyleHelper()
     ADD(Preference,long_focus_out_delta_time,200,2000);
     ADD(Preference,long_focus_container_fix_ratio,1.1,3.0);
     ADD(Preference,enable_tooltip_right_animation,0,0);
+
+
+    ADD(Preference,use_pic_as_icon,0,0);
 
     psh = this;
 }
@@ -177,6 +187,7 @@ void StyleHelper::showSetting()
 
 StyleSettingWindow::StyleSettingWindow():QDialog(nullptr)
 {
+
     mainLayout = new QVBoxLayout(this);
     QMutableVectorIterator<boolVal*> iterator0(psh->boolStyles);
     while (iterator0.hasNext()) {
@@ -227,6 +238,22 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr)
         setInLayout(iterator2.value()->field(),iterator2.value()->name(),iterator2.value()->slider,0);
 
     }
+}
+
+void StyleSettingWindow::InitWindow()
+{
+    // resize(1240, 740);
+    // ElaLog::getInstance()->initMessageLog(true);
+    // // eApp->setThemeMode(ElaApplicationType::Dark);
+    // // setIsNavigationBarEnable(false);
+    // // setNavigationBarDisplayMode(ElaNavigationType::Compact);
+    // // setWindowButtonFlag(ElaAppBarType::MinimizeButtonHint, false);
+    // setUserInfoCardPixmap(QPixmap(":/include/Image/Cirno.jpg"));
+    // setUserInfoCardTitle("Ela Tool");
+    // setUserInfoCardSubTitle("Liniyous@gmail.com");
+    // setWindowTitle("ElaWidgetTool");
+    // setIsStayTop(true);
+    // setUserInfoCardVisible(false);
 }
 
 void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *content, bool checkBox)

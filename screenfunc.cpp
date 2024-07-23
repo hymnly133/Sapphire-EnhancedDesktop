@@ -2,6 +2,7 @@
 #include "SysFunctions.h"
 #include "qapplication.h"
 #include "qscreen.h"
+#include"mainwindow.h"
 QPoint Shift_Global;
 
 int screenInd(QWidget *aim){

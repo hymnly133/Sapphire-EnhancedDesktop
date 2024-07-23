@@ -46,7 +46,7 @@ LayerShower* pls;
 QDesktopWidget* pdt;
 QString* UserDesktopPath;
 QString* PublicDesktopPath;
-ED_Unit* pMovingUnit;
+SUnit* pMovingUnit;
 bool onLoading = true;
 
 
@@ -134,7 +134,7 @@ void SetUp()
     onLoading  =false;
 
     for(int i=0;i<screenNum;i++){
-        pmws[i]->ed_update();
+        pmws[i]->endUpdate();
     }
     qDebug()<<"started";
 }
@@ -216,17 +216,21 @@ QRect AbsoluteRect(QWidget* aim){
     return QRect(pos.x()+tem.x(),pos.y()+tem.y(),tem.width(),tem.height());
 }
 
-ED_Unit* from_json(QJsonObject data,MainWindow* parent){
+SUnit* from_json(QJsonObject data,MainWindow* parent){
     QString name = data.value("Class").toString();
+    QString newname = name.replace("ED_","S");
     int id = QMetaType::type(name.toStdString().c_str());
     if (id == QMetaType::UnknownType){
-        qDebug()<<"error";
-        return nullptr;
-        ; // ERROR HERE
-
+        qDebug()<<"error0";
+        id = QMetaType::type(newname.toStdString().c_str());
+        if(id == QMetaType::UnknownType){
+            qDebug()<<"error1";
+            return nullptr;
+        }
     }
+    qDebug()<<name;
     auto k = QMetaType::create(id);
-    ED_Unit *unit = static_cast<ED_Unit*>(QMetaType::create(id));
+    SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
     unit->setParent(parent);
     unit->setPMW(parent);
     unit->load_json(data);
@@ -239,10 +243,10 @@ void paintRect(QWidget* aim,QColor color){
     bool another = true;
     bool choosen = false;
 
-    if(aim->inherits("ED_Unit")) {
-        color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
-        another = ((ED_Unit*)aim)->showRect;
-        choosen = ((ED_Unit*)aim)->onmouse;
+    if(aim->inherits("SUnit")) {
+        color.setAlpha(color.alpha()*((SUnit*)aim)->nowPadRatio);
+        another = ((SUnit*)aim)->showRect;
+        choosen = ((SUnit*)aim)->onmouse;
     }
     if(ShowRect&(another)){
         QPainter painter(aim);
@@ -258,13 +262,17 @@ double rectLen(int w,int h){
 }
 
 void paintLight(QWidget* aim,QColor color){
+    // qDebug()<<"Light color"<<color;
     bool another = true;
     bool choosen = false;
-    if(aim->inherits("ED_Unit")) {
-        color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
+    int aim_alpha_start = light_alpha_start;
+    int aim_alpha_end= light_alpha_end;
+    if(aim->inherits("SUnit")) {
+        aim_alpha_end*=((SUnit*)aim)->nowPadRatio;
+        aim_alpha_start+=((SUnit*)aim)->nowPadRatio;
         // qDebug()<<color.alpha();
-        another = ((ED_Unit*)aim)->showLight;
-        choosen = ((ED_Unit*)aim)->onmouse;
+        another = ((SUnit*)aim)->showLight;
+        choosen = ((SUnit*)aim)->onmouse;
     }
 
 
@@ -281,14 +289,14 @@ void paintLight(QWidget* aim,QColor color){
         QPainter painter(aim);
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setPen(Qt::NoPen);
-        color.setAlpha(light_alpha_start);
-        if(aim->inherits("ED_Unit")) {
-            color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
+        color.setAlpha(aim_alpha_start);
+        if(aim->inherits("SUnit")) {
+            color.setAlpha(color.alpha()*((SUnit*)aim)->nowPadRatio);
         }
         radialGradient->setColorAt(0,color);
-        color.setAlpha(light_alpha_end);
-        if(aim->inherits("ED_Unit")) {
-            color.setAlpha(color.alpha()*((ED_Unit*)aim)->nowPadRatio);
+        color.setAlpha(aim_alpha_end);
+        if(aim->inherits("SUnit")) {
+            color.setAlpha(color.alpha()*((SUnit*)aim)->nowPadRatio);
             // qDebug()<<color.alpha();
         }
         radialGradient->setColorAt(1.0,color);
@@ -299,9 +307,9 @@ void paintLight(QWidget* aim,QColor color){
 
 void paintSide(QWidget* aim,QColor color){
     bool another = true;
-    if(aim->inherits("ED_Unit")){
+    if(aim->inherits("SUnit")){
 
-        another = ((ED_Unit*)aim)->showSide;
+        another = ((SUnit*)aim)->showSide;
         // 恢复默认混合模式，绘制边框，如果没有则不用
         if(ShowSide&&another){
             QPainter painter(aim);
@@ -728,18 +736,16 @@ QMap<int,QJsonObject> readJson(){
 
 
 
-MyFileInfo::MyFileInfo(QString path, int size)
+
+bool isPic(QString pah)
 {
-    type = TYPE::SINGLE;
-    name = path2Name(path);
-    icons = path2Icon(path,size);
-    if(icons.size()>1){
-        type= TYPE::MULTI;
+    bool bRet = false;
+    QFile fi(pah);
+    if (fi.open(QIODevice::ReadOnly)) {
+        QPixmap pix;
+        pix.loadFromData(fi.readAll());
+        bRet = !pix.isNull();
+        fi.close();
     }
-    filePath = path;
+    return bRet;
 }
-
-MyFileInfo::MyFileInfo(QFileInfo qfi, int size):MyFileInfo(qfi.filePath(),size)
-{
-}
-
