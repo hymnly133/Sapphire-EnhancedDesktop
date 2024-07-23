@@ -571,10 +571,10 @@ void SUnit::wheelEvent(QWheelEvent *event)
 
 void SUnit::endUpdate(){
     //当初始化完成之后调用以更新状态
-    // colorAlpha = aim_colorAlpha();
-    // nowPadRatio = aim_padRatio();
-    // scaleFix = aim_scaleFix();
-    // nowMainColorRatio = aim_mainColorRatio();
+    colorAlpha = aim_colorAlpha();
+    nowPadRatio = aim_padRatio();
+    scaleFix = aim_scaleFix();
+    nowMainColorRatio = aim_mainColorRatio();
 
     rs->updateDisplay();
     rs->raise();
