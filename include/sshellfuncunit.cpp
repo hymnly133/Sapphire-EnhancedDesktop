@@ -15,7 +15,14 @@ SShellFuncUnit::SShellFuncUnit(SLayout *dis):SMultiFunc(dis)
     im.load(":/icon/sysicon/Computer");
     setPix((resizeToRect(QPixmap::fromImage(im))));
     setname("我的电脑");
-    windowsMenu = new QMenu(this);
+    windowsMenu = new QMenu();
+
+    QAction* windowsMenuAction  =new QAction(this);
+    windowsMenuAction->setText("Windows功能");
+    windowsMenuAction->setMenu(windowsMenu);
+
+    myMenu->addAction(windowsMenuAction);
+
 
     SET_ANCTION(actOpenSetting,Win11设置,windowsMenu,{
         SToolTip::Tip(shellrun("ms-settings:wheel"));
@@ -116,7 +123,7 @@ bool SShellFuncUnit::ProcessPath(QString path)
 
 void SShellFuncUnit::onShiftContextMenu(QContextMenuEvent *event)
 {
-    windowsMenu->exec(event->globalPos());
+    // windowsMenu->exec(event->globalPos());
 }
 
 
