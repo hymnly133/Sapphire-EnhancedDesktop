@@ -15,6 +15,7 @@
 
 class MainWindow;
 
+//桌面组件的所有基类
 class SUnit : public QWidget
 {
     Q_OBJECT
@@ -27,26 +28,47 @@ class SUnit : public QWidget
     Q_PROPERTY(double nowPadRatio MEMBER nowPadRatio NOTIFY nowPadRatio_changed)
     Q_PROPERTY(double nowMainColorRatio MEMBER nowMainColorRatio NOTIFY nowMainColorRatio_changed)
 public:
+    //用于区分容器（即将弃用）
     enum STYPE {Unit,Container};
     STYPE type = Unit;
+
+    //所在的布局管理器
     SLayout* layout = nullptr;
 
+    //右键菜单
     QMenu* myMenu;
+
+    //指向当前的MainWindow
     MainWindow* pmw = nullptr;
+
+    //用于动画的指定和更新
     QPoint nowPos;
-    QPoint aim_pos;
     QSize nowSize;
-    QSize aim_size;
+
+
+    //边框显示比率Alpha
+    double nowPadRatio = 1;
 
     double nowMainColorRatio = aim_mainColorRatio();
+
+    //各种属性将要进入的值
+    int aim_colorAlpha();
+    double aim_scaleFix();
+    double aim_padRatio();
+    QPoint aim_pos;
+    QSize aim_size;
     double aim_mainColorRatio();
 
+    //pos/size的缓存（在！layout时使用）
     QPoint my_pos_tem;
     QSize my_size_tem;
 
-    double nowPadRatio = 1;
+    //长聚焦计时器
     QTimer* longFocusTimer;
 
+    //各种当前属性
+    bool alwaysShow = false;
+    bool simpleMode = false;
     bool onLongFocus = false;
     bool preLongFocus = false;
     bool requireLongFocusOutDeltaTime = false;
@@ -61,24 +83,27 @@ public:
     double scaleFix = 1.0;
     double scale = 1.0;
 
+    //移动时使用 与鼠标相对距离
     QPoint relativeP;
+
+    //主颜色 不关注透明度
     QColor mainColor;
-    //不关注透明度
+
+    //组件主颜色与主题颜色混合 不关注透明度
     QColor displayColor(){
-    //不关注透明度
-
-    QColor sysrgb =  GetWindowsThemeColor();
-    QColor res = QColor(
-        mainColor.red()*nowMainColorRatio + sysrgb.red()*(1.0-nowMainColorRatio),
-        mainColor.green()*nowMainColorRatio + sysrgb.green()*(1.0-nowMainColorRatio),
-        mainColor.blue()*nowMainColorRatio + sysrgb.blue()*(1.0-nowMainColorRatio)
-    );
-
-    return res;
+        QColor sysrgb =  GetWindowsThemeColor();
+        QColor res = QColor(
+            mainColor.red()*nowMainColorRatio + sysrgb.red()*(1.0-nowMainColorRatio),
+            mainColor.green()*nowMainColorRatio + sysrgb.green()*(1.0-nowMainColorRatio),
+            mainColor.blue()*nowMainColorRatio + sysrgb.blue()*(1.0-nowMainColorRatio)
+        );
+        return res;
     }
 
+    //加入alpha的dispalycolor
     QColor displayColor_Alphaed();
 
+    //动画
     QParallelAnimationGroup * focusAnimations;
     QPropertyAnimation* alphaAnimation;
     QPropertyAnimation* scaleFixAnimation;
@@ -92,22 +117,23 @@ public:
 
     QParallelAnimationGroup * longFocusAnimations;
 
+    //移动至基于layout->pcontainer的坐标
     void edmove(QPoint dis);
+
+    //基于layout->pcontainer的坐标
     QPoint edpos();
+
+    //以格数计的大小
     int sizeX = 1;
     int sizeY = 1;
-    int ind;
-    int aim_colorAlpha();
-    double aim_scaleFix();
-    double aim_padRatio();
 
-    int colorAlpha = sleep_alpha;
-    bool alwaysShow = false;
-    bool simpleMode = false;
+
+    int colorAlpha = unfocused_alpha;
 
     int indX = -1;
     int indY = -1;
 
+    //圆角显示器
     roundShower* rs;
     QGraphicsDropShadowEffect* shadow_main_color;
 
@@ -118,13 +144,16 @@ public:
 
     bool operator<(const SUnit& another) const;
 
+    //从layout脱离
     void removeFromLayout();
 
     virtual void setupMenu();
 
 
     // virtual void update_after_resize();
+    //重定向之后的双击事件
     virtual void double_click_action(QMouseEvent* event);
+    //重定向之后的单击事件（未启用
     virtual void single_click_action();
     virtual void mouse_move_action();
     virtual void mouse_release_action();
@@ -212,19 +241,19 @@ public: signals:
 
 };
 inline  double SUnit:: aim_mainColorRatio(){
-    if(onmouse)return active_color_ratio;
-    else return sleep_color_ratio;
+    if(onmouse)return focused_color_ratio;
+    else return unfocused_color_ratio;
 }
 
 
 inline int SUnit::aim_colorAlpha(){
     if(onmouse){
-        if(deepColor) return active_alpha_deep;
-        else return active_alpha;
+        if(deepColor) return focused_alpha_deep;
+        else return focused_alpha;
     }
     else{
-        if(deepColor) return sleep_alpha_deep;
-        else return sleep_alpha;
+        if(deepColor) return unfocused_alpha_deep;
+        else return unfocused_alpha;
     }
 }
 
