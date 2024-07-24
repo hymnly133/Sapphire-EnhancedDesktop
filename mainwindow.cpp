@@ -634,7 +634,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
 #ifdef QT_DEBUG
     SToolTip::Tip("样例文本");
     // SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
-    SNotice::notice(QStringList()<<"infoTestfdfdfghgfdfghjhgfdhgffghfhdgfggfhdfghdfghdffdfdfdsdsdssds","TitleTest");
+    SNotice::notice(QStringList()<<"infoTestinfoTestinfoTestinfoTestinfoTest","TitleTest");
 #endif
     // SNotice::notice(QStringList()<<"infoTestfdfdfghgfdfghjhgfdhgffghfhdgfggfhdfghdfghdffdfdfdsdsdssds","TitleTest");
     pls->raise();

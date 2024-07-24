@@ -23,6 +23,7 @@ class SUnit : public QWidget
     Q_PROPERTY(QColor mainColor MEMBER mainColor NOTIFY mainColor_changed WRITE setMainColor)
     Q_PROPERTY(double scale MEMBER scale NOTIFY scale_changed WRITE setScale)
     Q_PROPERTY(double scaleFix MEMBER scaleFix NOTIFY scaleFix_changed WRITE setScaleFix)
+
     Q_PROPERTY(QPoint nowPos MEMBER nowPos NOTIFY nowPos_changed)
     Q_PROPERTY(QSize nowSize MEMBER nowSize NOTIFY nowSize_changed)
     Q_PROPERTY(double nowPadRatio MEMBER nowPadRatio NOTIFY nowPadRatio_changed)
@@ -155,26 +156,42 @@ public:
     virtual void double_click_action(QMouseEvent* event);
     //重定向之后的单击事件（未启用
     virtual void single_click_action();
+    //重定向之后的移动事件（未启用
     virtual void mouse_move_action();
+    //重定向之后的释放事件（未启用
     virtual void mouse_release_action();
+    //重定向之后的释放事件（未启用
     virtual void mouse_enter_action();
+    //重定向之后的离开事件（未启用
     virtual void mouse_leave_action();
+
+    //设置格数大小
     virtual bool setBlockSize(int w,int h);
 
+    //重定向之后的菜单事件
     virtual void onContextMenu(QContextMenuEvent* event);
+    //重定向之后的Shift菜单事件
     virtual void onShiftContextMenu(QContextMenuEvent* event);
+
+    //作为处理器时处理其他SUnit的事件
     virtual void onProcessAnother(SUnit* another);
 
+    //精简模式更改时触发一次
     virtual void onSimpleModeChange(bool val);
+
+    //scale*scaleFix更改时触发（包括动画更改）
     virtual void onScaleChange(double val);
+
+    //mainColor更改时触发
     virtual void onMainColorChange(QColor val);
 
 
-
+    //长聚焦动画更新时
     virtual void whenLongFocusAnimationChange();
+    //聚焦动画更新时
     virtual void whenFocusAnimationChange();
 
-
+    //作为各种操作结束时（如加载/动画）的更新
     virtual void endUpdate();
 
     virtual QJsonObject to_json();
@@ -184,18 +201,23 @@ public:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
-    void enterEvent(QEvent *) override;                      //进入QWidget瞬间事件
-    void leaveEvent(QEvent *) override;                      //离开QWidget瞬间事件
+    void enterEvent(QEvent *) override;
+    void leaveEvent(QEvent *) override;
     void paintEvent(QPaintEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
-    virtual void Remove();
-
     void resizeEvent(QResizeEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 
+
+    //移除
+    virtual void Remove();
+
+    //Resize之后触发
     virtual void afterResize(QResizeEvent* event);
 
+    //直接切换
     void changeSimpleMode();
+
 
     void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
@@ -207,36 +229,54 @@ public:
     virtual void setPMW(MainWindow* pmw);
 
 
-
+    //切换屏幕
     void tryToSwitch(QMouseEvent *event);
+
+    //更新各种情况下的动画
 
     virtual void updateLongFocusAnimation();
     virtual void updataFocusAnimation();
     virtual void updatePositionAnimation();
 
+    //用于定位和resize的统一接口
     virtual QPoint MyPos();
     virtual QSize MySize();
+
+    //被拖出时调用
     virtual void onDragedOut(QMouseEvent *event);
+
+    //更新layout并将要触发positionAnimation时调用
     virtual void preSetInLayout(bool animated);
+
+    //positionAnimation结束时调用
+    virtual void setInLayout(bool animated);
+
+    //在layout中由layout调用以匹配layout->pContainer的变化（不包括放置进入layout）
+    virtual void updateInLayout(bool animated = true);
+
+    //动画move
+    virtual void moveto(QPoint edpos,QSize size);
+
 public slots:
+    //用于接受计时器
     void setInLayoutAniSlot();
     void longFocusTimeoutSlot();
-    virtual void setInLayout(bool animated);
-    virtual void updateInLayout(bool animated = true);
-    virtual void moveto(QPoint pos,QSize size);
+
 
 
 public: signals:
-    void colorAlpha_changed(int);
+
+    //未启用
     void mainColor_changed(QColor);
+
+    //以下全部为动画更新的数值
+    void colorAlpha_changed(int);
     void scale_changed(double);
     void scaleFix_changed(double);
     void nowPos_changed(QPoint);
     void nowSize_changed(QSize);
     void nowPadRatio_changed(double);
     void nowMainColorRatio_changed(double);
-
-    // QOpenGLWidget interface
 
 
 };

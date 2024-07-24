@@ -15,20 +15,29 @@ class SLayout
 public:
     // virtual QSize areaSize() =0;
 
+    //可见
     bool visibal;
+    //区分主容器
     bool isMain = false;
+    //用于自定义显示区域（false使用pContainer->size)
     bool useStandaloneRect  = false;
+    void setStandalongRect(QRect rect);
     QRect standaloneRect = QRect(1,1,1,1);
 
     MainWindow* pmw;
 
+    //当前区域（用于显示桌面模糊，未启用
     QRegion region;
+
+    //容器
     QWidget* pContainer;
+
+    //内部管理，分为三个
     QVector<SUnit*>* contents = new QVector<SUnit*>;
     QVector<SUnit*>* contents_AlwaysShow = new QVector<SUnit*>;
-    QVector<SUnit*>* contents_Show = new QVector<SUnit*>;
 
-    void setStandalongRect(QRect rect);
+    //contents差contents_AlwaysShow
+    QVector<SUnit*>* contents_Show = new QVector<SUnit*>;
 
 
     SLayout(QWidget* father);
@@ -42,9 +51,11 @@ public:
     virtual QPoint ind2CenterPoint(QPoint ind);
     virtual QPoint ind2CenterPoint(int x,int y);
 
+    //从序号获得大小
     virtual QSize ind2Size(QPoint ind);
     virtual QSize ind2Size(int xind,int yind) = 0;
 
+    //从序号获得pos
     virtual QPoint ind2Pos(QPoint ind);
     virtual QPoint ind2Pos(int xind,int yind) = 0;
 
@@ -52,13 +63,10 @@ public:
     bool Occupied(QPoint ind);
     virtual bool Occupied(int x,int y) =0;
 
-    //将一个ED_Unit放置在Block中，并在双方的变量中纪律以便之后识别
+    //将一个ED_Unit放置在Block中，并在双方的变量中记录以便之后识别
     void putUnit(SUnit* aim,int xind,int yind,bool animated);
     void putUnit(SUnit* aim,QPoint ind,bool animated);
 
-    // 从坐标获得最近的可放置Block序号
-    // QPoint NearestEmptyBlockInd(ED_Unit* aim,int posx,int posy);
-    // QPoint NearestEmptyBlockInd(ED_Unit* aim,QPoint pos);
 
     //将一个Unit从坐标体系中脱离
     void RemoveAUnit(SUnit* aim);

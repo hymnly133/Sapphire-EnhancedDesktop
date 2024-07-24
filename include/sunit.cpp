@@ -341,11 +341,11 @@ void SUnit::updateInLayout(bool animated)
     }
 }
 
-void SUnit::moveto(QPoint pos, QSize size)
+void SUnit::moveto(QPoint edpos, QSize size)
 {
     //传入相对于Layou-pContainer的坐标
 
-    aim_pos = pos;
+    aim_pos = edpos;
     aim_size = size;
 
     updatePositionAnimation();
@@ -718,6 +718,7 @@ void SUnit::setInLayout(bool animated)
     // qDebug()<<tem<<dis;
     setParent(layout->pContainer);
     edmove(tem);
+    layout->updateAfterPut(this,indX,indY);
     setVisible(true);
     update();
 
