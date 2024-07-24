@@ -1,7 +1,7 @@
 #ifndef SETTINGWINDOW_H
 #define SETTINGWINDOW_H
 
-#include <ElaWindow.h>
+#include "qdialog.h"
 #include <QWidget>
 class T_Home;
 class T_Icon;
@@ -9,13 +9,13 @@ class T_ElaScreen;
 class T_BaseComponents;
 class T_TabWidget;
 class T_Popup;
-class SettingWindow : public ElaWindow
+class SettingWindow : public QDialog
 {
     Q_OBJECT
 
     Q_SLOT void onCloseButtonClicked();
 public:
-    explicit SettingWindow(ElaWindow *parent = nullptr);
+    explicit SettingWindow(QDialog *parent = nullptr);
     void initWindow();
     void initEdgeLayout();
     void initContent();

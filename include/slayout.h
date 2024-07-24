@@ -63,19 +63,28 @@ public:
     bool Occupied(QPoint ind);
     virtual bool Occupied(int x,int y) =0;
 
-    //将一个ED_Unit放置在Block中，并在双方的变量中记录以便之后识别
+    //将一个Unit放置在Block中，并在双方的变量中记录以便之后识别，是放置的主函数
     void putUnit(SUnit* aim,int xind,int yind,bool animated);
     void putUnit(SUnit* aim,QPoint ind,bool animated);
 
 
     //将一个Unit从坐标体系中脱离
     void RemoveAUnit(SUnit* aim);
-    //将一个Unit加入到坐标体系中
+
+
+    //将一个Unit放入Layou有两种方法，default和clear
+    //default用于初始化
+    //clear用于定位放置
+
+    //对应的序号获取方法，不能放置返回（-1，-1）
+    virtual QPoint defaultPutableInd(SUnit* aim)=0;
+    virtual QPoint clearPutableInd(SUnit* aim)=0;
+
+    //对应的放置方法
     void clearPut(SUnit* aim,bool animated);
-    virtual void defaultPut(SUnit* aim,bool animated);
+    void defaultPut(SUnit* aim,bool animated);
 
-    //判断一个ED_Unit的左上角放置在该Block中是否合法
-
+    //判断一个Unit能否防止进入
     bool OKForClearPut(SUnit* aim);
     bool OKForDefaultPut(SUnit* aim);
 
@@ -83,24 +92,25 @@ public:
     virtual SUnit* ind2Unit(int xind,int yind) =0;
     SUnit* ind2Unit(QPoint ind);
 
-    virtual QPoint defaultPutableInd(SUnit* aim)=0;
-    virtual QPoint clearPutableInd(SUnit* aim)=0;
-
-
-    //将一个ED_Unit按序号最下且可放置的位置放置
-
+    //设置可见性
     virtual void setVisible(bool val, bool force = false);
 
+    //更新region
     void UpdateRegion();
+    //更新内部组件位置，默认调用SUnit::updateInLayout
     void UpdateContentPositon(bool animated =true);
 
-
-    virtual void updateAfterPut(SUnit*,int,int);
-    virtual void updateBeforePutAnimation(SUnit*,int,int);
-    virtual void updateAfterRemove(SUnit*,int,int);
+    //开始放置前调用（content与unit::layout未更新）
     virtual void updateBeforePut(SUnit*,int,int);
-    virtual void updateBeforeRemove(SUnit*,int,int);
 
+    //开始放置后，动画开始前调用（content与unit::layout已更新）
+    virtual void updateBeforePutAnimation(SUnit*,int,int);
+
+    //开始放置后，动画开始前调用（content与unit::layout已更新）
+    virtual void updateAfterPut(SUnit*,int,int);
+
+    virtual void updateBeforeRemove(SUnit*,int,int);
+    virtual void updateAfterRemove(SUnit*,int,int);
     virtual void load_json(QJsonObject rootObject);
     virtual QJsonObject to_json();
 

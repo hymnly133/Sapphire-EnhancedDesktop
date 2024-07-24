@@ -1,26 +1,4 @@
-#include "settingwindow.h"
-#include "ElaContentDialog.h"
-#include "ElaDockWidget.h"
-#include "ElaGraphicsItem.h"
-#include "ElaGraphicsScene.h"
-#include "ElaGraphicsView.h"
-#include"ElaLog.h"
-#include "ElaMenu.h"
-#include "ElaMenuBar.h"
-#include "ElaToolBar.h"
-#include "ElaToolButton.h"
-#include"ElaStatusBar.h"
-#include"ElaText.h"
-#include "ElaWidget.h"
-#include"T_BaseComponents.h"
-#include"T_ElaScreen.h"
-#include"T_Home.h"
-#include"T_Icon.h"
-#include"T_LogWidget.h"
-#include"T_UpdateWidget.h"
-#include"T_TabWidget.h"
-#include"T_Popup.h"
-#include"ElaEventBus.h"
+
 SettingWindow::SettingWindow(ElaWindow *parent)
     : ElaWindow{parent}
 {

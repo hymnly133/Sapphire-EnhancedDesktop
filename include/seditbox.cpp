@@ -102,12 +102,6 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
         pmw->repaint();
     });
 
-    QCheckBox *checkBoxTooltip = new QCheckBox("标签向右消失",this);
-    checkBoxTooltip->setChecked(enable_tooltip_right_animation);
-    paint->addWidget(checkBoxTooltip);
-    connect(checkBoxTooltip, &QCheckBox::clicked, this, [](bool checked) {
-        enable_tooltip_right_animation = checked;
-    });
 
     QCheckBox *checkBox7 = new QCheckBox("大图标填充",this);
     checkBox7->setChecked(enable_image_fill);

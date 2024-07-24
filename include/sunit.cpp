@@ -718,8 +718,8 @@ void SUnit::setInLayout(bool animated)
     // qDebug()<<tem<<dis;
     setParent(layout->pContainer);
     edmove(tem);
-    layout->updateAfterPut(this,indX,indY);
     setVisible(true);
+    layout->updateAfterPut(this,indX,indY);
     update();
 
 }

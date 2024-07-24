@@ -1,20 +1,18 @@
 #include "style.h"
-#include "ElaSlider.h"
 #include "SysFunctions.h"
 #include "mainwindow.h"
 #include "qfileinfo.h"
 #include "qsettings.h"
-#include"ElaLog.h"
 
 
-int sleep_alpha = 130;
-int active_alpha = 220;
+int unfocused_alpha = 130;
+int focused_alpha = 220;
 
-int sleep_alpha_deep = 140;
-int active_alpha_deep = 200;
+int unfocused_alpha_deep = 140;
+int focused_alpha_deep = 200;
 
-double sleep_color_ratio = 0.8;
-double active_color_ratio = 0.95;
+double unfocused_color_ratio = 0.8;
+double focused_color_ratio = 0.95;
 
 int light_alpha_start = 120;
 int light_alpha_end = 0;
@@ -64,14 +62,14 @@ StyleHelper::StyleHelper()
     boolStyles = QVector<boolVal*>();
     doubleStyles = QVector<doubleVal*>();
 
-    ADD(Color,sleep_alpha,0,255);
-    ADD(Color,active_alpha,0,255);
+    ADD(Color,unfocused_alpha,0,255);
+    ADD(Color,focused_alpha,0,255);
 
-    ADD(Color,sleep_alpha_deep,0,255);
-    ADD(Color,active_alpha_deep,0,255);
+    ADD(Color,unfocused_alpha_deep,0,255);
+    ADD(Color,focused_alpha_deep,0,255);
 
-    ADD(Color,sleep_color_ratio,0,1);
-    ADD(Color,active_color_ratio,0,1);
+    ADD(Color,unfocused_color_ratio,0,1);
+    ADD(Color,focused_color_ratio,0,1);
 
     ADD(Effect,light_alpha_start,0,255);
     ADD(Effect,light_alpha_end,0,255);
@@ -240,24 +238,9 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr)
     }
 }
 
-void StyleSettingWindow::InitWindow()
-{
-    // resize(1240, 740);
-    // ElaLog::getInstance()->initMessageLog(true);
-    // // eApp->setThemeMode(ElaApplicationType::Dark);
-    // // setIsNavigationBarEnable(false);
-    // // setNavigationBarDisplayMode(ElaNavigationType::Compact);
-    // // setWindowButtonFlag(ElaAppBarType::MinimizeButtonHint, false);
-    // setUserInfoCardPixmap(QPixmap(":/include/Image/Cirno.jpg"));
-    // setUserInfoCardTitle("Ela Tool");
-    // setUserInfoCardSubTitle("Liniyous@gmail.com");
-    // setWindowTitle("ElaWidgetTool");
-    // setIsStayTop(true);
-    // setUserInfoCardVisible(false);
-}
-
 void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *content, bool checkBox)
 {
+
     if(!layouts.contains(field)){
         auto k = new QHBoxLayout();
         k->setObjectName(field);
