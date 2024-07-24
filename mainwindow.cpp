@@ -2,6 +2,7 @@
 #include "ContextMenu/shellmenuitem.h"
 #include "sbgshower.h"
 #include"ContextMenu/desktopmenu.h"
+#include "snotice.h"
 #include "sshellfuncunit.h"
 #include"stooltip.h"
 #include "sblockcontainer.h"
@@ -171,14 +172,17 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     this->screenInd = screenInd;
+    setFocusPolicy( Qt::StrongFocus );
     setObjectName("MainWindow"+QString::number(screenInd));
     ui->setupUi(this);
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
     setAcceptDrops(true);
     inplace(this);
-
     setFixedSize(pscs[screenInd]->availableSize());
+
+    //shift:Windows主屏幕位于全局的位置;
+
     move(pscs[screenInd]->geometry().topLeft()+Shift_Global);
 
 
@@ -281,6 +285,26 @@ void MainWindow::load_json(QJsonObject rootObject)
     endUpdate();
 }
 
+QList<MyFileInfo> MainWindow::Init(QList<MyFileInfo> data)
+{
+    Init();
+    while(!data.empty())
+    {
+        qDebug()<<"remmains"<<data.size();
+        if(!inside->OKForDefaultPut(new SUnit())){
+            break;
+        }
+        else{
+            qDebug()<<"ok";
+            addAIcon(data[0]);
+            data.removeAt(0);
+        }
+        // inside->printOccupied();
+    }
+    qDebug()<<"Init"<<objectName() <<"Done,Remainin"<<data.size()<<"file data";
+    return data;
+}
+
 void MainWindow::endUpdate()
 {
     if(inside!=nullptr)
@@ -294,7 +318,6 @@ void MainWindow::endUpdate()
 
 void MainWindow::Init()
 {
-    // 获取图标
     qDebug()<<"Init Mainwindow"<<screenInd;
     QString name;
     if(screenInd==0) name+="主屏幕";
@@ -309,17 +332,9 @@ void MainWindow::Init()
     setupLayout(sizeX,sizeY);
 
     if(screenInd==0){
-        qDebug()<<"Scaning";
         auto su = new SShellFuncUnit(inside);
-        QVector<MyFileInfo> iconns = scanalldesktopfiles();
-        foreach (MyFileInfo content, iconns) {
-            addAIcon(content);
-        }
         auto eb = new SEditBox(inside);
     }
-    endUpdate();
-
-    qDebug()<<"Init Done";
 }
 
 void MainWindow::capture()
@@ -378,23 +393,25 @@ void MainWindow::updata_animation()
 
 void MainWindow::addAIcon(QString path)
 {
-    addAIcon(path2MyFI(path));
+     addAIcon(path2MyFI(path));
 }
 
 void MainWindow::addAIcon(QFileInfo qinfo)
 {
-    addAIcon(MyFileInfo(qinfo));
+     addAIcon(MyFileInfo(qinfo));
 }
 
 void MainWindow::addAIcon(MyFileInfo info)
 {
+
+    if(!inside->OKForDefaultPut(new SFile())) return ;
 
     qDebug() <<"Adding to Desktop"<< info.name << info.type;
 
     SFile *tem = nullptr;
     tem = new SFile(inside);
     tem->loadFromMyFI(info,true);
-    qDebug()<<tem->colorAlpha;
+    // qDebug()<<tem->colorAlpha;
 
     if (tem)
     {
@@ -470,41 +487,6 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 }
 
 
-void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
-{
-    setShoweredVisibal(!showeredVisibal);
-    pdt->activateWindow();
-    Q_UNUSED(ev);
-}
-
-void MainWindow::mousePressEvent(QMouseEvent* event){
-    appendPoints(event->pos());
-    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
-    qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
-    pls->Clear();
-
-#ifdef QT_DEBUG
-    SToolTip::Tip(this,event->pos(),"样例文本");
-#endif
-    raise();
-    pls->raise();
-}
-
-
-
-void MainWindow::mouseReleaseEvent(QMouseEvent *event)
-{
-    appendPoints(event->pos());
-        pls->update();  // 启动paintEvent
-    //  mouseReleaseAndControl();  // 在鼠标释放后调用快速定位的功能
-    drawParamList.clear();
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    appendPoints(event->pos());
-    pls->update();
-}
 
 void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事件函数
 {
@@ -600,6 +582,7 @@ void MainWindow::wheelEvent(QWheelEvent *event)
 void MainWindow::focusInEvent(QFocusEvent *event)
 {
     qDebug()<<objectName()<<"FoucusIn";
+    scanForChange();
 }
 
 void MainWindow::focusOutEvent(QFocusEvent *event)
@@ -611,9 +594,11 @@ void MainWindow::focusOutEvent(QFocusEvent *event)
 
 void MainWindow::enterEvent(QEvent *event)
 {
-    qDebug()<<objectName()<<"Enter";
-    raise();
     pls->raise();
+    qDebug()<<objectName()<<"Enter";
+    if(!onLoading)
+    scanForChange();
+    // raise();
 }
 
 void MainWindow::leaveEvent(QEvent *event)
@@ -627,6 +612,49 @@ void MainWindow::showEvent(QShowEvent *event)
     endUpdate();
 }
 
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+    setShoweredVisibal(!showeredVisibal);
+    pdt->activateWindow();
+    Q_UNUSED(ev);
+}
+
+void MainWindow::mousePressEvent(QMouseEvent* event){
+    appendPoints(event->pos());
+    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
+    qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
+    pls->Clear();
+
+
+    if(firstNotice&&init){
+
+        firstNotice = false;
+    }
+
+#ifdef QT_DEBUG
+    SToolTip::Tip("样例文本");
+    // SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
+    SNotice::notice(QStringList()<<"infoTestfdfdfghgfdfghjhgfdhgffghfhdgfggfhdfghdfghdffdfdfdsdsdssds","TitleTest");
+#endif
+    // SNotice::notice(QStringList()<<"infoTestfdfdfghgfdfghjhgfdhgffghfhdgfggfhdfghdfghdffdfdfdsdsdssds","TitleTest");
+    pls->raise();
+}
+
+
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    appendPoints(event->pos());
+    pls->update();  // 启动paintEvent
+    //  mouseReleaseAndControl();  // 在鼠标释放后调用快速定位的功能
+    drawParamList.clear();
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    appendPoints(event->pos());
+    pls->update();
+}
 
 
 void MainWindow::paintEvent(QPaintEvent *ev)

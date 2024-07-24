@@ -7,8 +7,12 @@
 #include "qfileinfo.h"
 #include"filefunc.h"
 #include "sunit.h"
+class MainWindow;
+class SFile;
 
-
+extern bool init;
+extern bool firstNotice;
+extern bool isQuit;
 extern QMap<int,MainWindow*> pmws;
 extern QMap<int,QScreen*> pscs;
 extern QDesktopWidget* pdt;
@@ -17,9 +21,10 @@ extern StyleHelper* psh;
 extern SUnit* pMovingUnit;
 extern int screenNum;
 extern QMap<int,QJsonObject> UnusedJsons;
+extern QMap<QString,SFile*> nowExits;
 
 // static void HighDpiAdapt();
-class MainWindow;
+
 void SetUp();
 
 
@@ -33,8 +38,8 @@ extern bool onLoading;
 
 QList<SUnit*> units();
 
-QVector<MyFileInfo> scanalldesktopfiles();
-QVector<MyFileInfo>getFormFileInfo(QFileInfo x);
+QList<MyFileInfo> scanalldesktopfiles();
+QList<MyFileInfo>getFormFileInfo(QFileInfo x);
 
 void paintRect(QWidget* aim,QColor color);
 void repaintAround(QWidget* aim);
@@ -61,4 +66,5 @@ bool isPic(QString pah);
 
 QString shellrun(QString path,QString para = "");
 
+void scanForChange();
 #endif // SYSFUNCTIONS_H

@@ -8,6 +8,7 @@
 #include "QScreen"
 #include "QThread"
 #include"QStyle"
+#include "mainwindow.h"
 #include "stooltip.h"
 #include "qapplication.h"
 #include "qpainter.h"
@@ -16,7 +17,7 @@
 LayerShower::LayerShower(QWidget *parent)
     : QWidget{parent}
 {
-    setWindowState(Qt::WindowMaximized   );
+    // setWindowState(Qt::WindowMaximized   );
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setWindowFlags(Qt::FramelessWindowHint);
@@ -33,6 +34,7 @@ LayerShower::LayerShower(QWidget *parent)
 
     // qDebug()<<1;
 
+    // setFixedSize(10,10);
     move(0,0);
     setFixedSize( pdt->size()*2);
     qDebug()<<"Layer Shower Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
@@ -56,15 +58,12 @@ void LayerShower::paintEvent(QPaintEvent *event)
     // paintRect(this,tem);
     foreach(MainWindow* pmw,pmws){
         QList<QPoint>& drawParamList = pmw->drawParamList;
-        if (drawParamList.count() >= 2) {
+        if (drawParamList.size() >= 2) {
             QPainter painter(this);
             QColor tem = GetWindowsThemeColor();
             QPoint shift =mapFromGlobal( pmw->mapToGlobal(QPoint(0,0)));
-            qDebug()<<"shift"<<shift;
             QPoint fixPoint0 = drawParamList[0]+shift;
             QPoint fixPoint1 = drawParamList[1]+shift;
-            qDebug()<<"Point0"<<fixPoint0;
-            qDebug()<<"Point1"<<fixPoint1;
             tem.setAlpha(200);
             painter.setBrush(tem);
             int x = (fixPoint0.x() < fixPoint1.x()) ? fixPoint0.x() : fixPoint1.x();
@@ -103,6 +102,11 @@ bool LayerShower::nativeEvent(const QByteArray &eventType, void *message, long *
         }
     }
     return false;
+}
+
+void LayerShower::focusInEvent(QFocusEvent *event)
+{
+    pmws[0]->setFocus();
 }
 
 

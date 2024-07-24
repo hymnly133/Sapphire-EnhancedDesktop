@@ -29,6 +29,7 @@ QPoint SBlockLayout::pos2Ind(int posx,int posy){
 
 QPoint SBlockLayout::defaultPutableInd(SUnit *aim)
 {
+    // qDebug()<<aim->sizeX<<aim->sizeY;
     for(int j=0;j<col;j++)
     {
         for(int i=0;i<row;i++)
@@ -96,6 +97,17 @@ void SBlockLayout::updateBeforePut(SUnit * aim, int indx, int indy)
             blocks[indx+i][indy+k]->occupied = true;
             blocks[indx+i][indy+k]->content = aim;
         }
+    }
+}
+
+void SBlockLayout::printOccupied()
+{
+    for(int i=0;i<col;i++){
+        QString buf;
+        for(int j=0;j<row;j++){
+            buf.append(QString::number(blocks[j][i]->occupied)).append(" ");
+        }
+        qDebug()<<buf;
     }
 }
 

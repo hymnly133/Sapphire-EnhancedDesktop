@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
     double dpi  = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
     qDebug()<<dpi;
     // eApp->init();
-    // 获取多显示器,通过list存储当前主机所有显示器
+
+
 
 
     static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块
@@ -43,11 +44,14 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+
+
     QFont font = qApp->font();
     font.setPointSize(10);
     // font.setFamily("MiSans");
     font.setHintingPreference(QFont::PreferNoHinting);
     qApp->setFont(font);
+
 
     qRegisterMetaType<SUnit>();
     qRegisterMetaType<SFile>();
@@ -85,7 +89,14 @@ int main(int argc, char *argv[])
     }
 
     SetUp();
+    if(isQuit){
+        qApp->quit();
+        return -1;
+    }
 
+
+
+    scanForChange();
     a.exec();
     sh.writeStyleIni();
 

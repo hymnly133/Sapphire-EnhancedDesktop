@@ -1,6 +1,7 @@
 #include "smultifunc.h"
 #include"QProcess"
 #include "filefunc.h"
+#include "mainwindow.h"
 #include "qboxlayout.h"
 #include"SysFunctions.h"
 #include "qevent.h"

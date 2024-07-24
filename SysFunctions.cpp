@@ -32,11 +32,15 @@
 #include <QDateTime>
 #include <QMutex>
 #include <dwmapi.h>
+#include <QStandardPaths>
+#include"sfile.h"
 #include"QWindowStateChangeEvent"
+#include"snotice.h"
 
 static QMutex mutex;;
-
-
+bool firstNotice = true;
+bool init = false;
+bool isQuit = false;
 QMap<int,MainWindow*> pmws;
 QMap<int,QScreen*> pscs;
 int screenNum;
@@ -48,7 +52,7 @@ QString* UserDesktopPath;
 QString* PublicDesktopPath;
 SUnit* pMovingUnit;
 bool onLoading = true;
-
+QMap<QString,SFile*> nowExits;
 
 QMap<int,QJsonObject> UnusedJsons;
 
@@ -65,12 +69,10 @@ HWND shelldlldefview = NULL;
 void SetUp()
 {
     qDebug()<<"Setting Up...";
-
-    UserDesktopPath = new QString(getDesktopPath());
+    UserDesktopPath = new  QString(QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0]);
     qDebug()<<"User Desktop:"<<*UserDesktopPath;
-    PublicDesktopPath=new QString(QDir::toNativeSeparators("C:/Users/Public/Desktop"));
+    PublicDesktopPath=new QString("C:/Users/Public/Desktop");
     qDebug()<<"Public Desktop:"<<*PublicDesktopPath;
-
     pdt = QApplication::desktop();
     pscs[0]=QGuiApplication::primaryScreen();
 
@@ -100,27 +102,54 @@ void SetUp()
     qDebug()<<"Find"<<screenNum<<"Screens";
 
 
-    if(jsonNum<screenNum)
-    QMessageBox::about(nullptr,"注意！",QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化\n请注意弹出窗口！").arg(jsonNum).arg(screenNum));
-    if(jsonNum>screenNum){
-        QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！多余的桌面数据不会被清理").arg(jsonNum).arg(screenNum));
-        for(int i=screenNum;i<jsonNum;i++){
-            UnusedJsons[i] = jsons[i];
-        }
-    }
 
 
-    for(int i=0;i<screenNum;i++){
-        qDebug()<<"Processing Mainwindow"<<i;
-        pmws[i] = new MainWindow(nullptr,i);
-        if(jsons.contains(i)){
-            pmws[i]->load_json(jsons[i]);
-        }
+    if(jsonNum == 0){
+        //初始化
+        init = true;
+        if(screenNum!=1)
+            QMessageBox::about(NULL, "提示",QString( "没有布局文件，即将初始化~\n你有%1个屏幕，将分别初始化\n请注意弹出窗口！").arg(screenNum));
         else{
-            pmws[i]->Init();
+            QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化~\n请注意弹出窗口！");
+        }
+
+        qDebug()<<"Scaning";
+        QList<MyFileInfo> iconns = scanalldesktopfiles();
+        for(int i=0;i<screenNum;i++){
+            qDebug()<<"Processing Mainwindow"<<i;
+            pmws[i] = new MainWindow(nullptr,i);
+            iconns = pmws[i]->Init(iconns);
+        }
+        if(!iconns.empty()){
+            QMessageBox::about(nullptr,"(⊙o⊙)！！",QString("你选择的布局不足以容纳所有图标，请重启软件并重新选择布局\n（剩余：%1个）").arg(iconns.size()));
+            isQuit = true;
+            return;
         }
     }
+    else{
+        if(jsonNum<screenNum)
+            QMessageBox::about(nullptr,"注意！",QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化\n请注意弹出窗口！").arg(jsonNum).arg(screenNum));
+        if(jsonNum>screenNum){
+            QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！多余的桌面数据不会被清理").arg(jsonNum).arg(screenNum));
+            for(int i=screenNum;i<jsonNum;i++){
+                UnusedJsons[i] = jsons[i];
+            }
+        }
+        //加载
+        for(int i=0;i<screenNum;i++){
+            qDebug()<<"Processing Mainwindow"<<i;
+            pmws[i] = new MainWindow(nullptr,i);
+            if(jsons.contains(i)){
+                pmws[i]->load_json(jsons[i]);
+            }
+            else{
+                pmws[i]->Init();
+            }
+        }
+
+    }
     for(int i=0;i<screenNum;i++){
+        pmws[i]->endUpdate();
         pmws[i]->show();
     }
 
@@ -130,7 +159,14 @@ void SetUp()
         qDebug()<<"Mainwindow"<<i<<pmws[i]->mapToGlobal(QPoint(0,0));
     }
     pls->move(0,0);
+    pls->show();
     pls->raise();
+
+    if(init)
+    {
+        SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
+    }
+
 
     onLoading  =false;
 }
@@ -435,10 +471,10 @@ void inplace2(QWidget* pmw2) {
     // 如果找到了符合条件的 WorkerW 窗口，设置 Qt 窗口的父窗口
 }
 
-QVector<MyFileInfo> scandesktopfiles(const QString &desktopPath)
+QList<MyFileInfo> scandesktopfiles(const QString &desktopPath)
 {
     //对于指定桌面路径，返还桌面路径中的文件信息的列表
-    QVector<MyFileInfo> files;
+    QList<MyFileInfo> files;
     QDir desktopDir(desktopPath);
     desktopDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
     QFileInfoList fileInfoList=desktopDir.entryInfoList();
@@ -450,10 +486,10 @@ QVector<MyFileInfo> scandesktopfiles(const QString &desktopPath)
     return files;
 }
 
-QVector<MyFileInfo> scanalldesktopfiles()
+QList<MyFileInfo> scanalldesktopfiles()
 {
     //寻找桌面路径，并返回两个桌面中所有文件信息的列表
-    QVector<MyFileInfo> files;
+    QList<MyFileInfo> files;
 
     files.append(scandesktopfiles(*PublicDesktopPath));
     files.append(scandesktopfiles(*UserDesktopPath));
@@ -669,7 +705,7 @@ QMap<int,QJsonObject> readJson(){
     QFile file("content.json");
 
     if(!file.exists()){
-    QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化~");
+
         return res;
     }
 
@@ -790,7 +826,65 @@ QString shellrun(QString filename, QString para)
         sRet = QString("unknow error.");
         break;
     }
-
     return sRet;
+}
 
+void scanForChange()
+{
+    if(onLoading) return;
+    //ScanForLoss
+    QList<QString> keyList = nowExits.keys();
+    QMap<QString,SFile*> loss;
+    QVector<QString> newFiles;
+    foreach (QString path, keyList) {
+        if(!QFileInfo::exists(path)){
+            loss[path] = nowExits[path];
+        }
+    }
+
+
+
+    QDir uPathDir(*UserDesktopPath);
+    qDebug()<<"Scanningfor"<<*UserDesktopPath;
+    uPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
+
+    foreach (QString name, uPathDir.entryList()) {
+        QString absolute = uPathDir.absoluteFilePath(name);
+        if(!nowExits.contains(absolute)){
+            newFiles.append(absolute);
+        }
+    }
+    QDir pPathDir(*PublicDesktopPath);
+    qDebug()<<"Scanningfor"<<*PublicDesktopPath;
+    pPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
+
+    foreach (QString name, pPathDir.entryList()) {
+        QString absolute = pPathDir.absoluteFilePath(name);
+        if(!nowExits.contains(absolute)){
+            newFiles.append(absolute);
+        }
+    }
+
+    QStringList removefiles;
+    QList<QString> removed = loss.keys();
+    foreach (QString path, removed) {
+        if(nowExits.contains(path))
+            nowExits[path]->Remove();
+        removefiles<<path;
+        //提示
+    }
+    if(!removefiles.empty())
+    SNotice::notice(removefiles,"移除文件",5000);
+
+    QStringList newfiles;
+    foreach (QString newfile, newFiles) {
+        pmws[0]->addAIcon(newfile);
+        pmws[0]->endUpdate();
+        newfiles<<newfile;
+        //提示
+    }
+    if(!newfiles.empty())
+    SNotice::notice(newfiles,"新增文件",5000);
+
+    writeJson();
 }

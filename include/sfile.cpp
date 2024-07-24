@@ -28,6 +28,7 @@ SFile::SFile(SLayout *dis, int sizex, int sizey,QString filePath):SMultiFunc(dis
 {
     if(filePath!="")
     loadFromPath(filePath,true);
+
 }
 
 
@@ -108,10 +109,23 @@ void SFile::setPix(QString pixPath, bool save)
 }
 
 
+void SFile::Remove()
+{
+    if(nowExits.contains(filePath))
+        nowExits.remove(filePath);
+    if(QFileInfo::exists(filePath)){
+        QFile::moveToTrash(filePath);
+    }
+    SUnit::Remove();
+}
+
+
 void SFile::loadFromMyFI(MyFileInfo info,bool init){
 
     filePath = info.filePath;
     if(QFileInfo(filePath).isDir()) isDir = true;
+    nowExits[filePath] = this;
+
 
     if(init)
     setname(info.name);
@@ -151,6 +165,7 @@ void SFile::loadFromMyFI(MyFileInfo info,bool init){
 void SFile::loadFromPath(QString filepath,bool init)
 {
     qDebug()<<"Loading form path:"<<filepath;
+
     MyFileInfo info = path2MyFI(filepath);
     loadFromMyFI(info,init);
 }

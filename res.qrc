@@ -2,9 +2,7 @@
     <qresource prefix="/images">
         <file alias="background">testBackgroud.jpg</file>
     </qresource>
-    <qresource prefix="/qt/etc">
-        <file>qt.conf</file>
-    </qresource>
+    <qresource prefix="/qt/etc"/>
     <qresource prefix="/icon/sysicon">
         <file alias="Control">SysIcons/imageres 023.png</file>
         <file alias="Dustbin">SysIcons/imageres 050.png</file>

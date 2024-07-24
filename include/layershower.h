@@ -21,6 +21,10 @@ protected:
     // QWidget interface
 protected:
     bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
+
+    // QWidget interface
+protected:
+    void focusInEvent(QFocusEvent *event) override;
 };
 
 #endif // LAYERSHOWER_H

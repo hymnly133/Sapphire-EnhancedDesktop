@@ -16,6 +16,7 @@ void SLinearLayout::refresh()
 
 QPoint SLinearLayout::pos2Ind(int posx, int posy)
 {
+    qDebug()<<"required"<<int(posx/fixedDis());
     return QPoint(int(posx/fixedDis()),0);
 }
 
@@ -50,9 +51,9 @@ QPoint SLinearLayout::defaultPutableInd(SUnit *aim)
 
 QPoint SLinearLayout::clearPutableInd(SUnit *aim)
 {
-    if(nowNum>9)
+    if(list.size()>9)
        return QPoint(-1,-1);
-    if (!nowNum)return QPoint(0,0);
+
 
     int posx = pContainer->mapFromGlobal(pContainer->cursor().pos()).x();
     return QPoint((posx+fixedDis()/2)/fixedDis(),0);

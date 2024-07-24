@@ -208,8 +208,7 @@ void SUnit::setupMenu()
 
 
     SET_ANCTION(act7,删除,{
-        removeFromLayout();
-        deleteLater();
+        Remove();
     });
 
 
@@ -570,6 +569,12 @@ void SUnit::wheelEvent(QWheelEvent *event)
         }
         event->accept();
     }
+}
+
+void SUnit::Remove()
+{
+    removeFromLayout();
+    deleteLater();
 }
 
 void SUnit::endUpdate(){

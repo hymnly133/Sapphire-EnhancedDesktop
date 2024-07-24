@@ -1,5 +1,6 @@
 #include "stooltip.h"
 #include "SysFunctions.h"
+#include "mainwindow.h"
 #include "qpainter.h"
 #include "screenfunc.h"
 
@@ -19,154 +20,123 @@ SToolTip::SToolTip(QWidget *parent)
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setAttribute(Qt::WA_InputMethodTransparent);
     setWindowFlags(Qt::WindowTransparentForInput|Qt::NoDropShadowWindowHint);
-    animations = new QParallelAnimationGroup(this);
-
-    int animationTime =200;
-    SET_ANIMATION(radiusAnimation,nowRadius,animationTime);
-    SET_ANIMATION(alphaAnimation,nowAlpha,animationTime);
-    SET_ANIMATION(sizeAnimation,nowSize,animationTime);
-
-    posAnimation = new QPropertyAnimation(this,"nowPos");
-    posAnimation->setDuration(animationTime);
-    posAnimation->setEasingCurve(QEasingCurve::InOutQuad);\
-
-
-    connect(this,&SToolTip::nowAlpha_changed,this,[=](int val){
-        whenAnimationChange();
-    });
-    connect(this,&SToolTip::nowRadius_changed,this,[=](int val){
-        whenAnimationChange();
-    });
-    connect(this,&SToolTip::nowSize_changed,this,[=](QSize val){
-        whenAnimationChange();
-    });
-    connect(this,&SToolTip::nowPos_changed,this,[=](QPoint val){
-        whenAnimationChange();
-    });
+    arect = new SAnimationRect(this);
     // connect(animations,&)
-    rs->distriRadius(&nowRadius);
+    rs->distriRadius(&arect->nowRadius);
     rs->raise();
+    connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
+        deleteLater();
+    });
+    connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){
+        move(pls->mapFromGlobal(previousPos)+pos);
+        setFixedSize(size);
+        update();
+    });
+
 }
 
 void SToolTip::setInfo(QString info)
 {
-    this->info = info;
     QFontMetrics fm(*font);
     QRect rec = fm.boundingRect(info);
-    aimSize = QSize(rec.width()+20,rec.height()+20);//这个就获得了字符串所占的像素宽度
+    this->info = info;
+    aimSize = rec.size()+QSize(20,20);
+    QPoint tem = pmws[0]->mapFromGlobal(pls->mapToGlobal(previousPos));
+    if(tem.x()+aimSize.width()>pmws[0]->width()){
+        aimPos = QPoint(-13-aimSize.width(),8);
+        left = true;
+    }
+    else{
+        aimPos = QPoint(13,8);
+    }
+
+    //这个就获得了字符串所占的像素宽度
 }
 
 void SToolTip::comeout()
 {
-    alphaAnimation->setStartValue(0);
-    alphaAnimation->setEndValue(230);
 
-    sizeAnimation->setStartValue(QSize(0,aimSize.height()));
-    sizeAnimation->setEndValue(aimSize);
+    arect->setStartValue(QPoint(0,8),
+                         QSize(0,aimSize.height()),
+                         0,0);
 
-    radiusAnimation->setStartValue(0);
-    radiusAnimation->setEndValue(10);
+    arect->setEndValue(aimPos,
+                         QSize(aimSize.width(),aimSize.height()),
+                       230,10);
 
-    animations->start();
+
+    arect->start();
     setVisible(true);
     show();
 }
 
 void SToolTip::end()
 {
-    if(onEnd) return;
-    onEnd = true;
-    previousPos = pos();
-    nowPos = pos();
-    aimPos = geometry().topRight();
-    animations->stop();
-
-    if(enable_tooltip_right_animation){
-        animations->addAnimation(posAnimation);
-
-        posAnimation->setStartValue(pos());
-        posAnimation->setEndValue(aimPos);
-
-        animations->removeAnimation(sizeAnimation);
-    }
-    else{
-
-        sizeAnimation->setStartValue(size());
-        sizeAnimation->setEndValue(QSize(0,aimSize.height()));
-    }
+    arect->stop();
 
 
-    alphaAnimation->setStartValue(nowAlpha);
-    alphaAnimation->setEndValue(0);
+    arect->setEndValue(QPoint(0,8),
+                       QSize(0,aimSize.height()),
+                       0,0);
+    arect->setFinal();
 
-    radiusAnimation->setStartValue(10);
-    radiusAnimation->setEndValue(5);
 
 
-    connect(animations,&QParallelAnimationGroup::finished,this,&SToolTip::whenEndAnimationEnd);
-
-    animations->start();
+    arect->start();
 }
 
 void SToolTip::Tip(QString info)
 {
-    Tip(pls->mapFromGlobal(QCursor::pos()),info);
+    qDebug()<<"tipCalled";
+    Tip(QCursor::pos(),info);
 }
 
 void SToolTip::Tip(QPoint pos, QString info)
 {
-    //ls pos
+    //global pos
     SToolTip* Tip = new SToolTip(pls);
-    Tip->move(pos+QPoint(13,8));
+    Tip->previousPos = pos;
+    Tip->move(pls->mapFromGlobal(pos));
     Tip->setInfo(info);
     Tip->comeout();
 }
 
 void SToolTip::Tip(QWidget *aim, QPoint pos, QString info)
 {
-    Tip(mapToLS(aim,pos),info);
+    Tip(aim->mapToGlobal(pos),info);
 }
 
-void SToolTip::whenAnimationChange()
-{
-
-    if(onEnd&&enable_tooltip_right_animation){
-        move(nowPos);
-        setFixedWidth(aimPos.x()-nowPos.x());
-    }
-    else{
-               setFixedSize(nowSize);
-    }
-    update();
-
-
-}
-
-void SToolTip::whenEndAnimationEnd()
-{
-    deleteLater();
-}
 
 void SToolTip::paintEvent(QPaintEvent *event)
 {
     QColor tem = GetWindowsThemeColor();
-
+    // qDebug()<<mapToGlobal(QPoint(0,0));
     QPainter painter(this);
-    tem.setAlpha(nowAlpha);
+    tem.setAlpha(arect->nowAlpha);
     painter.setBrush(tem);
     painter.setPen(Qt::NoPen);
     painter.drawRect(rect());
 
 
     tem = QColor("black");
-    tem.setAlpha(nowAlpha);
+    tem.setAlpha(arect->nowAlpha);
     painter.setPen(tem);
 
     //    font.setUnderline(true); //设置下划线
     //    font.setOverline(true); //设置上划线
     // font.setLetterSpacing(QFont::AbsoluteSpacing, 10); //设置字符间的间距
     painter.setFont(*font);
-    QRect temsize = QRect((previousPos-nowPos).x(),0,aimSize.width(),aimSize.height());
+
+    QRect temsize = QRect(0,0,aimSize.width(),aimSize.height());
+    if(left){
+
+        int delta = -arect->nowPos.x() - arect->nowSize.width();
+        QPoint globalstill = (previousPos+aimPos);
+        temsize.setX(mapFromGlobal(globalstill).x());
+        temsize = QRect(mapFromGlobal(globalstill).x()+13-delta,0,aimSize.width(),aimSize.height());
+        // temsize.setX(0);
+    }
+    // qDebug()<<temsize;
     painter.drawText(temsize, Qt::AlignCenter, info);//字体水平居中
 }
 

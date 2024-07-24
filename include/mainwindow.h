@@ -78,6 +78,7 @@ public:
     void load_json(QJsonObject rootObject);
 
 
+    QList<MyFileInfo> Init(QList<MyFileInfo> data);
     void Init();
 
 private:
@@ -121,8 +122,6 @@ protected:
     void leaveEvent(QEvent *event) override;
 
 public:
-signals:
-    void LoadDone();
 
 
     // QWidget interface

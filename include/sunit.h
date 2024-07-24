@@ -159,6 +159,7 @@ public:
     void leaveEvent(QEvent *) override;                      //离开QWidget瞬间事件
     void paintEvent(QPaintEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    virtual void Remove();
 
     void resizeEvent(QResizeEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;

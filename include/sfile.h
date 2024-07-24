@@ -19,7 +19,7 @@ public:
 
     QPropertyAnimation* defaultScaleAnimation;
 
-    SFile(const SFile& other):SFile(other.layout,other.sizeX,other.sizeY){};
+    SFile(const SFile& other);;
 
     void mouse_enter_action() override;
 
@@ -39,7 +39,15 @@ public:
 
     // SMultiFunc interface
     void setPix(QString pixPath, bool save) override;
+
+
+
+    // SUnit interface
+public:
+    void Remove() override;
 };
+
+inline SFile::SFile(const SFile &other):SFile(other.layout,other.sizeX,other.sizeY){}
 
 Q_DECLARE_METATYPE(SFile)
 

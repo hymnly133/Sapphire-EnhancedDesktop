@@ -104,6 +104,7 @@ public:
     // ED_Layout interface
 public:
     void updateBeforePut(SUnit *, int, int) override;
+    void printOccupied();
 
 
     // ED_Layout interface

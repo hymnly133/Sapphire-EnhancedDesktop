@@ -1,6 +1,6 @@
 QT += core gui widgets winextras network concurrent quick qml
 
-VERSION = 1.2.8.2
+VERSION = 1.2.8.3
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8
@@ -49,6 +49,7 @@ SOURCES += SysFunctions.cpp \
     include/picturebox.cpp \
     include/repaintcounterunit.cpp \
     include/roundshower.cpp \
+    include/sanimationrect.cpp \
     include/sbgshower.cpp \
     include/sblockcontainer.cpp \
     include/sblocklayout.cpp \
@@ -60,6 +61,7 @@ SOURCES += SysFunctions.cpp \
     include/slayout.cpp \
     include/slinearlayout.cpp \
     include/smultifunc.cpp \
+    include/snotice.cpp \
     include/sshellfuncunit.cpp \
     include/stooltip.cpp \
     include/sunit.cpp \
@@ -165,6 +167,7 @@ HEADERS += \
     include/picturebox.h \
     include/repaintcounterunit.h \
     include/roundshower.h \
+    include/sanimationrect.h \
     include/sbgshower.h \
     include/sblockcontainer.h \
     include/sblocklayout.h \
@@ -178,6 +181,7 @@ HEADERS += \
     include/slayout.h \
     include/slinearlayout.h \
     include/smultifunc.h \
+    include/snotice.h \
     include/sshellfuncunit.h \
     include/stooltip.h \
     include/style.h \
