@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "sbgshower.h"
+#include "snotice.h"
 #include "sshellfuncunit.h"
 #include "sblockcontainer.h"
 #include "sfile.h"
@@ -26,7 +27,8 @@
 #include "QThread"
 #include"style.h"
 #include"qmenu.h"
-
+#include"QClipboard"
+#include"QMimeData"
 
 
 #define SET_ANCTION(NAME,TEXT,MENU,FUCTION)\
@@ -371,7 +373,7 @@ void MainWindow::setShoweredVisibal(bool val){
             if(content->alwaysShow)
             content->setVisible(false);
         }
-
+        if(!(showerAnimations->state()==QParallelAnimationGroup::Running))
         capture();
 
         foreach (SUnit* content,*(inside->contents)) {
@@ -404,7 +406,13 @@ void MainWindow::updata_animation()
 
 void MainWindow::addAIcon(QString path)
 {
-     addAIcon(path2MyFI(path));
+    if(nowExits.contains(path)){
+        SNotice::notice(QStringList()<<"文件已存在");
+    }
+    else{
+        addAIcon(path2MyFI(path));
+    }
+
 }
 
 void MainWindow::addAIcon(QFileInfo qinfo)
@@ -512,12 +520,85 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    // if(event->key()==Qt::Key_Shift){
-    //     onShift = true;
-    // }
-    event->accept();
 
+    if( event ->matches( QKeySequence::Copy ) )
+    {
 
+        QList<QUrl> copyfiles;
+        foreach (SUnit* unit, pCelectedUnits) {
+            if(unit->inherits("SFile")){
+                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
+                if(url.isValid()){
+                    copyfiles.push_back(url);
+                }
+            }
+        }
+        qDebug()<<"Copied"<<copyfiles;
+
+        QMimeData *data=new QMimeData;
+        data->setUrls(copyfiles);
+
+        QClipboard *clip=QApplication::clipboard();
+        clip->setMimeData(data);
+        event->accept();
+        return;
+    }
+    else if( event ->matches( QKeySequence::Paste ) ){
+
+        QClipboard *clip=QApplication::clipboard();
+        if(clip->mimeData()->hasUrls())//处理期望数据类型
+        {
+            QList<QUrl> list = clip->mimeData()->urls();//获取数据并保存到链表中
+            for(int i = 0; i < list.count(); i++)
+            {
+                QString path = list[i].toLocalFile();
+                QString newName =  (*UserDesktopPath)+"/"+QFileInfo(path).fileName();
+                bool removed = QFile::rename(path,newName);
+                qDebug()<<"move"<<newName;
+                if(removed){
+                    qDebug()<<"moved";
+                }
+                addAIcon(newName);
+            }
+        }
+
+        event->accept();
+        return;
+    }
+    else if(event->matches(QKeySequence::Cut)){
+        QList<QUrl> copyfiles;
+        foreach (SUnit* unit, pCelectedUnits) {
+            if(unit->inherits("SFile")){
+                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
+                if(url.isValid()){
+                    copyfiles.push_back(url);
+
+                }
+            }
+        }
+        qDebug()<<"Cut"<<copyfiles;
+
+        QMimeData *data=new QMimeData;
+        data->setUrls(copyfiles);
+
+        QClipboard *clip=QApplication::clipboard();
+        clip->setMimeData(data);
+
+        foreach (SUnit* unit, pCelectedUnits) {
+            if(unit->inherits("SFile")){
+                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
+                if(url.isValid()){
+                    QFile::remove(((SFile*)unit)->filePath);
+                }
+            }
+        }
+
+        event->accept();
+        return;
+    }
+
+    event->ignore();
+    return;
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
@@ -571,8 +652,8 @@ void MainWindow::enterEvent(QEvent *event)
 {
     activepmw = this;
     qDebug()<<objectName()<<"Enter";
-    if(!onLoading)
-    scanForChange();
+    // if(!onLoading)l
+    // // scanForChange();
     // raise();
 }
 
@@ -621,7 +702,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
     cleanCelect();
 
     appendPoints(event->pos());
-
+    inside->printOccupied();
     pls->Clear();
 
     if(firstNotice&&init){

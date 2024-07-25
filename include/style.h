@@ -143,6 +143,7 @@ public:
     QMap<QString,QVBoxLayout*> checklayouts;
     QMap<QString,QVBoxLayout*> sliderlayouts;
     QVBoxLayout* mainLayout;
+    QHBoxLayout* buttons;
 
     //将Val类型设置到面板
     void setInLayout(QString field,QString name,QWidget* content,bool checkBox);
@@ -229,5 +230,7 @@ extern bool use_pic_as_icon;;
 
 //启用开机自启
 extern bool enable_auto_run;
+
+extern bool resize_to_rect;
 
 #endif // STYLE_H

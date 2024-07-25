@@ -951,6 +951,19 @@ void moveCelect()
         // k->update();
     }
 
+    //processor
+    if(pCelectedUnits.size()==1){
+        QPoint ind = activepmw->inside->SLayout::pos2Ind(activepmw->mapFromGlobal(QCursor::pos()));
+        SUnit* aim = activepmw->inside->SLayout::ind2Unit(ind);
+        if(aim!=nullptr){
+            aim->preSetLongFocus(true);
+        }
+        foreach (SUnit* tem, *(activepmw->inside->contents)) {
+            if(tem!=aim &&tem->preLongFocus){
+                tem->preSetLongFocus(false);
+            }
+        }
+    }
 }
 
 QPair<SLayout*,QPoint > deepFind(SUnit *aim)

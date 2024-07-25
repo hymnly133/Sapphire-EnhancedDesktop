@@ -3,7 +3,8 @@
 #include "mainwindow.h"
 #include "qfileinfo.h"
 #include "qsettings.h"
-
+#include"QInputDialog"
+#include"SNotice.h"
 
 int unfocused_alpha = 130;
 int focused_alpha = 220;
@@ -54,6 +55,9 @@ bool enable_text_shadow = 0;
 bool use_pic_as_icon = 1;
 
 bool enable_auto_run = 0;
+bool enable_resize_to_rect = 0;
+
+QString user_font;
 
 #define ADD(TYPE,NAME,MIN,MAX)\
 Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
@@ -189,6 +193,22 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr)
 {
 
     mainLayout = new QVBoxLayout(this);
+    buttons = new QHBoxLayout(this);
+    mainLayout->addLayout(buttons);
+
+    QPushButton* resizeLayoutButton = new QPushButton(this);
+    resizeLayoutButton->setText("重布局");
+    connect(resizeLayoutButton,&QPushButton::clicked,this,[=](){
+        int sizeX = QInputDialog::getInt(nullptr,"重布局","请输入布局列数(根据屏幕宽度)",activepmw->inside->row,1,1000,2);
+        int sizeY = QInputDialog::getInt(nullptr,"重布局","请输入布局行数(根据屏幕高度)",activepmw->inside->col,1,1000,2);
+        if(!sizeX) sizeX=10;
+        if(!sizeY) sizeY=10;
+        activepmw->inside->resize(sizeX,sizeY);
+
+    });
+    buttons->addWidget(resizeLayoutButton);
+
+
     QMutableVectorIterator<boolVal*> iterator0(psh->boolStyles);
     while (iterator0.hasNext()) {
         iterator0.next();
@@ -270,10 +290,6 @@ void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *conte
         sliderlayouts[field]->addWidget(content);
         sliderlayouts[field]->addWidget(new QLabel(name));
     }
-
-
-
-
 }
 
 void StyleSettingWindow::closeEvent(QCloseEvent *event)

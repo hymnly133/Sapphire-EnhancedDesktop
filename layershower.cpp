@@ -44,7 +44,7 @@ void LayerShower::paintEvent(QPaintEvent *event)
     // auto tem = QColor("green");
     // tem.setAlpha(100);
     // paintRect(this,tem);
-    qDebug()<<"ShowerRepaint";
+    // qDebug()<<"ShowerRepaint";
     auto tem = winThemeColor();
     tem.setAlpha(100);
 

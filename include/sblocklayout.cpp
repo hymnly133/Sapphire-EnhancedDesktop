@@ -1,7 +1,7 @@
 #include "sblocklayout.h"
 #include "SysFunctions.h"
 #include "screenfunc.h"
-
+#include"SNotice.h"
 SBlockLayout::SBlockLayout(QWidget *father, int row, int col, int borad_space,int space_x,int space_y):SLayout(father) {
     this->row = row;
     this->col = col;
@@ -58,6 +58,27 @@ void SBlockLayout::updateAfterRemove(SUnit *aim, int indx, int indy)
             blocks[indx+i][indy+k]->content = nullptr;
         }
     }
+}
+
+void SBlockLayout::resize(int sizeX, int sizeY)
+{
+    for(int i=this->row;i<sizeX;i++){
+        for(int j=0;j<this->col;j++){
+            blocks[i][j] = new little_Block(this,i,j);
+                        blocks[i][j]->occupied = false;
+        }
+    }
+    this->row = sizeX;
+
+    for(int i=this->col;i<sizeY;i++){
+        for(int j=0;j<this->row;j++){
+            blocks[j][i] = new little_Block(this,j,i);
+            blocks[j][i]->occupied = false;
+        }
+    }
+    this->col = sizeY;
+        SNotice::notice(QStringList()<<"列数："+QString::number(sizeX)<<"行数："+QString::number(sizeY),"重布局",5000);
+    UpdateContentPositon(true);
 }
 
 QPoint SBlockLayout::clearPutableInd(SUnit *aim)

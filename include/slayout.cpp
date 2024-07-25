@@ -273,6 +273,7 @@ void SLayout::load_json(QJsonObject rootObject)
     foreach (QJsonValue contentValue , (contentsArray)) {
         QJsonObject contentObject = contentValue.toObject();
         SUnit* unit = from_json(contentObject,this);
+        if(unit==nullptr) continue;
         if(unit->indX==-1){
             defaultPut(unit,false);
         }
