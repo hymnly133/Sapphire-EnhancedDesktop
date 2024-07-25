@@ -160,7 +160,6 @@ void SFile::loadFromMyFI(MyFileInfo info,bool init){
         pixPath = "";
     }
 
-    // endUpdate();
 }
 
 void SFile::loadFromPath(QString filepath,bool init)
