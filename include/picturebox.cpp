@@ -36,6 +36,7 @@ void PictureBox::setImage(QPixmap &image)
 
     // if(!followSource&& source!=nullptr)
     //     delete source;
+    requireRefresh = true;
     source = new QPixmap(image);
 
     followSource = false;
@@ -46,8 +47,7 @@ void PictureBox::setImage(QPixmap &image)
 
 void PictureBox::follow(QPixmap *pPixmap)
 {
-    // if(!followSource&& source!=nullptr)
-    //     delete source;
+    requireRefresh = true;
     source = pPixmap;
     followSource = true;
     updateDispaly();
@@ -68,6 +68,13 @@ void PictureBox::paintEvent(QPaintEvent * event)
 void PictureBox::updateDispaly()
 {
     if(source!=nullptr && !source->isNull()){
+        // qDebug()<<newSource<<aim_scale();
+        if((aim_scale() == pre_scale)&&!requireRefresh&&(preParentSize == parentWidget()->size())) return;
+
+        pre_scale = aim_scale();
+        requireRefresh = false;
+        preParentSize = parentWidget()->size();
+
         double window_width, window_height;
         double image_width, image_height;
         double r1, r2, r;

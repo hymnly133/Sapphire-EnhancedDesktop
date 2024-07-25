@@ -24,11 +24,12 @@ SToolTip::SToolTip(QWidget *parent)
     // connect(animations,&)
     rs->distriRadius(&arect->nowRadius);
     rs->raise();
+
     connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
         deleteLater();
     });
     connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){
-        move(pls->mapFromGlobal(previousPos)+pos);
+        move(previousPos+pos);
         setFixedSize(size);
         update();
     });
@@ -41,7 +42,7 @@ void SToolTip::setInfo(QString info)
     QRect rec = fm.boundingRect(info);
     this->info = info;
     aimSize = rec.size()+QSize(20,20);
-    QPoint tem = pmws[0]->mapFromGlobal(pls->mapToGlobal(previousPos));
+    QPoint tem = previousPos;
     if(tem.x()+aimSize.width()>pmws[0]->width()){
         aimPos = QPoint(-13-aimSize.width(),8);
         left = true;
@@ -94,9 +95,9 @@ void SToolTip::Tip(QString info)
 void SToolTip::Tip(QPoint pos, QString info)
 {
     //global pos
-    SToolTip* Tip = new SToolTip(pls);
-    Tip->previousPos = pos;
-    Tip->move(pls->mapFromGlobal(pos));
+    SToolTip* Tip = new SToolTip(activepmw->pls);
+    Tip->previousPos = activepmw->mapFromGlobal(pos);
+    Tip->move(Tip->previousPos);
     Tip->setInfo(info);
     Tip->comeout();
 }
@@ -109,7 +110,7 @@ void SToolTip::Tip(QWidget *aim, QPoint pos, QString info)
 
 void SToolTip::paintEvent(QPaintEvent *event)
 {
-    QColor tem = GetWindowsThemeColor();
+    QColor tem = winThemeColor();
     // qDebug()<<mapToGlobal(QPoint(0,0));
     QPainter painter(this);
     tem.setAlpha(arect->nowAlpha);

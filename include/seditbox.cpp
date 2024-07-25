@@ -69,6 +69,13 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
 
 
 
+    checkBoxIcon->setChecked(enable_highdef_icon);
+    overall->addWidget(checkBoxIcon);
+    connect(checkBoxIcon, &QCheckBox::clicked, this, [](bool checked) {
+        enable_highdef_icon = checked;
+    });
+
+
     paint =  new QVBoxLayout();
     settings->addLayout(paint);
 
@@ -108,7 +115,6 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     connect(checkBox7, &QCheckBox::clicked, this, [this](bool checked) {
         enable_image_fill = checked;
         pmw->endUpdate();
-        pls->raise();
     });
     overall->addWidget(checkBox7);
 
@@ -122,6 +128,15 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     });
     paint->addWidget(checkBox8);
 #endif
+
+    QCheckBox *checkAutoRun = new QCheckBox("开机自启",this);
+    checkAutoRun->setChecked(enable_auto_run);
+    overall->addWidget(checkAutoRun);
+    connect(checkAutoRun, &QCheckBox::clicked, this, [](bool checked) {
+        enable_auto_run = checked;
+        setMyAppAutoRun(checked);
+    });
+
 
     scale_Slider = new QSlider(this);
     scale_Slider->setRange(0, 100);

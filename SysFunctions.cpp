@@ -7,6 +7,7 @@
 #include "qpainter.h"
 #include "qpainterpath.h"
 #include "qscreen.h"
+#include "scontainer.h"
 #include "screenfunc.h"
 #include"windows.h"
 #include "shlobj.h"
@@ -37,20 +38,25 @@
 #include"QWindowStateChangeEvent"
 #include"snotice.h"
 
-static QMutex mutex;;
+
+#define numCelect pCelectedUnits.size()
+
+static QMutex mutex;
 bool firstNotice = true;
 bool init = false;
 bool isQuit = false;
 QMap<int,MainWindow*> pmws;
+MainWindow* activepmw = nullptr;
+SUnit* processor;
 QMap<int,QScreen*> pscs;
 int screenNum;
 int jsonNum;
 StyleHelper* psh;
-LayerShower* pls;
 QDesktopWidget* pdt;
 QString* UserDesktopPath;
 QString* PublicDesktopPath;
-SUnit* pMovingUnit;
+bool moving_global;
+QList<SUnit*> pCelectedUnits;
 bool onLoading = true;
 QMap<QString,SFile*> nowExits;
 
@@ -68,6 +74,12 @@ HWND shelldlldefview = NULL;
 
 void SetUp()
 {
+    QString application_name = QApplication::applicationName();//获取应用名称
+    QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
+    enable_auto_run = !settings->value(application_name).isNull();
+
+
+
     qDebug()<<"Setting Up...";
     UserDesktopPath = new  QString(QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0]);
     qDebug()<<"User Desktop:"<<*UserDesktopPath;
@@ -92,8 +104,6 @@ void SetUp()
         pscs[i] = list_screen[i];
     }
     qDebug()<<"Setting layerShower";
-    pls = new LayerShower();
-
 
     QMap<int,QJsonObject> jsons = readJson();
     jsonNum = jsons.size();
@@ -154,19 +164,14 @@ void SetUp()
     }
 
     qDebug()<<"Final:";
-    qDebug()<<"Layershower"<<pls->mapToGlobal(QPoint(0,0));
     for(int i=0;i<screenNum;i++){
         qDebug()<<"Mainwindow"<<i<<pmws[i]->mapToGlobal(QPoint(0,0));
     }
-    pls->move(0,0);
-    pls->show();
-    pls->raise();
-
+    activepmw = pmws[0];
     if(init)
     {
         SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
     }
-
 
     onLoading  =false;
 }
@@ -252,12 +257,10 @@ QRect AbsoluteRect(QWidget* aim){
 
 void paintRect(QWidget* aim,QColor color){
     bool another = true;
-    bool choosen = false;
 
     if(aim->inherits("SUnit")) {
         color.setAlpha(color.alpha()*((SUnit*)aim)->nowPadRatio);
         another = ((SUnit*)aim)->showRect;
-        choosen = ((SUnit*)aim)->onmouse;
     }
     if(ShowRect&(another)){
         QPainter painter(aim);
@@ -283,7 +286,6 @@ void paintLight(QWidget* aim,QColor color){
         aim_alpha_start+=((SUnit*)aim)->nowPadRatio;
         // qDebug()<<color.alpha();
         another = ((SUnit*)aim)->showLight;
-        choosen = ((SUnit*)aim)->onmouse;
     }
 
 
@@ -441,7 +443,11 @@ void inplace(QWidget* aim) {
         qDebug() << "Unable to find proper Program manager,Inplacing failed";
     }
 }
-
+void positionToScreen(QWidget* aim,int screenInd){
+    aim->setFixedSize(pscs[screenInd]->availableSize());
+    aim->move(pscs[screenInd]->geometry().topLeft()+Shift_Global);
+    aim->move(2*aim->pos()-aim->geometry().topLeft());
+}
 void inplace2(QWidget* pmw2) {
     // 接入到壁纸层
     HWND background = NULL;
@@ -887,4 +893,76 @@ void scanForChange()
     SNotice::notice(newfiles,"新增文件",5000);
 
     writeJson();
+}
+
+void dragOut()
+{
+    // if(pCelectedUnits.size()>=4){
+    //     foreach (auto k, pCelectedUnits) {
+    //         k->setUpdatesEnabled(false);
+    //     }
+    // }
+    foreach (auto k, pCelectedUnits) {
+        k->onDragedOut();
+    }
+}
+
+QRect Point2Rect(QPoint point0, QPoint point1)
+{
+            QPoint fixPoint0 = point0;
+            QPoint fixPoint1 = point1;
+
+            int x = (fixPoint0.x() < fixPoint1.x()) ? fixPoint0.x() : fixPoint1.x();
+            int y = (fixPoint0.y() < fixPoint1.y()) ? fixPoint0.y() : fixPoint1.y();
+            int w = qAbs(fixPoint0.x() - fixPoint1.x()) + 1;
+            int h = qAbs(fixPoint0.y() - fixPoint1.y()) + 1;
+            return QRect(x, y, w, h);  // 画长方形
+}
+
+void cleanCelect()
+{
+    bool animation = numCelect>4;
+    foreach (auto k, pCelectedUnits) {
+        k->setCelect(false,animation);
+    }
+    pCelectedUnits.clear();
+}
+
+void releaseCelect()
+{
+    foreach (auto k, pCelectedUnits) {
+        // k->setUpdatesEnabled(true);
+        QPair<SLayout*,QPoint >res = deepFind(k);
+        res.first->putUnit(k,res.second,true);
+        k->moving = false;
+        k->premove = false;
+        k->updateFocusAnimation();
+        if(processor!=nullptr){
+            processor->onProcessAnother(k);
+        }
+    }
+    if(numCelect<=1)cleanCelect();
+}
+
+void moveCelect()
+{
+    foreach (auto k, pCelectedUnits) {
+        k->move(activepmw->mapFromGlobal(QCursor::pos())-k->relativeP);
+        // k->update();
+    }
+
+}
+
+QPair<SLayout*,QPoint > deepFind(SUnit *aim)
+{
+    foreach(SContainer* container,*(activepmw->inside->insideContainers)){
+        if(container->geometry().contains(aim->geometry().center())){
+            QPoint ind = container->inside->clearPutableInd(aim);
+            if(ind!=QPoint(-1,-1)){
+                return QPair<SLayout*,QPoint>(container->inside,ind);
+            }
+        }
+    }
+
+    return QPair<SLayout*,QPoint>(activepmw->inside,activepmw->inside->clearPutableInd(aim));
 }

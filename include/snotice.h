@@ -25,7 +25,7 @@ public:
     QPoint previousPos;
     QPoint aimPos;
     QTimer* endTimer;
-    QPoint pmw2pls;
+    QPoint pmwUpCenter;
     int staytime;
     void setTitle(QString Title);
     void setInfo(QStringList info);

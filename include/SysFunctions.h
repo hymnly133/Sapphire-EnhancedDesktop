@@ -23,16 +23,18 @@ extern bool firstNotice;
 extern bool isQuit;
 //MainWindows
 extern QMap<int,MainWindow*> pmws;
+extern MainWindow* activepmw;
 //Screens
 extern QMap<int,QScreen*> pscs;
 //desktop
 extern QDesktopWidget* pdt;
-//全局layerShower
-extern LayerShower* pls;
+
 //全局StyleHelper
 extern StyleHelper* psh;
 //移动中的Unit(待重构
-extern SUnit* pMovingUnit;
+extern bool moving_global;
+extern SUnit* processor;
+extern QList<SUnit*> pCelectedUnits;
 //屏幕数量
 extern int screenNum;
 //未使用的Json数据
@@ -66,6 +68,7 @@ void repaintAround(QWidget* aim);
 //接入图标层
 void inplace(QWidget* aim);
 
+void positionToScreen(QWidget* aim, int screenInd);
 //向Wallpaper发送鼠标点击信号（待修复
 void sentToWallpaper(QPoint winpos);
 //获取主题颜色
@@ -97,4 +100,17 @@ QString shellrun(QString path,QString para = "");
 
 //扫描文件改动
 void scanForChange();
+
+//拖出
+void dragOut();
+//移动选择的组件
+void moveCelect();
+//清楚选择的组件
+void cleanCelect();
+//释放选择的组件
+void releaseCelect();
+
+QRect Point2Rect(QPoint point0,QPoint point1);
+
+QPair<SLayout *, QPoint> deepFind(SUnit* aim);
 #endif // SYSFUNCTIONS_H

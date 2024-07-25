@@ -3,12 +3,21 @@
 
 #include <QWidget>
 
+class MainWindow;
 class LayerShower : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LayerShower(QWidget *parent = nullptr);
+    explicit LayerShower(MainWindow *parent , int screenId);
+    MainWindow* pmw;
+    enum Layer{
+        Bottom =0,
+        Upper = 2
+    };
+    int screenId;
+    Layer layer;
 
+    bool lowerShower = false;
     void Clear();
 signals:
 

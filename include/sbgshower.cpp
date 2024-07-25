@@ -33,10 +33,5 @@ void SBGShower::paintEvent(QPaintEvent * ev){
 
 QRegion SBGShower::updateMask(){
     QRegion tem = pmw->inside->region;
-    // if(pMovingUnit){
-    //     auto pos = pMovingUnit->mapToGlobal(QPoint(0,0));
-    //     auto geo = pMovingUnit->geometry();
-    //      tem = tem.united(QRect(pos.x(),pos.y(),geo.width(),geo.height()));
-    // }
     return tem;
 }

@@ -45,6 +45,7 @@ QPoint SUnit::edpos()
 
 SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
 {
+    setObjectName(metaObject()->className());
     sizeX = sizex;
     sizeY = sizey;
 
@@ -61,7 +62,7 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
 
     setGraphicsEffect(shadow_main_color);
 
-    setMainColor(GetWindowsThemeColor());
+    setMainColor(winThemeColor());
 
     // colorAlpha = aim_colorAlpha();
     // nowPadRatio = aim_padRatio();
@@ -221,6 +222,9 @@ void SUnit::mousePressEvent(QMouseEvent *event)
         single_click_action();
         premove = true;
         relativeP = event->pos();
+        if(!pCelectedUnits.contains(this))
+            cleanCelect();
+        setCelect(true);
     }
     event->accept();
     qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(pmw,event->pos());
@@ -232,32 +236,7 @@ void SUnit::mouseReleaseEvent(QMouseEvent *event)
     releaseMouse();
     mouse_release_action();
     if(moving){
-        //首先检查是否拖到文件夹
-        SLayout* mwlayout = pmw->inside;
-        auto pp = QPoint(pos().x()+width()/2,pos().y()+height()/2);
-        qDebug()<<"Detecting Pos:"<<pp;
-        QPoint point = mwlayout->pos2Ind(pp);
-        qDebug()<<"Find Ins:"<<point;
-
-        if(mwlayout->Occupied(point)){
-            if(mwlayout->ind2Unit(point)->type == SUnit::Container){
-                qDebug()<<"Container";
-                SBlockContainer*  c = (SBlockContainer*)mwlayout->ind2Unit(point);
-                if(c->OKForClearPut(this)){
-                    c->clearPut(this,true);
-                    moving = false;
-                    return;
-                }
-            }
-        }
-        // 放置
-        pMovingUnit = nullptr;
-        mwlayout->clearPut(this,true);
-        moving = false;
-    }
-    premove = false;
-    if(pmw->processor!=nullptr){
-        pmw->processor->onProcessAnother(this);
+        releaseCelect();
     }
     event->accept();
 }
@@ -273,38 +252,35 @@ void SUnit::mouseMoveEvent(QMouseEvent *event)
     event->accept();
     if (moving)
     {
-
-        QPoint pmwPos = mapTo(pmw,event->pos());
-        move(pmwPos-relativeP);
-        QPoint ind = pmw->inside->SLayout::pos2Ind(pmwPos);
-        SUnit* aim = pmw->inside->SLayout::ind2Unit(ind);
-        if(aim!=nullptr){
-            aim->preSetLongFocus(true);
-        }
-        foreach (SUnit* tem, *(pmw->inside->contents)) {
-            if(tem!=aim &&tem->preLongFocus){
-                tem->preSetLongFocus(false);
-            }
-        }
-        update();
-
-        tryToSwitch(event);
+        //processor
+        // QPoint ind = pmw->inside->SLayout::pos2Ind(pmwPos);
+        // SUnit* aim = pmw->inside->SLayout::ind2Unit(ind);
+        // if(aim!=nullptr){
+        //     aim->preSetLongFocus(true);
+        // }
+        // foreach (SUnit* tem, *(pmw->inside->contents)) {
+        //     if(tem!=aim &&tem->preLongFocus){
+        //         tem->preSetLongFocus(false);
+        //     }
+        // }
+        moveCelect();
+        // tryToSwitch(event);
     }
     else if(premove){
         auto tem = event->pos();
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
         if(dis>=2){
-            onDragedOut(event);
+            dragOut();
         }
     }
 }
 
 void SUnit::enterEvent(QEvent *event){
-    qDebug()<<objectName()<<"enter";
-    qDebug()<<"enter"<<size();
-    onmouse = true;
+    qDebug()<<objectName()<<"enter"<<(layout != nullptr);
+
+    onFocus = true;
     mouse_enter_action();
-    updataFocusAnimation();
+    updateFocusAnimation();
     event->accept();
     if(layout!=nullptr)
         if(!layout->isMain){
@@ -318,10 +294,10 @@ void SUnit::enterEvent(QEvent *event){
 
 void SUnit::leaveEvent(QEvent *event){
     qDebug()<<objectName()<<"leave";
-    onmouse = false  ;
+    onFocus = false  ;
     preSetLongFocus(false);
     mouse_leave_action();
-    updataFocusAnimation();
+    updateFocusAnimation();
     if(layout!=nullptr)
         if(!(layout->isMain)){
             layout->pContainer->update();
@@ -378,6 +354,7 @@ bool SUnit::setBlockSize(int w,int h){
         temu.setPMW(pmw);
         bool res = false;
         temu.move(mapTo(pmw,QPoint(0,0)));
+
         removeFromLayout();
         if(tem_layout->OKForClearPut(&temu)){
             sizeX = w;
@@ -419,7 +396,7 @@ void SUnit::setLongFocus(bool val)
     qDebug()<<"Long Focus"<<val;
     onLongFocus = val;
     if(!val){
-        pls->Clear();
+        activepmw->pls->Clear();
     }
     updateLongFocusAnimation();
 }
@@ -482,6 +459,11 @@ void SUnit::onSimpleModeChange(bool val){}
 
 void SUnit::onScaleChange(double val){}
 
+void SUnit::onCelectChange(double val)
+{
+    updateFocusAnimation();
+}
+
 void SUnit::setScale(double val){
     scale = val;
     emit scale_changed(val);
@@ -496,35 +478,6 @@ void SUnit::setScaleFix(double val)
 void SUnit::setAlwaysShow(bool val)
 {
     alwaysShow = val;
-    if(layout!=nullptr){
-        if(val){
-            auto s = std::find(layout->contents_Show->begin(), layout->contents_Show->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
-            if (s != layout->contents_Show->end())//如果找到，就输出这个元素
-            {
-                layout->contents_Show->erase(s);
-            }
-            else//如果没找到
-            {
-                qDebug() << "not find!";
-            }
-
-            layout->contents_AlwaysShow->push_back(this);
-        }
-        else{
-
-            auto s = std::find(layout->contents_AlwaysShow->begin(), layout->contents_AlwaysShow->end(), this);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
-            if (s != layout->contents_AlwaysShow->end())//如果找到，就输出这个元素
-            {
-                layout->contents_AlwaysShow->erase(s);
-            }
-            else//如果没找到
-            {
-                qDebug() << "not find!";
-            }
-
-            layout->contents_Show->push_back(this);
-        }
-    }
 }
 
 void SUnit::setPMW(MainWindow *pmw)
@@ -613,7 +566,6 @@ void SUnit::tryToSwitch(QMouseEvent *event)
                 qDebug()<<pmw->objectName()<<"Acitive:"<<pmw->isActiveWindow();
                 pmw->raise();
                 raise();
-                pls->raise();
                 setFocus();
                 grabMouse();
 
@@ -627,7 +579,7 @@ void SUnit::updateLongFocusAnimation()
 
 }
 
-void SUnit::updataFocusAnimation()
+void SUnit::updateFocusAnimation()
 {
     focusAnimations->stop();
 
@@ -661,31 +613,28 @@ void SUnit::updatePositionAnimation()
     positionAnimations->start();
 }
 
-void SUnit::onDragedOut(QMouseEvent *event)
+void SUnit::onDragedOut()
 {
-    pMovingUnit = this;
+    relativeP = mapFromGlobal(QCursor::pos());
     moving = true;
     preSetLongFocus(false);
-    pls->Clear();
+    pmw->pls->Clear();
     QPoint usedp = mapTo(pmw,QPoint(0,0));
     positionAnimations->stop();
-    if(!layout->isMain)layout->pContainer->update();
+    if(layout)
+        if(!layout->isMain)layout->pContainer->update();
     if(layout)
         removeFromLayout();
     move(usedp);
-
-
 }
 
 void SUnit::preSetInLayout(bool animated)
 {
-    pMovingUnit = nullptr;
     raise();
     if(animated){
         moveto(MyPos(),MySize());
         connect(positionAnimations,&QParallelAnimationGroup::finished,this,&::SUnit::setInLayoutAniSlot,Qt::UniqueConnection);
         connect(positionAnimations,&QParallelAnimationGroup::currentLoopChanged,this,[=](){
-            qDebug()<<"CurrentLoop Changed";
             disconnect(positionAnimations,SIGNAL(finished()), 0, 0);
         });
     }
@@ -708,8 +657,6 @@ void SUnit::longFocusTimeoutSlot()
     setLongFocus(preLongFocus);
 
 }
-
-
 
 
 void SUnit::setInLayout(bool animated)
@@ -787,7 +734,7 @@ double SUnit::aim_padRatio(){
     else{
         if(layout->isMain) val = 1.0;
         else{
-            if(onmouse) val = 1.0;
+            if(onFocus) val = 1.0;
             else val =  0.0;
         }
     }
@@ -795,4 +742,20 @@ double SUnit::aim_padRatio(){
     return val;
 }
 
+void SUnit::setCelect(bool newOnCelected, bool disableAnimation )
+{
+    if(newOnCelected){
+        if(!pCelectedUnits.contains(this))
+            pCelectedUnits.append(this);
+    }
+    else{
+        if(pCelectedUnits.contains(this))
+            pCelectedUnits.removeOne(this);
+    }
+    onCelect = newOnCelected;
+    if(pCelectedUnits.size()>4||disableAnimation)
+    endUpdate();
+    else
+    updateFocusAnimation();
 
+}

@@ -15,7 +15,6 @@ int cmp(const SUnit* a,const SUnit* b)
     SUnit* p2=(SUnit*)b;
     //将a和b强制类型转换后分别存入int型指针变量p1和p2
     return *p1<*p2;
-
 }
 
 void SLayout::setStandalongRect(QRect rect)
@@ -101,12 +100,8 @@ void SLayout::putUnit(SUnit *aim, int xind, int yind, bool animated)
     }
 
     contents->push_back(aim);
-    if(aim->alwaysShow){
-        contents_AlwaysShow->push_back(aim);
-    }
-    else{
-        contents_Show->push_back(aim);
-    }
+    if(aim->inherits("SContainer"))
+        insideContainers->push_back((SContainer*)aim);
 
 
     aim->preSetInLayout(animated);
@@ -133,31 +128,21 @@ void SLayout::RemoveAUnit(SUnit *aim)
     aim->indX = -1;
     aim->indY = -1;
     aim->layout = nullptr;
-    aim->setParent(pmws[screenInd(aim)]);
+    aim->setParent(pmw);
     aim->move(tempos);
     aim->setEnabled(true);
     aim->setVisible(true);
-    pls->raise();
     aim->raise();
     auto s = std::find(contents->begin(), contents->end(), aim);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
     if (s != contents->end())//如果找到，就输出这个元素
     {
         contents->erase(s);
     }
-    if(aim->alwaysShow){
-        auto s = std::find(contents_AlwaysShow->begin(), contents_AlwaysShow->end(), aim);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
-        if (s != contents_AlwaysShow->end())//如果找到，就输出这个元素
-        {
-            contents_AlwaysShow->erase(s);
-        }
+
+    if(aim->inherits("SContainer")){
+        insideContainers->removeOne((SContainer*)aim);
     }
-    else{
-        auto s = std::find(contents_Show->begin(), contents_Show->end(), aim);//第一个参数是array的起始地址，第二个参数是array的结束地址，第三个参数是需要查找的值
-        if (s != contents_Show->end())//如果找到，就输出这个元素
-        {
-            contents_Show->erase(s);
-        }
-    }
+
 
     updateAfterRemove(aim,indx,indy);
 }
@@ -206,15 +191,10 @@ void SLayout::setVisible(bool val, bool force)
         }
     }
     else{
-        foreach (SUnit* unit,*contents_Show) {
+        foreach (SUnit* unit,*contents) {
+            if(!val&&unit->alwaysShow) continue;
             unit->setVisible(val);
             countt ++;
-        }
-
-        if(!val){
-            foreach (SUnit* unit,*contents_AlwaysShow) {
-                unit->raise();
-            }
         }
     }
 
@@ -274,8 +254,7 @@ void SLayout::updateBeforeRemove(SUnit *, int, int)
 void SLayout::load_json(QJsonObject rootObject)
 {
     contents->clear();
-    contents_AlwaysShow->clear();
-    contents_Show->clear();
+    insideContainers->clear();
 
     QJsonArray contentsArray = rootObject.value("contents").toArray();
     QVector<SUnit*> tem;
@@ -294,6 +273,10 @@ void SLayout::load_json(QJsonObject rootObject)
     foreach (QJsonValue contentValue , (contentsArray)) {
         QJsonObject contentObject = contentValue.toObject();
         SUnit* unit = from_json(contentObject,this);
+        if(unit->indX==-1){
+            defaultPut(unit,false);
+        }
+        else
         putUnit(unit,unit->indX,unit->indY,false);
     }
 

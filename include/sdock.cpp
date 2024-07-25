@@ -14,8 +14,7 @@ QAction *NAME = new QAction(#TEXT);\
 
 SDock::SDock(SLayout *dis, int outSizeX, int outSizeY): SContainer(dis,outSizeX,outSizeY)
 {
-    alwaysShow = true;
-    setMainColor(GetWindowsThemeColor());
+    setMainColor(winThemeColor());
     inside = new SLinearLayout(this);
 }
 

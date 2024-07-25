@@ -53,6 +53,8 @@ bool enable_tooltip_right_animation = 0;
 bool enable_text_shadow = 0;
 bool use_pic_as_icon = 1;
 
+bool enable_auto_run = 0;
+
 #define ADD(TYPE,NAME,MIN,MAX)\
 Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
 
@@ -274,9 +276,16 @@ void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *conte
 
 }
 
+void StyleSettingWindow::closeEvent(QCloseEvent *event)
+{
+    foreach(auto pmw,pmws){
+        pmw->endUpdate();
+    }
+}
 
 
-QColor GetWindowsThemeColor()
+
+QColor winThemeColor()
 {
     DWORD crColorization;
     BOOL fOpaqueBlend;

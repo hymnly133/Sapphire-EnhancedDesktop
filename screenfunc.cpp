@@ -18,12 +18,6 @@ int cursorScreenInd(){
     return 0;
 }
 
-QPoint mapToLS(QWidget *aim, QPoint dis)
-{
-
-    return pls->mapFromGlobal(aim->mapToGlobal(dis));
-
-}
 
 void updateScreen()
 {
@@ -31,8 +25,6 @@ void updateScreen()
     if(screenNum != screens.count())
     {
         Shift_Global = -pscs[0]->virtualGeometry().topLeft();
-        pls->setFixedSize(pdt->size()*2);
-        pls->move(0,0);
         if(screens.count() > screenNum)
         {
             qDebug() << u8"检测到扩展屏加入";

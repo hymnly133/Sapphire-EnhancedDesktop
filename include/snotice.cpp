@@ -85,7 +85,6 @@ void SNotice::setStayTime(int time)
 
 void SNotice::comeout()
 {
-    pmw2pls = pls->mapFromGlobal(pmws[0]->mapToGlobal(QPoint(0,0)));
     noticeList.append(this);
     aimSize = QSize(qMax(titleSize.width(),infoSize.width())+borad*2,titleSize.height()+infoSize.height()+borad*2+spaceBetweenTileInfo);
 
@@ -98,7 +97,7 @@ void SNotice::comeout()
                        230,unit_radius);
 
 
-    move(pmw2pls+QPoint((pmws[0]->width()-aimSize.width())/2,nowOKPosY(this)));
+    move(QPoint((pmws[0]->width()-aimSize.width())/2,nowOKPosY(this)));
     arect->start();
     endTimer->start(staytime);
     setEnabled(true);
@@ -120,16 +119,16 @@ void SNotice::end()
 
 void SNotice::whenAnimationUpdate()
 {
-    pmw2pls = pls->mapFromGlobal(pmws[0]->mapToGlobal(QPoint(0,0)));
+
     // qDebug()<<pos()<<size();
-    move(pmw2pls+QPoint(pmws[0]->width()/2,nowOKPosY(this))+arect->nowPos);
+    move(QPoint(pmws[0]->width()/2,nowOKPosY(this))+arect->nowPos);
     setFixedSize(arect->nowSize);
     update();
 }
 
 void SNotice::notice(QStringList info, QString title, int time)
 {
-    SNotice* notice = new SNotice(pls);
+    SNotice* notice = new SNotice(activepmw->pls);
     notice->setInfo(info);
     notice->setTitle(title);
     notice->setStayTime(time);
@@ -160,7 +159,7 @@ void SNotice::updateAllNoticeAnimation()
 
 void SNotice::paintEvent(QPaintEvent *event)
 {
-    QColor tem = GetWindowsThemeColor();
+    QColor tem = winThemeColor();
 
     QPainter painter(this);
     tem.setAlpha(arect->nowAlpha);

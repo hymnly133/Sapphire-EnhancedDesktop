@@ -1,5 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include "layerbackground.h"
+#include "layermousegetter.h"
+#include "layertoppainter.h"
 #include "sbgshower.h"
 
 #include "sblocklayout.h"
@@ -9,7 +12,7 @@
 #include "qparallelanimationgroup.h"
 #include<QLinkedList>
 #include "smultifunc.h"
-#include"sunit.h"
+#include "sunit.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -24,10 +27,18 @@ class MainWindow : public QMainWindow
     Q_PROPERTY(QSize showerSize MEMBER showerSize NOTIFY showerSize_changed)
     Q_PROPERTY(int showerRadius MEMBER showerRadius NOTIFY showerRadius_changed)
 public:
-    MainWindow(QWidget *parent = nullptr,int screenInd=0);
+    MainWindow(MainWindow *parent = nullptr,int screenInd=0);
     ~MainWindow();
-    //当前的处理器
-    SMultiFunc* processor = nullptr;
+    LayerBackground* plsBG =nullptr;
+    //顶层，用于绘制顶层特效
+    LayerShower* pls;
+    //中间层，用于放置图标
+    // LayerMouseGetter* plsM;
+    //底层，用于绘制底层特效
+    LayerShower* plsB;
+
+    void raiseLayers();
+
     Ui::MainWindow *ui;
     //用于显示背景模糊（未启用
     SBGShower* bgshower = nullptr;
@@ -46,7 +57,7 @@ public:
     //储存缓存
     QPixmap buffer;
     //用于绘制框选
-    QList<QPoint> drawParamList;
+    QList<QPoint> celectPointList;
     void appendPoints(QPoint p);
 
     //用于双击隐藏
@@ -72,7 +83,7 @@ public:
     //屏幕序号
     int screenInd;
     // void InitAUnit(SUnit* aim, bool animated=false);
-    void paintEvent(QPaintEvent * ev) override;
+
 
 
 
@@ -151,6 +162,8 @@ protected:
     void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
     void showEvent(QShowEvent *event) override;
+
+    void paintEvent(QPaintEvent * ev) override;
 };
 
 #endif // MAINWINDOW_H

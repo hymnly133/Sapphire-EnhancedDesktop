@@ -32,12 +32,10 @@ public:
     //容器
     QWidget* pContainer;
 
-    //内部管理，分为三个
+    //内部管理
     QVector<SUnit*>* contents = new QVector<SUnit*>;
-    QVector<SUnit*>* contents_AlwaysShow = new QVector<SUnit*>;
+    QVector<SContainer*>* insideContainers = new QVector<SContainer*>;
 
-    //contents差contents_AlwaysShow
-    QVector<SUnit*>* contents_Show = new QVector<SUnit*>;
 
 
     SLayout(QWidget* father);

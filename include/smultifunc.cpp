@@ -34,7 +34,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
 
     // 初始化内部组件
     vl = new QVBoxLayout(this);
-    vl->setContentsMargins(0, 5, 0, 5);
+    vl->setContentsMargins(0, 0, 0, 0);
     vl->addSpacing(0);
 
     gv = new PictureBox(this);
@@ -86,7 +86,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
 
 
     SET_ANCTION(act1,选择图标,{
-        QString tem =  QFileDialog::getOpenFileName(pls,tr("open a file."),"D:/");
+        QString tem =  QFileDialog::getOpenFileName(nullptr,tr("open a file."),"D:/");
         if(!tem.isEmpty()){
             setPix(tem,true);
             writeJson();
@@ -197,7 +197,9 @@ void SMultiFunc::onMainColorChange(QColor val)
 void SMultiFunc::endUpdate()
 {
     SUnit::endUpdate();
-    onScaleChange(scale);
+    gv->requireRefresh = true;
+    gv->updateDispaly();
+    // onScaleChange(scale*scaleFix);
 }
 
 void SMultiFunc::setLongFocus(bool val)
@@ -205,18 +207,18 @@ void SMultiFunc::setLongFocus(bool val)
     SUnit::setLongFocus(val);
     bool set = false;
 
-    if(val&&pMovingUnit!=nullptr&&pMovingUnit!=this){
-        pmw->processor = this;
+    if(val&& !pCelectedUnits.empty() &&!pCelectedUnits.contains(this)){
+        processor = this;
         onCelectedProcessor(true);
         set = true;
         qDebug()<<"set Processor"<<name;
     }
     else{
-        if(pmw->processor!=nullptr){
-            if(pmw->processor==this){
+        if(processor!=nullptr){
+            if(processor==this){
                 qDebug()<<"release Processor"<<objectName();
                 onCelectedProcessor(false);
-                pmw->processor = nullptr;
+                processor = nullptr;
             }
             else{
 
@@ -270,7 +272,7 @@ void SMultiFunc::dragEnterEvent(QDragEnterEvent *event)
 void SMultiFunc::dragLeaveEvent(QDragLeaveEvent *event)
 {
     qDebug()<<objectName()<<"DragLeave";
-    pls->Clear();
+    pmw->pls->Clear();
 }
 
 void SMultiFunc::dropEvent(QDropEvent *event)
@@ -300,20 +302,13 @@ void SMultiFunc::setFullShow(bool val)
         lb->setVisible(true);
 
 
-    if(val){
-        vl->setMargin(0);
-
-    }
-    else{
-        vl->setContentsMargins(0,5,0,5);
-    }
     gv->maxFill = val;
     onScaleChange(scale*scaleFix);
 }
 
-void SMultiFunc::onDragedOut(QMouseEvent *event)
+void SMultiFunc::onDragedOut()
 {
-    SUnit::onDragedOut(event);
+    SUnit::onDragedOut();
     updateDefaultScale();
 }
 

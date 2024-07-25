@@ -111,7 +111,7 @@ struct doubleVal{
 };
 
 
-QColor GetWindowsThemeColor();
+QColor winThemeColor();
 
 class StyleHelper{
 public:
@@ -147,6 +147,10 @@ public:
     //将Val类型设置到面板
     void setInLayout(QString field,QString name,QWidget* content,bool checkBox);
 
+
+    // QWidget interface
+protected:
+    void closeEvent(QCloseEvent *event) override;
 };
 
 // 未/已聚焦时的色值alpha
@@ -222,5 +226,8 @@ extern bool enable_text_shadow;
 
 //启用读取图片作为Icon
 extern bool use_pic_as_icon;;
+
+//启用开机自启
+extern bool enable_auto_run;
 
 #endif // STYLE_H

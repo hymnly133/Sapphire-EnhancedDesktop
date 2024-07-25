@@ -1,10 +1,6 @@
 #include "mainwindow.h"
-#include "ContextMenu/shellmenuitem.h"
 #include "sbgshower.h"
-#include"ContextMenu/desktopmenu.h"
-#include "snotice.h"
 #include "sshellfuncunit.h"
-#include"stooltip.h"
 #include "sblockcontainer.h"
 #include "sfile.h"
 #include "sdock.h"
@@ -18,8 +14,6 @@
 #include "qpainter.h"
 #include "repaintcounterunit.h"
 #include "roundshower.h"
-#include "screenfunc.h"
-#include "settingwindow.h"
 #include "ui_mainwindow.h"
 #include "SysFunctions.h"
 #include <QMouseEvent>
@@ -71,9 +65,11 @@ void MainWindow::setupActions()
 
     foreach(auto pmw,pmws){
             pmw->close();
+            if(plsBG!=nullptr)
+            plsBG->close();
+            pls->close();
+            plsB->close();
         }
-        pls->close();
-
     })
 
     QAction *creatNewAction = new QAction(myMenu);
@@ -90,12 +86,15 @@ void MainWindow::setupActions()
         capture();
     })
 
+    SET_ANCTION(actupdate,EndUpdate,myMenu,{
+        endUpdate();
+    })
+
     #endif
 
 
     SET_ANCTION(act6,新建小型格子,creatNewMenu,{
         auto bc = new SBlockContainer(inside,2,2,2,2,5,10,10);
-        // InitAUnit(bc);
     })
 
 
@@ -168,32 +167,34 @@ void MainWindow::setupLayout(int x, int y)
     inside->setStandalongRect(tem);
 }
 
-MainWindow::MainWindow(QWidget *parent, int screenInd)
+MainWindow::MainWindow(MainWindow *parent, int screenInd)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
-    this->screenInd = screenInd;
-    setFocusPolicy( Qt::StrongFocus );
     setObjectName("MainWindow"+QString::number(screenInd));
     ui->setupUi(this);
+
+    this->screenInd = screenInd;
+    setFocusPolicy( Qt::StrongFocus );
+
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
+    // setWindowFlags(Qt::FramelessWindowHint);
     setAcceptDrops(true);
     inplace(this);
-    setFixedSize(pscs[screenInd]->availableSize());
-
+    positionToScreen(this,screenInd);
     //shift:Windows主屏幕位于全局的位置;
 
-    move(pscs[screenInd]->geometry().topLeft()+Shift_Global);
 
 
-    qDebug()<<"Moved"<<mapToGlobal(QPoint(0,0));
+    // plsBG = new LayerBackground(this,screenInd);
+
+    plsB = new LayerShower(this,screenInd);
+    plsB->layer = LayerShower::Bottom;
 
 
-    qDebug()<<"Screen Information"<<pscs[screenInd]->availableGeometry()<<pscs[screenInd]->geometry()<<pscs[screenInd]->availableSize();
+    pls = new LayerShower(this,screenInd);
+    pls->layer =LayerShower::Upper;
 
-    qDebug()<<"MainWindow"<<screenInd<<"Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0))<<mapFromGlobal(QPoint(0,0)) ;
-
-    move(2*pos()-geometry().topLeft());
 
     qDebug()<<"MainWindow"<<screenInd<<"Information Fixed:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0))<<mapFromGlobal(QPoint(0,0)) ;
 
@@ -249,6 +250,13 @@ MainWindow::MainWindow(QWidget *parent, int screenInd)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::raiseLayers()
+{
+    plsB->raise();
+    raise();
+    pls->raise();
 }
 
 void MainWindow::setScale(double scale)
@@ -359,18 +367,21 @@ void MainWindow::setShoweredVisibal(bool val){
     // changeShower->raise();
 
     if (!val){
-        foreach (SUnit* content,*(inside->contents_AlwaysShow)) {
+        foreach (SUnit* content,*(inside->contents)) {
+            if(content->alwaysShow)
             content->setVisible(false);
         }
 
         capture();
 
-        foreach (SUnit* content,*(inside->contents_AlwaysShow)) {
+        foreach (SUnit* content,*(inside->contents)) {
             content->setVisible(true);
         }
 
         inside->setVisible(false);
     }
+
+
     showeredVisibal = val;
 
 
@@ -422,16 +433,17 @@ void MainWindow::addAIcon(MyFileInfo info)
 
 void MainWindow::appendPoints(QPoint p)
 {
-    if ( drawParamList.count() == 2 ) {
-        drawParamList.removeLast(); // 移除最后一个点
+    if ( celectPointList.count() == 2 ) {
+        celectPointList.removeLast(); // 移除最后一个点
     }
-    drawParamList.append(p);
+    celectPointList.append(p);
 }
 
 void MainWindow::updatePer01second()
 {
-    if (enable_intime_repaint)
+    if (enable_intime_repaint){
         repaint();
+    }
 
     // qDebug()<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0));
 }
@@ -490,7 +502,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 
 void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事件函数
 {
-
+    pls->close();
     event->accept();
     psh->writeStyleIni();
     writeJson();
@@ -524,45 +536,6 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
         // SettingWindow* k = new SettingWindow();
         StyleSettingWindow* k = new StyleSettingWindow;
         k->show();
-        // ElaWindow* ttt = new ElaWindow(this);
-        // ttt->show();
-        // QMenu menu;
-        // static bool isSwitch = false;
-        // ShellMenuItems items;
-        // if(isSwitch)
-        //     items = DesktopMenu::computerShellItems();
-        // else
-        //     items = DesktopMenu::desktopMenuItems();
-        // isSwitch = !isSwitch;
-
-        // foreach(auto item, items)
-        // {
-        //     ShellMenuItems childItems;
-
-        //     DesktopMenu::shellSubMenuItems(item, childItems, true);
-        //     if(childItems.isEmpty())
-        //     {
-        //         menu.addAction(item.icon, item.caption, this, [=](){
-        //             item.exec();
-        //         });
-        //     }
-        //     else
-        //     {
-        //         QMenu *subMenu = new QMenu(item.caption);
-        //         foreach(auto childItem, childItems)
-        //         {
-        //             subMenu->addAction(childItem.icon, childItem.caption, this, [=](){
-        //                 QPoint p = QCursor::pos();
-        //                 childItem.pItem->contextMenu((void *)winId(), p.x(), p.y());
-        //             });
-        //         }
-        //         QAction* action = subMenu->menuAction();
-        //         action->setIcon(item.icon);
-        //         menu.addMenu(subMenu);
-        //     }
-        // }
-        // menu.exec(QCursor::pos());
-        // ContextMenu::show(QStringList()<<toLinuxPath(*UserDesktopPath),(HWND*)winId(),event->globalPos());
     }
     else
         myMenu->exec(event->globalPos());
@@ -581,6 +554,8 @@ void MainWindow::wheelEvent(QWheelEvent *event)
 
 void MainWindow::focusInEvent(QFocusEvent *event)
 {
+    pls->raise();
+    // lower();
     qDebug()<<objectName()<<"FoucusIn";
     scanForChange();
 }
@@ -594,7 +569,7 @@ void MainWindow::focusOutEvent(QFocusEvent *event)
 
 void MainWindow::enterEvent(QEvent *event)
 {
-    pls->raise();
+    activepmw = this;
     qDebug()<<objectName()<<"Enter";
     if(!onLoading)
     scanForChange();
@@ -608,57 +583,20 @@ void MainWindow::leaveEvent(QEvent *event)
 
 void MainWindow::showEvent(QShowEvent *event)
 {
+        raiseLayers();
     QMainWindow::showEvent(event);
+    raiseLayers();
+    // lower();
     endUpdate();
 }
 
-void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
-{
-    setShoweredVisibal(!showeredVisibal);
-    pdt->activateWindow();
-    Q_UNUSED(ev);
-}
-
-void MainWindow::mousePressEvent(QMouseEvent* event){
-    appendPoints(event->pos());
-    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(this,event->pos())<<mapToGlobal(event->pos());
-    qDebug()<<"FixedGlobal"<<mapToGlobal(event->pos())+Shift_Global;
-    pls->Clear();
-
-
-    if(firstNotice&&init){
-
-        firstNotice = false;
-    }
-
-#ifdef QT_DEBUG
-    SToolTip::Tip("样例文本");
-    // SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
-    SNotice::notice(QStringList()<<"infoTestinfoTestinfoTestinfoTestinfoTest","TitleTest");
-#endif
-    // SNotice::notice(QStringList()<<"infoTestfdfdfghgfdfghjhgfdhgffghfhdgfggfhdfghdfghdffdfdfdsdsdssds","TitleTest");
-    pls->raise();
-}
-
-
-
-void MainWindow::mouseReleaseEvent(QMouseEvent *event)
-{
-    appendPoints(event->pos());
-    pls->update();  // 启动paintEvent
-    //  mouseReleaseAndControl();  // 在鼠标释放后调用快速定位的功能
-    drawParamList.clear();
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    appendPoints(event->pos());
-    pls->update();
-}
-
-
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
+    QPainter paint(this);
+    paint.setPen(Qt::transparent);
+    paint.setBrush(QColor(0, 0, 0, 1));
+    paint.drawRect(rect());
+
     if (!transparent)
     {
         QPainter painter(this);
@@ -670,11 +608,83 @@ void MainWindow::paintEvent(QPaintEvent *ev)
         QPainter painter(this);
         painter.drawPixmap(rect(), buffer);
     }
-
-
     Q_UNUSED(ev);
 }
 
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+    setShoweredVisibal(!showeredVisibal);
+    Q_UNUSED(ev);
+}
+
+void MainWindow::mousePressEvent(QMouseEvent* event){
+    cleanCelect();
+
+    appendPoints(event->pos());
+
+    pls->Clear();
+
+    if(firstNotice&&init){
+        firstNotice = false;
+    }
+
+#ifdef QT_DEBUG
+    // SToolTip::Tip("样例文本");
+    // // SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
+    // SNotice::notice(QStringList()<<"infoTestinfoTestinfoTestinfoTestinfoTest","TitleTest");
+#endif
+    // SNotice::notice(QStringList()<<"infoTestfdfdfghgfdfghjhgfdhgffghfhdgfggfhdfghdfghdffdfdfdsdsdssds","TitleTest");
+    // raiseLayers();
+    pls->raise();
+
+}
+
+
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    appendPoints(event->pos());
+    pls->update();
+
+    celectPointList.clear();
+    if(celectPointList.size()==2){
+        QRect aimRect = Point2Rect(celectPointList[0],celectPointList[1]);
+        foreach (SUnit* k , *(inside->contents)) {
+            if(aimRect.contains( k->rect().center())){
+                pCelectedUnits.append(k);
+                k->setCelect(true);
+            }
+        }
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+
+    appendPoints(event->pos());
+
+    if(celectPointList.size()==2){
+        QRect aimRect = Point2Rect(celectPointList[0],celectPointList[1]);
+        foreach (SUnit* k , *(inside->contents)) {
+            if(!pCelectedUnits.contains(k)){
+                if(aimRect.contains( k->geometry().center())){
+                    qDebug()<<"CONTAIN";
+                    pCelectedUnits.append(k);
+                    k->setCelect(true);
+                }
+            }
+            else{
+                if(!aimRect.contains( k->geometry().center())){
+                    qDebug()<<"RELEASE";
+                    k->setCelect(false);
+
+                }
+            }
+        }
+    }
+    pls->raise();
+    pls->update();
+}
 
 
 

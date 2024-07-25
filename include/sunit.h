@@ -70,6 +70,8 @@ public:
     //各种当前属性
     bool alwaysShow = false;
     bool simpleMode = false;
+    bool onFocus = false;
+    bool onCelect = false;
     bool onLongFocus = false;
     bool preLongFocus = false;
     bool requireLongFocusOutDeltaTime = false;
@@ -78,13 +80,12 @@ public:
     bool showRect = true;
     bool showLight = true;
     bool showSide = true;
-    bool onmouse = false;
     bool deepColor = false;
     bool dark = false;
     double scaleFix = 1.0;
     double scale = 1.0;
 
-    //移动时使用 与鼠标相对距离
+    //移动时使用鼠标的本地坐标
     QPoint relativeP;
 
     //主颜色 不关注透明度
@@ -92,7 +93,7 @@ public:
 
     //组件主颜色与主题颜色混合 不关注透明度
     QColor displayColor(){
-        QColor sysrgb =  GetWindowsThemeColor();
+        QColor sysrgb =  winThemeColor();
         QColor res = QColor(
             mainColor.red()*nowMainColorRatio + sysrgb.red()*(1.0-nowMainColorRatio),
             mainColor.green()*nowMainColorRatio + sysrgb.green()*(1.0-nowMainColorRatio),
@@ -174,6 +175,7 @@ public:
     virtual void onShiftContextMenu(QContextMenuEvent* event);
 
     //作为处理器时处理其他SUnit的事件
+
     virtual void onProcessAnother(SUnit* another);
 
     //精简模式更改时触发一次
@@ -181,6 +183,9 @@ public:
 
     //scale*scaleFix更改时触发（包括动画更改）
     virtual void onScaleChange(double val);
+
+    //onCelected更改时触发（包括动画更改）
+    virtual void onCelectChange(double val);
 
     //mainColor更改时触发
     virtual void onMainColorChange(QColor val);
@@ -222,6 +227,7 @@ public:
     void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
     virtual void setLongFocus(bool);
+    virtual void setCelect(bool,bool animaion = false);
     virtual void preSetLongFocus(bool);
     virtual void setScale(double val);
     virtual void setScaleFix(double val);
@@ -235,7 +241,7 @@ public:
     //更新各种情况下的动画
 
     virtual void updateLongFocusAnimation();
-    virtual void updataFocusAnimation();
+    virtual void updateFocusAnimation();
     virtual void updatePositionAnimation();
 
     //用于定位和resize的统一接口
@@ -243,7 +249,7 @@ public:
     virtual QSize MySize();
 
     //被拖出时调用
-    virtual void onDragedOut(QMouseEvent *event);
+    virtual void onDragedOut();
 
     //更新layout并将要触发positionAnimation时调用
     virtual void preSetInLayout(bool animated);
@@ -264,7 +270,10 @@ public slots:
 
 
 
-public: signals:
+
+
+
+signals:
 
     //未启用
     void mainColor_changed(QColor);
@@ -281,13 +290,13 @@ public: signals:
 
 };
 inline  double SUnit:: aim_mainColorRatio(){
-    if(onmouse)return focused_color_ratio;
+    if(onFocus||onCelect)return focused_color_ratio;
     else return unfocused_color_ratio;
 }
 
 
 inline int SUnit::aim_colorAlpha(){
-    if(onmouse){
+    if(onFocus||onCelect){
         if(deepColor) return focused_alpha_deep;
         else return focused_alpha;
     }
@@ -298,7 +307,7 @@ inline int SUnit::aim_colorAlpha(){
 }
 
 inline double SUnit::aim_scaleFix(){
-    if(onmouse){
+    if(onFocus){
         return scale_fix_ratio;
     }
     else{

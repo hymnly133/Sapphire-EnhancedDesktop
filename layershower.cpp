@@ -14,38 +14,26 @@
 #include "qpainter.h"
 #include "screenfunc.h"
 
-LayerShower::LayerShower(QWidget *parent)
-    : QWidget{parent}
+LayerShower::LayerShower(MainWindow *parent,int screenId)
+    : QWidget{nullptr}
 {
-    // setWindowState(Qt::WindowMaximized   );
     setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(Qt::FramelessWindowHint );
     setAttribute(Qt::WA_TransparentForMouseEvents);
-    setWindowFlags(Qt::FramelessWindowHint);
-    inplace((QWidget* )this);
 
+    pmw = parent;
+    this->screenId = screenId;
+    inplace(this);
+    positionToScreen(this,screenId);
 
-    show();
-
-    setVisible(true);
-
-
-    qDebug()<<"DesktopSize"<<pdt->size();
-    qDebug()<<"availableVirtualSize"<<QGuiApplication::primaryScreen()->availableVirtualSize();
-
-    // qDebug()<<1;
-
-    // setFixedSize(10,10);
-    move(0,0);
-    setFixedSize( pdt->size()*2);
     qDebug()<<"Layer Shower Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
-    move(2*pos()-geometry().topLeft());
-    qDebug()<<"Layer Shower Information Fixed:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
-
+    show();
+    setVisible(true);
 }
 
 void LayerShower::Clear()
 {
-    QList<SToolTip*> list = pls->findChildren<SToolTip*>();
+    QList<SToolTip*> list = this->findChildren<SToolTip*>();
     foreach (auto tem, list) {
         tem->end();
     }
@@ -56,33 +44,63 @@ void LayerShower::paintEvent(QPaintEvent *event)
     // auto tem = QColor("green");
     // tem.setAlpha(100);
     // paintRect(this,tem);
-    foreach(MainWindow* pmw,pmws){
-        QList<QPoint>& drawParamList = pmw->drawParamList;
-        if (drawParamList.size() >= 2) {
-            QPainter painter(this);
-            QColor tem = GetWindowsThemeColor();
-            QPoint shift =mapFromGlobal( pmw->mapToGlobal(QPoint(0,0)));
-            QPoint fixPoint0 = drawParamList[0]+shift;
-            QPoint fixPoint1 = drawParamList[1]+shift;
-            tem.setAlpha(200);
-            painter.setBrush(tem);
-            int x = (fixPoint0.x() < fixPoint1.x()) ? fixPoint0.x() : fixPoint1.x();
-            int y = (fixPoint0.y() < fixPoint1.y()) ? fixPoint0.y() : fixPoint1.y();
-            int w = qAbs(fixPoint0.x() - fixPoint1.x()) + 1;
-            int h = qAbs(fixPoint0.y() - fixPoint1.y()) + 1;
-            painter.drawRect(x, y, w, h);  // 画长方形
+    qDebug()<<"ShowerRepaint";
+    auto tem = winThemeColor();
+    tem.setAlpha(100);
+
+
+    switch (layer) {
+    case Bottom:
+        //绘制
+        if(activepmw == pmw){
+            if(!pCelectedUnits.empty()){
+                qDebug()<<"celected";
+                auto tem = winThemeColor();
+                tem.setAlpha(255);
+                qDebug()<<"paint";
+                QRegion celectedRegion;
+                foreach (SUnit* unit, pCelectedUnits) {
+                    celectedRegion = celectedRegion.united(unit->geometry().adjusted(-10,-10,10,10));
+                }
+
+                QPainter painter(this);
+                painter.setClipRegion(celectedRegion);
+                painter.setBrush(tem);
+                painter.drawRect(rect());
+            }
         }
+        break;
+        //绘制边框
+    case Upper:
+        //绘制框选
+        if(pmw!=nullptr)
+            if(pmw->celectPointList.size()==2){
+                // qDebug()<<"paintrect";
+                QPoint point0 = pmw->celectPointList[0];
+                QPoint point1 = pmw->celectPointList[1];
+                QRect aimRect = Point2Rect(point0,point1);
+
+                QPainter painter(this);
+                painter.setClipRect(aimRect);
+                painter.setPen(QColor("green"));
+                painter.setBrush(tem);
+                painter.drawRect(aimRect);
+            }
+
+        break;
     }
+
+        //绘制框
 
 
 #ifdef QT_DEBUG
 
-    if(pMovingUnit!=nullptr){
-        // qDebug()<<"Repaint!";
-        QPainter painter(this);
-        auto tem  =mapFromGlobal( pMovingUnit->mapToGlobal(QPoint(0,0)));
-        painter.drawRect(tem.x(),tem.y(),pMovingUnit->width(),pMovingUnit->height());
-    }
+    // if(pMovingUnit!=nullptr){
+    //     // qDebug()<<"Repaint!";
+    //     QPainter painter(this);
+    //     auto tem  =mapFromGlobal( pMovingUnit->mapToGlobal(QPoint(0,0)));
+    //     painter.drawRect(tem.x(),tem.y(),pMovingUnit->width(),pMovingUnit->height());
+    // }
 
 #endif
 
@@ -106,7 +124,7 @@ bool LayerShower::nativeEvent(const QByteArray &eventType, void *message, long *
 
 void LayerShower::focusInEvent(QFocusEvent *event)
 {
-    pmws[0]->setFocus();
+    // pmws[0]->setFocus();
 }
 
 

@@ -14,6 +14,7 @@
 #include"QDesktopServices"
 #include"QTextCodec"
 #include "qmimedata.h"
+#include"mainwindow.h"
 #include "qpainter.h"
 #include"QGraphicsDropShadowEffect"
 #include"ContextMenu/contextmenu.h"
@@ -75,7 +76,7 @@ void SFile::processorTip()
 void SFile::onShiftContextMenu(QContextMenuEvent *event)
 {
     qDebug()<<filePath;
-    ContextMenu::show(QStringList() << filePath, (void *)pls->winId(), event->globalPos());
+    ContextMenu::show(QStringList() << filePath, (void *)pmw->winId(), event->globalPos());
 }
 
 

@@ -46,6 +46,7 @@ CONFIG += c++17
 
 SOURCES += SysFunctions.cpp \
     filefunc.cpp \
+    include/layerbackground.cpp \
     include/picturebox.cpp \
     include/repaintcounterunit.cpp \
     include/roundshower.cpp \
@@ -84,6 +85,7 @@ HEADERS += \
     include/ContextMenu/shellmenuitem.h \
     include/SysFunctions.h \
     include/filefunc.h \
+    include/layerbackground.h \
     include/layershower.h \
     include/mainwindow.h \
     include/picturebox.h \

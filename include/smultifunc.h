@@ -67,7 +67,7 @@ protected:
     void setFullShow(bool val);
     // ED_Unit interface
 public:
-    void onDragedOut(QMouseEvent *event) override;
+    void onDragedOut() override;
     void preSetInLayout(bool animated) override;
 
     virtual void onCelectedProcessor(bool val);

@@ -62,7 +62,7 @@ void SBlockLayout::updateAfterRemove(SUnit *aim, int indx, int indy)
 
 QPoint SBlockLayout::clearPutableInd(SUnit *aim)
 {
-    auto pos = pContainer->mapFrom(aim->parentWidget(),aim->pos());
+    auto pos = pContainer->mapFromGlobal(aim->mapToGlobal(QPoint(0,0)));
     int posx = pos.x();
     int posy = pos.y();
     int mindeltaw=W_Container();

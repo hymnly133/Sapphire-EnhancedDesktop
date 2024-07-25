@@ -119,7 +119,7 @@ QPixmap resizeToRect(QPixmap source){
     int f_start = qBound(0,start-1,qMin(width-1,height-1));
     int f_end = qBound(0,end,qMin(width-1,height-1));
     QPixmap res = source.copy(f_start,f_start,f_end+2-f_start,f_end+2-f_start);
-    qDebug()<<"Start"<<start<<"End"<<end<<"Result Size"<<res.size();
+    // qDebug()<<"Start"<<start<<"End"<<end<<"Result Size"<<res.size();
     return res;
 }
 

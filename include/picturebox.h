@@ -16,11 +16,14 @@ public:
     bool maxFill = false;
     bool limitInisde = false;
     bool followSource = false;
+    bool requireRefresh = true;
     QPixmap* source;
     QPixmap scaled;
     QBrush m_brush;
     QSize displaySize;
     QSize actualSize;
+    QSize preParentSize = QSize();
+
     double aim_scale(){
         if(maxFill){
             return qMax(m_scale,1.0);
@@ -36,6 +39,7 @@ public:
     };
     int off_x,off_y;
     double m_scale = 1.0;
+    double pre_scale;
     void updateDispaly();
 protected:
     void paintEvent(QPaintEvent * event);
