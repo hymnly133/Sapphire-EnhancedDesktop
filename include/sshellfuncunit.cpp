@@ -1,6 +1,7 @@
 #include "sshellfuncunit.h"
 #include "qevent.h"
 #include "qfileiconprovider.h"
+#include "smenu.h"
 #include"stooltip.h"
 #include"QProcess"
 
@@ -14,15 +15,16 @@ SShellFuncUnit::SShellFuncUnit(SLayout *dis):SMultiFunc(dis)
     QImage im;
     im.load(":/icon/sysicon/Computer");
     setPix((resizeToRect(QPixmap::fromImage(im))));
-    setname("我的电脑");
-    windowsMenu = new QMenu();
+    setName("我的电脑");
+    windowsMenu = new SMenu();
 
     QAction* windowsMenuAction  =new QAction(this);
     windowsMenuAction->setText("Windows功能");
     windowsMenuAction->setMenu(windowsMenu);
 
     myMenu->addAction(windowsMenuAction);
-
+    // myMenu->setDefaultAction(windowsMenuAction);
+    myMenu->raiseAction(windowsMenuAction);
 
     SET_ANCTION(actOpenSetting,Win11设置,windowsMenu,{
         SToolTip::Tip(shellrun("ms-settings:wheel"));
@@ -104,13 +106,13 @@ void SShellFuncUnit::onCelectedProcessor(bool val)
         QImage im;
         im.load(":/icon/sysicon/Dustbin");
         setPix((resizeToRect(QPixmap::fromImage(im))));
-        setname("回收站");
+        setName("回收站");
     }
     else{
         QImage im;
         im.load(":/icon/sysicon/Computer");
         setPix((resizeToRect(QPixmap::fromImage(im))));
-        setname("我的电脑");
+        setName("我的电脑");
     }
     update();
 

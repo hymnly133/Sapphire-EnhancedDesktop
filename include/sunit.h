@@ -5,6 +5,7 @@
 #include "qparallelanimationgroup.h"
 #include "qpropertyanimation.h"
 #include "roundshower.h"
+#include "smenu.h"
 #include "style.h"
 #include <QWidget>
 #include<qlabel.h>
@@ -37,7 +38,7 @@ public:
     SLayout* layout = nullptr;
 
     //右键菜单
-    QMenu* myMenu;
+    SMenu* myMenu;
 
     //指向当前的MainWindow
     MainWindow* pmw = nullptr;

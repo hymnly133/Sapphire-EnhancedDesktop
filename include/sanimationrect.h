@@ -40,9 +40,9 @@ public:
 
 
     void setStartValue(QPoint pos, QSize size, int alpha,int radius);
-    void setTime(int time);
 
     void setEndValue(QPoint pos, QSize size, int alpha,int radius);
+    void setTime(int time);
     void setFinal(bool val = true);
     void start();
     void stop();

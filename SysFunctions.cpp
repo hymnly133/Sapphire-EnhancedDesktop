@@ -37,6 +37,7 @@
 #include"sfile.h"
 #include"QWindowStateChangeEvent"
 #include"snotice.h"
+#include"QInputDialog"
 
 
 #define numCelect pCelectedUnits.size()
@@ -59,8 +60,8 @@ bool moving_global;
 QList<SUnit*> pCelectedUnits;
 bool onLoading = true;
 QMap<QString,SFile*> nowExits;
-
 QMap<int,QJsonObject> UnusedJsons;
+QList<QString> ExcludeFiles;
 
 QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
@@ -78,7 +79,7 @@ void SetUp()
     QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
     enable_auto_run = !settings->value(application_name).isNull();
 
-
+    ExcludeFiles.append("desktop.ini");
 
     qDebug()<<"Setting Up...";
     UserDesktopPath = new  QString(QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0]);
@@ -110,8 +111,6 @@ void SetUp()
 
     qDebug()<<"Find"<<jsonNum<<"Jsons";
     qDebug()<<"Find"<<screenNum<<"Screens";
-
-
 
 
     if(jsonNum == 0){
@@ -171,6 +170,7 @@ void SetUp()
     if(init)
     {
         SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
+        SNotice::notice(QStringList()<<"为了使用部分桌面功能"<<"Sapphire会开始使用管理员权限","有关管理员权限",5000);
     }
 
     onLoading  =false;
@@ -482,7 +482,7 @@ QList<MyFileInfo> scandesktopfiles(const QString &desktopPath)
     //对于指定桌面路径，返还桌面路径中的文件信息的列表
     QList<MyFileInfo> files;
     QDir desktopDir(desktopPath);
-    desktopDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
+    desktopDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
     QFileInfoList fileInfoList=desktopDir.entryInfoList();
     foreach(const QFileInfo &x,fileInfoList)
     {
@@ -838,31 +838,43 @@ QString shellrun(QString filename, QString para)
 void scanForChange()
 {
     if(onLoading) return;
-    //ScanForLoss
+    //Scan For Loss
     QList<QString> keyList = nowExits.keys();
     QMap<QString,SFile*> loss;
     QVector<QString> newFiles;
     foreach (QString path, keyList) {
         if(!QFileInfo::exists(path)){
+            if(QFileInfo(path).isFile())continue;
+            if(QFileInfo(path).isShortcut())continue;
+            if(QFileInfo(path).isSymLink())continue;
+            loss[path] = nowExits[path];
+        }
+        else if(ExcludeFiles.contains( QFileInfo(path).fileName())){
             loss[path] = nowExits[path];
         }
     }
 
 
 
+
+    //Scan For New
     QDir uPathDir(*UserDesktopPath);
     qDebug()<<"Scanningfor"<<*UserDesktopPath;
-    uPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
-
-    foreach (QString name, uPathDir.entryList()) {
+    uPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
+    QStringList files = uPathDir.entryList();
+    foreach (QString name, files) {
         QString absolute = uPathDir.absoluteFilePath(name);
         if(!nowExits.contains(absolute)){
+            if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) continue;
             newFiles.append(absolute);
         }
     }
+
+
+
     QDir pPathDir(*PublicDesktopPath);
     qDebug()<<"Scanningfor"<<*PublicDesktopPath;
-    pPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot);
+    pPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
 
     foreach (QString name, pPathDir.entryList()) {
         QString absolute = pPathDir.absoluteFilePath(name);
@@ -894,7 +906,17 @@ void scanForChange()
 
     writeJson();
 }
+QRect Point2Rect(QPoint point0, QPoint point1)
+{
+    QPoint fixPoint0 = point0;
+    QPoint fixPoint1 = point1;
 
+    int x = (fixPoint0.x() < fixPoint1.x()) ? fixPoint0.x() : fixPoint1.x();
+    int y = (fixPoint0.y() < fixPoint1.y()) ? fixPoint0.y() : fixPoint1.y();
+    int w = qAbs(fixPoint0.x() - fixPoint1.x()) + 1;
+    int h = qAbs(fixPoint0.y() - fixPoint1.y()) + 1;
+    return QRect(x, y, w, h);  // 画长方形
+}
 void dragOut()
 {
     // if(pCelectedUnits.size()>=4){
@@ -905,19 +927,10 @@ void dragOut()
     foreach (auto k, pCelectedUnits) {
         k->onDragedOut();
     }
+    moving_global = true;
 }
 
-QRect Point2Rect(QPoint point0, QPoint point1)
-{
-            QPoint fixPoint0 = point0;
-            QPoint fixPoint1 = point1;
 
-            int x = (fixPoint0.x() < fixPoint1.x()) ? fixPoint0.x() : fixPoint1.x();
-            int y = (fixPoint0.y() < fixPoint1.y()) ? fixPoint0.y() : fixPoint1.y();
-            int w = qAbs(fixPoint0.x() - fixPoint1.x()) + 1;
-            int h = qAbs(fixPoint0.y() - fixPoint1.y()) + 1;
-            return QRect(x, y, w, h);  // 画长方形
-}
 
 void cleanCelect()
 {
@@ -926,6 +939,7 @@ void cleanCelect()
         k->setCelect(false,animation);
     }
     pCelectedUnits.clear();
+    moving_global = false;
 }
 
 void releaseCelect()
@@ -942,6 +956,7 @@ void releaseCelect()
         }
     }
     if(numCelect<=1)cleanCelect();
+    moving_global = false;
 }
 
 void moveCelect()
@@ -978,4 +993,13 @@ QPair<SLayout*,QPoint > deepFind(SUnit *aim)
     }
 
     return QPair<SLayout*,QPoint>(activepmw->inside,activepmw->inside->clearPutableInd(aim));
+}
+
+void resizeForActiveMW()
+{
+    int sizeX = QInputDialog::getInt(nullptr,"重布局","请输入布局列数(根据屏幕宽度)",activepmw->inside->row,1,1000,2);
+    int sizeY = QInputDialog::getInt(nullptr,"重布局","请输入布局行数(根据屏幕高度)",activepmw->inside->col,1,1000,2);
+    if(!sizeX) sizeX=10;
+    if(!sizeY) sizeY=10;
+    activepmw->inside->resize(sizeX,sizeY);
 }

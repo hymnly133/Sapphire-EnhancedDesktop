@@ -12,9 +12,10 @@ class SToolTip : public QWidget
 public:
     QString info;
     roundShower* rs;
+    SAnimationRect* arect;
+
     QFont* font;
     bool left = false;
-    SAnimationRect* arect;
 
     QSize aimSize;
     QPoint previousPos;

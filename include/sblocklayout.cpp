@@ -60,7 +60,7 @@ void SBlockLayout::updateAfterRemove(SUnit *aim, int indx, int indy)
     }
 }
 
-void SBlockLayout::resize(int sizeX, int sizeY)
+void SBlockLayout::resize(int sizeX, int sizeY,bool animated)
 {
     for(int i=this->row;i<sizeX;i++){
         for(int j=0;j<this->col;j++){
@@ -78,7 +78,7 @@ void SBlockLayout::resize(int sizeX, int sizeY)
     }
     this->col = sizeY;
         SNotice::notice(QStringList()<<"列数："+QString::number(sizeX)<<"行数："+QString::number(sizeY),"重布局",5000);
-    UpdateContentPositon(true);
+    UpdateContentPositon(animated);
 }
 
 QPoint SBlockLayout::clearPutableInd(SUnit *aim)

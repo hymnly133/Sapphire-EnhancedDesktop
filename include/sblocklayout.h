@@ -97,7 +97,7 @@ public:
     void updateAfterPut(SUnit *, int, int) override;
     void updateAfterRemove(SUnit *, int, int) override;
 
-    void resize(int sizeX,int sizeY);
+    void resize(int sizeX, int sizeY, bool animated = true);
     // ED_Layout interface
 public:
     QPoint clearPutableInd(SUnit *aim) override;

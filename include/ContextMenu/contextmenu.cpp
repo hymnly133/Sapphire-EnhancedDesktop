@@ -106,7 +106,7 @@ struct ContextMenuHelper
                         cmi.hwnd = 0;
                         cmi.lpVerb = (LPCSTR)(INT_PTR)(idCmd - 1);
                         cmi.lpParameters = NULL;
-                        cmi.lpDirectory = NULL;
+                        cmi.lpDirectory = fileNames[0].toLocal8Bit();
                         cmi.nShow = SW_SHOWNORMAL;
                         cmi.dwHotKey = 0;
                         cmi.hIcon = NULL;

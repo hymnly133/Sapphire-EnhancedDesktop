@@ -11,12 +11,12 @@
 #include "qfileinfo.h"
 #include "qparallelanimationgroup.h"
 #include<QLinkedList>
+#include "smenu.h"
 #include "smultifunc.h"
 #include "sunit.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
-
 }
 QT_END_NAMESPACE
 class SFile;
@@ -46,7 +46,7 @@ public:
     bool onShift = false;
 
     //右键菜单
-    QMenu* myMenu;
+    SMenu* myMenu;
     //布局管理器
     SBlockLayout* inside = nullptr;
 
@@ -107,9 +107,9 @@ public:
     void updata_animation();
 
     //各种添加SFile的方法
-    void addAIcon(QString path);
-    void addAIcon(QFileInfo info);
-    void addAIcon(MyFileInfo info);
+    void addAIcon(QString path, bool notice = false);
+    void addAIcon(QFileInfo info, bool notice = false);
+    void addAIcon(MyFileInfo info, bool notice = false);
 
 
 

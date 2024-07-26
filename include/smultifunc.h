@@ -43,7 +43,7 @@ public:
     void onScaleChange(double) override;
     virtual void setPix(QString pixPath, bool save);
     virtual void setPix(QPixmap pixmap);
-    void setname(QString);
+    virtual void setName(QString);
 
     void paintEvent(QPaintEvent *event) override;
 

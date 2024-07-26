@@ -15,15 +15,16 @@ SToolTip::SToolTip(QWidget *parent)
     : QWidget{parent}
 {
     rs = new roundShower(this);
-    font = new QFont("MiSans", 10, QFont::Bold);   //字体，大小，粗体，斜体
+    arect = new SAnimationRect(this);
+    rs->distriRadius(&arect->nowRadius);
+    rs->raise();
+
+    font = new QFont(qApp->font().family(), 10);   //字体，大小，粗体，斜体
     font->setCapitalization(QFont::Capitalize);   //设置字母大小写
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setAttribute(Qt::WA_InputMethodTransparent);
     setWindowFlags(Qt::WindowTransparentForInput|Qt::NoDropShadowWindowHint);
-    arect = new SAnimationRect(this);
     // connect(animations,&)
-    rs->distriRadius(&arect->nowRadius);
-    rs->raise();
 
     connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
         deleteLater();
@@ -33,7 +34,6 @@ SToolTip::SToolTip(QWidget *parent)
         setFixedSize(size);
         update();
     });
-
 }
 
 void SToolTip::setInfo(QString info)
@@ -122,10 +122,6 @@ void SToolTip::paintEvent(QPaintEvent *event)
     tem = QColor("black");
     tem.setAlpha(arect->nowAlpha);
     painter.setPen(tem);
-
-    //    font.setUnderline(true); //设置下划线
-    //    font.setOverline(true); //设置上划线
-    // font.setLetterSpacing(QFont::AbsoluteSpacing, 10); //设置字符间的间距
     painter.setFont(*font);
 
     QRect temsize = QRect(0,0,aimSize.width(),aimSize.height());

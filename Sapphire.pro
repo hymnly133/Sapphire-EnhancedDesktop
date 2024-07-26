@@ -1,5 +1,15 @@
 QT += core gui widgets winextras network concurrent quick qml
+win32 {
 
+    CONFIG(debug, debug|release) {
+    //debug
+    QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/debug/$$TARGET".exe" $$escape_expand(\n\t)
+    }else{
+    //release
+    QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$$TARGET".exe" $$escape_expand(\n\t)
+    }
+}
+RC_FILE=Sapphire.rc
 VERSION = 1.2.8.3
 msvc{
     message("using msvc")
@@ -46,6 +56,8 @@ CONFIG += c++17
 
 SOURCES += SysFunctions.cpp \
     filefunc.cpp \
+    include/ContextMenu/contextmenu1.cpp \
+    include/ContextMenu/sshellcontextmenu.cpp \
     include/layerbackground.cpp \
     include/picturebox.cpp \
     include/repaintcounterunit.cpp \
@@ -59,8 +71,11 @@ SOURCES += SysFunctions.cpp \
     include/seditbox.cpp \
     include/sfile.cpp \
     include/shidetextblock.cpp \
+    include/sinputdialog.cpp \
     include/slayout.cpp \
     include/slinearlayout.cpp \
+    include/slineranimation.cpp \
+    include/smenu.cpp \
     include/smultifunc.cpp \
     include/snotice.cpp \
     include/sshellfuncunit.cpp \
@@ -79,10 +94,13 @@ SOURCES += SysFunctions.cpp \
 
 HEADERS += \
     include/ContextMenu/contextmenu.h \
+    include/ContextMenu/contextmenu1.h \
     include/ContextMenu/desktopmenu.h \
     include/ContextMenu/shellitem.h \
     include/ContextMenu/shellmemmanager.h \
     include/ContextMenu/shellmenuitem.h \
+    include/ContextMenu/sshellcontextmenu.h \
+    include/SQSS.h \
     include/SysFunctions.h \
     include/filefunc.h \
     include/layerbackground.h \
@@ -102,8 +120,11 @@ HEADERS += \
     # include/settingwindow.h \
     include/sfile.h \
     include/shidetextblock.h \
+    include/sinputdialog.h \
     include/slayout.h \
     include/slinearlayout.h \
+    include/slineranimation.h \
+    include/smenu.h \
     include/smultifunc.h \
     include/snotice.h \
     include/sshellfuncunit.h \
@@ -113,7 +134,8 @@ HEADERS += \
 
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    styleSetting.ui
 
 TRANSLATIONS += \
     Sapphire_zh_CN.ts \

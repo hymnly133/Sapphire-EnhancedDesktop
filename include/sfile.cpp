@@ -1,3 +1,4 @@
+#include "sinputdialog.h"
 #include"sunit.h"
 #include "sfile.h"
 #include "SysFunctions.h"
@@ -20,6 +21,7 @@
 #include"ContextMenu/contextmenu.h"
 #include"QFileDialog"
 #include"stooltip.h"
+#include"snotice.h"
 #define SET_ANCTION(NAME,TEXT,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\
     myMenu->addAction(NAME);\
@@ -29,6 +31,19 @@ SFile::SFile(SLayout *dis, int sizex, int sizey,QString filePath):SMultiFunc(dis
 {
     if(filePath!="")
     loadFromPath(filePath,true);
+
+    SET_ANCTION(actOpenFileProperty,属性,{
+        OpenFileProperty(this->filePath);
+    })
+
+    SET_ANCTION(actRename,重命名,{
+        qDebug()<<fullName();
+        SInputDialog* sip = SInputDialog::showInput("请输入新名字",fullName(),mapToGlobal(geometry().topRight())+QPoint(10,0));
+        connect(sip,&SInputDialog::finalText,this,&SFile::renameFile);
+    })
+    SET_ANCTION(actSoftDelet,软删除,{
+        SMultiFunc::Remove();
+    })
 
 }
 
@@ -109,14 +124,47 @@ void SFile::setPix(QString pixPath, bool save)
         useFileIcon = false;
 }
 
+void SFile::renameFile(QString newNameWithDot)
+{
+    QString folder = QFileInfo(filePath).path();
+    QString newName =  folder+"/"+newNameWithDot;
+    qDebug()<<"From"<<filePath<<"to"<<newName;
+    qDebug()<<QFileInfo(filePath).isReadable();
+    bool renamed = QFile::rename(filePath,newName);
+    if(renamed){
+        QString oldSuffix = suffix();
+
+        nowExits.remove(filePath);
+        nowExits[newName] = this;
+        filePath = newName;
+        setName(baseName());
+        QString newSuffix =suffix();
+        if(oldSuffix!=newSuffix){
+            //重新加载图标
+            setPix(filePath,false);
+        }
+    }
+    SNotice::notice(QStringList()<<newName+":"+((renamed)?"成功":"失败"),"重命名文件");
+}
+
+
 
 void SFile::Remove()
 {
-    if(nowExits.contains(filePath))
+    if(nowExits.contains(filePath)){
         nowExits.remove(filePath);
-    if(QFileInfo::exists(filePath)){
-        QFile::moveToTrash(filePath);
     }
+
+    bool res = QFile::moveToTrash(filePath);
+    if(!res){
+    qDebug()<<"Unable to delete";
+    QString cmd = "del \""+filePath+"\"";
+    system(cmd.toStdString().c_str());
+    }
+    else{
+        qDebug()<<"Deleted";
+    }
+
     SUnit::Remove();
 }
 
@@ -129,7 +177,7 @@ void SFile::loadFromMyFI(MyFileInfo info,bool init){
 
 
     if(init)
-    setname(info.name);
+    setName(info.name);
 
 
 

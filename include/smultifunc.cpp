@@ -63,7 +63,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
 
     // 显示名字
     lb->setAlignment(Qt::AlignCenter);
-    lb->setFont(QFont("MiSans", 10, 40));
+    lb->setFont(QFont(qApp->font().family(), 10, 40));
     lb->setFixedWidth(width() - 5);
     lb->setText(elidedLineText(lb, 3, name));
 
@@ -171,7 +171,7 @@ void SMultiFunc::load_json(QJsonObject rootObject)
     if(pixPath!="")
         SMultiFunc::setPix(path2Icon(pixPath)[0]);
 
-    if(rootObject.contains("name")) setname(rootObject.value("name").toString());
+    if(rootObject.contains("name")) setName(rootObject.value("name").toString());
     setFullShow(rootObject.value("fullShow").toBool());
 
 }
@@ -207,7 +207,7 @@ void SMultiFunc::setLongFocus(bool val)
     SUnit::setLongFocus(val);
     bool set = false;
 
-    if(val&& !pCelectedUnits.empty() &&!pCelectedUnits.contains(this)){
+    if(val&& !pCelectedUnits.empty()&&moving_global &&!pCelectedUnits.contains(this)){
         processor = this;
         onCelectedProcessor(true);
         set = true;
@@ -252,7 +252,7 @@ void SMultiFunc::onProcessAnother(SUnit *another)
 
 bool SMultiFunc::ProcessPath(QString path)
 {
-
+    return true;
 }
 
 void SMultiFunc::dragEnterEvent(QDragEnterEvent *event)
@@ -272,7 +272,7 @@ void SMultiFunc::dragEnterEvent(QDragEnterEvent *event)
 void SMultiFunc::dragLeaveEvent(QDragLeaveEvent *event)
 {
     qDebug()<<objectName()<<"DragLeave";
-    pmw->pls->Clear();
+    pmw->pls->clearTooltip();
 }
 
 void SMultiFunc::dropEvent(QDropEvent *event)
@@ -361,8 +361,9 @@ void SMultiFunc::setPix(QPixmap pixmap)
     update();
 }
 
-void SMultiFunc::setname(QString sname)
+void SMultiFunc::setName(QString sname)
 {
+    if(sname == "")return;
     name = sname;
     setObjectName("SMultiFunc-"+name);
     lb->setText(sname);

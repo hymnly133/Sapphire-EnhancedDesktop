@@ -16,98 +16,88 @@
 #include <minwindef.h>
 #include <winerror.h>
 #include "dwmapi.h"
+#include"ui_styleSetting.h"
 
-struct boolVal{
-    bool* pval;
+template <class T>
+struct Val{
+    T* pval;
     QString fullname;
-    bool& val(){return *pval;};
-    boolVal(QString fullname,bool *pval,bool ,bool):pval(pval),fullname(fullname){};
-    void read(QSettings *styleIni){
+    T& val(){return *pval;};
+    Val<T>(QString fullname,T* pval):pval(pval),fullname(fullname){};
+    virtual void read(QSettings *styleIni){
         if(styleIni->contains(fullname)){
-            val() = styleIni->value(fullname).toBool();
+            readVal(styleIni);
             qDebug() <<"Read"<< fullname << ":" << val();
         }
         else{
             qDebug() <<"No exist"<< fullname << ",use default" << val();
         }
-
     }
     void write(QSettings *styleIni){
-        styleIni->setValue(fullname, QString::number(val()));
+        writeVal(styleIni);
         qDebug() <<"Wrote"<< fullname << ":" << val();
     }
+    virtual void readVal(QSettings *styleIni) =0;
+    virtual void writeVal(QSettings *styleIni) =0;
     QString field(){
         return fullname.split("/")[0];
     }
     QString name(){
         return fullname.split("/")[1];
     }
-    QCheckBox* checkBox;
 };
 
-struct intVal{
-    int* pval;
-    QString fullname;
-    int min;
-    int max;
-    int& val(){return *pval;};
-    intVal(QString fullname,int *pval,int min,int max):pval(pval),fullname(fullname){
-        this->min = min;
-        this->max = max;
-          };
-    void read(QSettings *styleIni){
-        if(styleIni->contains(fullname)){
-            val() = styleIni->value(fullname).toInt();
-            qDebug() <<"Read"<< fullname << ":" << val();
-        }
-        else{
-            qDebug() <<"No exist"<< fullname << ",use default" << val();
-        }
-    }
-    void write(QSettings *styleIni){
-        styleIni->setValue(fullname, QString::number(val()));
-        qDebug() <<"Wrote"<< fullname << ":" << val();
-    }
-    QString field(){
-        return fullname.split("/")[0];
-    }
-    QString name(){
-        return fullname.split("/")[1];
-    }
-    QSlider* slider;
 
+
+template<class T>
+struct LimitedVal:public Val<T>{
+    T min;
+    T max;
+    LimitedVal<T>(QString fullname,T *pval,T min,T max):Val<T>(fullname,pval),min(min),max(max){};
 };
 
-struct doubleVal{
-    double* pval;
-    QString fullname;
-    double min;
-    double max;
-    double& val(){return *pval;};
-    doubleVal(QString fullname,double *pval,double min,double max):pval(pval),fullname(fullname){
-        this->min = min;
-        this->max = max;
-          };
-    void read(QSettings *styleIni){
-        if(styleIni->contains(fullname)){
-            val() = styleIni->value(fullname).toDouble();
-            qDebug() <<"Read"<< fullname << ":" << val();
-        }
-        else{
-            qDebug() <<"No exist"<< fullname << ",use default" << val();
-        }
-    }
-    void write(QSettings *styleIni){
+struct boolVal:public Val<bool>
+{
+    using Val<bool>::Val;
+    virtual void readVal(QSettings *styleIni){
+        val() = styleIni->value(fullname).toBool();
+    };
+    virtual void writeVal(QSettings *styleIni){
         styleIni->setValue(fullname, QString::number(val()));
-        qDebug() <<"Wrote"<< fullname << ":" << val();
     }
-    QString field(){
-        return fullname.split("/")[0];
-    }
-    QString name(){
-        return fullname.split("/")[1];
+    QCheckBox* checkbox;
+};
+
+struct intVal:public LimitedVal<int>{
+    using LimitedVal<int>::LimitedVal;
+    virtual void readVal(QSettings *styleIni){
+        val() =qBound( min, styleIni->value(fullname).toInt(),max);
+    };
+    virtual void writeVal(QSettings *styleIni){
+        styleIni->setValue(fullname, QString::number(val()));
     }
     QSlider* slider;
+};
+
+struct doubleVal:public LimitedVal<double>{
+    using LimitedVal<double>::LimitedVal;
+    virtual void readVal(QSettings *styleIni){
+        val() =qBound( min, styleIni->value(fullname).toDouble(),max);
+    };
+    virtual void writeVal(QSettings *styleIni){
+        styleIni->setValue(fullname, QString::number(val()));
+    }
+    QSlider* slider;
+};
+
+struct stringVal:public Val<QString>{
+    using Val<QString>::Val;
+    virtual void readVal(QSettings *styleIni){
+        val() = styleIni->value(fullname).toString();
+    };
+    virtual void writeVal(QSettings *styleIni){
+        styleIni->setValue(fullname, val());
+    }
 };
 
 
@@ -116,15 +106,17 @@ QColor winThemeColor();
 class StyleHelper{
 public:
 
-    QVector<intVal*> intStyles;
-    QVector<doubleVal*> doubleStyles;
-    QVector<boolVal*> boolStyles;
+    QList<intVal*> intStyles;
+    QList<doubleVal*> doubleStyles;
+    QList<boolVal*> boolStyles;
+    QList<stringVal*> stringStyles;
 
     StyleHelper();
 
     void Add(QString,bool*,bool,bool);
     void Add(QString name, int * pval,int min,int max);
     void Add(QString, double*, double min, double max);
+    void Add(QString, QString*, QString min, QString max);
     void readStyleIni();
     void writeStyleIni();
     void showSetting();
@@ -144,7 +136,7 @@ public:
     QMap<QString,QVBoxLayout*> sliderlayouts;
     QVBoxLayout* mainLayout;
     QHBoxLayout* buttons;
-
+    Ui::Form* ui;
     //将Val类型设置到面板
     void setInLayout(QString field,QString name,QWidget* content,bool checkBox);
 
@@ -152,6 +144,10 @@ public:
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
+private slots:
+    void on_fontChangeBox_clicked();
+    void on_rebootBox_clicked();
+    void on_resizeBox_clicked();
 };
 
 // 未/已聚焦时的色值alpha
@@ -232,5 +228,5 @@ extern bool use_pic_as_icon;;
 extern bool enable_auto_run;
 
 extern bool resize_to_rect;
-
+extern QString user_font;
 #endif // STYLE_H

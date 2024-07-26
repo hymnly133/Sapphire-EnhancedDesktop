@@ -179,7 +179,7 @@ void SUnit::removeFromLayout(){
 
 void SUnit::setupMenu()
 {
-    myMenu = new QMenu(this);
+    myMenu = new SMenu(this);
 
     SET_ANCTION(act1,加宽,{
         setBlockSize(sizeX+1,sizeY);
@@ -396,7 +396,7 @@ void SUnit::setLongFocus(bool val)
     qDebug()<<"Long Focus"<<val;
     onLongFocus = val;
     if(!val){
-        activepmw->pls->Clear();
+        activepmw->pls->clearTooltip();
     }
     updateLongFocusAnimation();
 }
@@ -618,7 +618,7 @@ void SUnit::onDragedOut()
     relativeP = mapFromGlobal(QCursor::pos());
     moving = true;
     preSetLongFocus(false);
-    pmw->pls->Clear();
+    pmw->pls->clearTooltip();
     QPoint usedp = mapTo(pmw,QPoint(0,0));
     positionAnimations->stop();
     if(layout)

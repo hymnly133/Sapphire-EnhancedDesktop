@@ -9,6 +9,7 @@
 #include "QThread"
 #include"QStyle"
 #include "mainwindow.h"
+#include "sinputdialog.h"
 #include "stooltip.h"
 #include "qapplication.h"
 #include "qpainter.h"
@@ -31,10 +32,19 @@ LayerShower::LayerShower(MainWindow *parent,int screenId)
     setVisible(true);
 }
 
-void LayerShower::Clear()
+void LayerShower::clearTooltip()
 {
     QList<SToolTip*> list = this->findChildren<SToolTip*>();
     foreach (auto tem, list) {
+        tem->end();
+    }
+
+}
+
+void LayerShower::clearInputDialog()
+{
+    QList<SInputDialog*> listInput = this->findChildren<SInputDialog*>();
+    foreach (auto tem, listInput) {
         tem->end();
     }
 }

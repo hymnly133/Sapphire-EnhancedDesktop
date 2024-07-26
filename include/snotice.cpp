@@ -18,13 +18,13 @@ SNotice::SNotice(QWidget *parent)
     : QWidget{parent}
 {
     rs = new roundShower(this);
-    titleFont = new QFont("MiSans", 20, QFont::Bold);   //字体，大小，粗体，斜体
+    titleFont = new QFont(qApp->font().family(), 20, QFont::Bold);   //字体，大小，粗体，斜体
     titleFont->setCapitalization(QFont::Capitalize);   //设置字母大小写
 
     endTimer = new QTimer(this);
     endTimer->setSingleShot(true);
 
-    infoFont = new QFont("MiSans", 10, QFont::Bold);   //字体，大小，粗体，斜体
+    infoFont = new QFont(qApp->font().family(), 10, QFont::Bold);   //字体，大小，粗体，斜体
     infoFont->setCapitalization(QFont::Capitalize);   //设置字母大小写
 
 
@@ -128,7 +128,12 @@ void SNotice::whenAnimationUpdate()
 
 void SNotice::notice(QStringList info, QString title, int time)
 {
-    SNotice* notice = new SNotice(activepmw->pls);
+    SNotice* notice;
+    if(activepmw)
+    notice = new SNotice(activepmw->pls);
+    else
+    notice = new SNotice(nullptr);
+
     notice->setInfo(info);
     notice->setTitle(title);
     notice->setStayTime(time);

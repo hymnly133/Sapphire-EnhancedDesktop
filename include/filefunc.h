@@ -38,4 +38,5 @@ MyFileInfo path2MyFI(QString path,int size=512);
 QMap<int,QPixmap> path2Icon(QString path,int size=512);
 QString path2Name(QString path);
 QPixmap resizeToRect(QPixmap source);
+void OpenFileProperty(QString path);
 #endif // FILEFUNC_H

@@ -95,6 +95,8 @@ QString toLinuxPath(QString const& windowsPath);
 //判断是否是图片
 bool isPic(QString pah);
 
+void resizeForActiveMW();
+
 //调用WindowsAPI启动
 QString shellrun(QString path,QString para = "");
 

@@ -1,5 +1,6 @@
 #include "filefunc.h"
 #include "SysFunctions.h"
+#include "mainwindow.h"
 #include "qdir.h"
 #include "qfileiconprovider.h"
 #include "qregularexpression.h"
@@ -9,7 +10,7 @@
 #include "commoncontrols.h"
 #include "Commctrl.h"
 #include <Shlobj.h>
-
+#include"tchar.h"
 
 MyFileInfo::MyFileInfo(QString path, int size)
 {
@@ -123,43 +124,7 @@ QPixmap resizeToRect(QPixmap source){
     return res;
 }
 
-QPixmap getWinIcon(int winshelobj){
 
-    QPixmap res;
-    LPITEMIDLIST pidlBin;
-    SHGetSpecialFolderLocation(NULL, winshelobj, &pidlBin);
-    TCHAR szFolderPath[MAX_PATH];
-    SHGetPathFromIDList(pidlBin, szFolderPath);
-    // 将回收站的路径转换为字符串格式
-
-
-    SHFILEINFO sfi;
-    if (!SHGetFileInfoW((LPCTSTR)szFolderPath,0,&sfi,sizeof(sfi), SHGFI_ICON | SHGFI_SYSICONINDEX)){
-        qDebug()<<"failed1";
-        return res;
-    }
-
-    // 获取大号图像列表
-    IImageList *piml;
-    int aim = (enable_highdef_icon)?4:2;
-    if (FAILED(SHGetImageList(aim, IID_PPV_ARGS(&piml)))){
-
-        qDebug()<<"failed2";
-        return res;
-
-    };
-
-    // 提取图标
-    HICON hico;
-    piml->GetIcon(sfi.iIcon, ILD_TRANSPARENT, &hico);
-
-    // 清理资源
-    piml->Release();
-
-    // 返回图标
-    res = QtWin::fromHICON(hico);
-    return res;
-}
 
 QMap<int,QPixmap> path2Icon(QString path,int size){
     QMap<int,QPixmap> res;
@@ -235,3 +200,102 @@ QMap<int,QPixmap> path2Icon(QString path,int size){
     return res;
 }
 
+LPITEMIDLIST GetItemIDListFromFilePath( QString strFilePath )
+{
+    if ( strFilePath.isNull() )
+    {
+        return NULL;
+    }
+
+    // 得到桌面的目录
+    LPSHELLFOLDER pDesktopFolder = NULL;
+    HRESULT hr = SHGetDesktopFolder( &pDesktopFolder );
+    if ( FAILED(hr) )
+    {
+        return NULL;
+    }
+
+    // 将文件路径转换至OLECHAR格式
+    OLECHAR strOleFilePath[MAX_PATH];
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, strFilePath.toStdString().c_str(), -1, strOleFilePath, MAX_PATH );
+
+    // 得到文件路径对应的ItemIDList
+    LPITEMIDLIST pItemIDList = NULL;
+    hr = pDesktopFolder->ParseDisplayName( NULL, NULL, strOleFilePath, NULL, &pItemIDList, NULL );
+    pDesktopFolder->Release();
+    if ( FAILED(hr) )
+    {
+        return NULL;
+    }
+
+    return pItemIDList;
+}
+
+LPITEMIDLIST GetIDListFromPath(QString path)
+{
+    LPITEMIDLIST pidl = NULL;
+    LPSHELLFOLDER pDesktopFolder;
+    OLECHAR szOleChar[MAX_PATH];
+    ULONG chEaten;
+    ULONG dwAttributes;
+    HRESULT hr;
+
+    if ( SUCCEEDED( ::SHGetDesktopFolder( &pDesktopFolder ) ) )
+    {
+
+
+
+        ::MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, path.toLocal8Bit(), -1,
+                              szOleChar, MAX_PATH );
+
+
+        // Convert the path to an ITEMIDLIST.
+        hr = pDesktopFolder->ParseDisplayName( NULL,NULL,szOleChar,
+                                              &chEaten,&pidl,&dwAttributes);
+
+        pDesktopFolder->Release();
+        if (SUCCEEDED( hr ))
+            return pidl;
+    }
+
+    return NULL;
+}
+
+void OpenFileProperty(QString path)
+{
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    qDebug()<<"on1"<<path;
+    // Convert the path into a PIDL.
+    path = toWindowsPath(path);
+    qDebug()<<"on1"<<path;
+
+    std::wstring wlpstrv = QString("properties").toStdWString();
+
+    SHELLEXECUTEINFO sei;
+
+    ZeroMemory(&sei,sizeof(sei));
+    sei.cbSize = sizeof(sei);
+    sei.lpFile = path.toStdWString().c_str(); //or path
+    // sei.lpIDList = pidl;
+    sei.lpVerb = wlpstrv.c_str();
+    sei.fMask  = SEE_MASK_INVOKEIDLIST;
+    ShellExecuteEx(&sei);
+}
+
+void creatAFile(QString name)
+{
+    QString filePath = *UserDesktopPath+"/"+name;
+
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly))
+    {
+        // 文件已成功打开
+
+        file.close(); // 关闭文件
+        qDebug() << "文件已创建：" << filePath;
+    }
+    else
+    {
+        qDebug() << "无法创建文件：" << filePath;
+    }
+}

@@ -18,7 +18,8 @@ public:
     Layer layer;
 
     bool lowerShower = false;
-    void Clear();
+    void clearTooltip();
+    void clearInputDialog();
 signals:
 
     // QWidget interface

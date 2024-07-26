@@ -11,6 +11,15 @@ class SFile : public SMultiFunc
     Q_OBJECT;
 public:
     QString filePath;
+    QString fullName(){
+        return QFileInfo(filePath).fileName();
+    }
+    QString suffix(){
+        return QFileInfo(filePath).suffix();
+    }
+    QString baseName(){
+        return QFileInfo(filePath).baseName();
+    }
     bool isDir = false;
     bool useFileIcon = true;
 
@@ -39,7 +48,7 @@ public:
 
     // SMultiFunc interface
     void setPix(QString pixPath, bool save) override;
-
+    void renameFile(QString newNameWithDot);
 
 
     // SUnit interface

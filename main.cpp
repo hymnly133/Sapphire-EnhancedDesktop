@@ -17,7 +17,7 @@
 #include "qsharedmemory.h"
 #include "repaintcounterunit.h"
 #include "sshellfuncunit.h"
-
+#include"QProcess"
 
 int main(int argc, char *argv[])
 {
@@ -45,10 +45,13 @@ int main(int argc, char *argv[])
     }
 
 
+    StyleHelper sh = StyleHelper();
+    sh.readStyleIni();
+
 
     QFont font = qApp->font();
+    font.setFamily(user_font);
     font.setPointSize(10);
-    // font.setFamily("MiSans");
     font.setHintingPreference(QFont::PreferNoHinting);
     qApp->setFont(font);
 
@@ -75,8 +78,7 @@ int main(int argc, char *argv[])
 
     #endif
 
-    StyleHelper sh = StyleHelper();
-    sh.readStyleIni();
+
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -97,8 +99,18 @@ int main(int argc, char *argv[])
 
 
     scanForChange();
-    a.exec();
+    int ret = a.exec();
     sh.writeStyleIni();
+
+    if(ret==733){
+        shareMem->detach();
+        QProcess::startDetached(qApp->applicationFilePath(), QStringList());
+        sh.writeStyleIni();
+
+        return 0;
+
+
+    }
 
 
     return 0;
