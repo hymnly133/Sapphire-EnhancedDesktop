@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>StyleSettingDialog</class>
+ <widget class="QDialog" name="StyleSettingDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1180</width>
+    <height>557</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="windowOpacity">
+   <double>0.980000000000000</double>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>300</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QListView {
+    outline: none;
+    show-decoration-selected: 1;
+	border: none;      
+    padding: 0;        
+    margin: 0; 
+}
+
+QListView::item {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #85FFCE, stop: 0.5 #83F3C6, stop: 1 #A6F5D5);
+}
+
+QListView::item:alternate {
+    background: 	OliveDrab4; 
+}
+
+
+#listWidget::item {
+    padding: 10px;
+}
+
+QListView::item:selected {
+    border: 1px solid #6a6ea9;
+}
+
+QListView::item:selected:!active {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #1BE9F7, stop: 1 #C3F5F9);
+
+}
+
+QListView::item:selected:active {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #1BE9F7, stop: 1 #C3F5F9);
+ 
+}
+
+QListView::item:hover {
+   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #CB5CF3, stop: 1 #DC98F5);
+}</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="itemAlignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="currentRow">
+        <number>0</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Color</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Effect</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Render</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Preference</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Unit</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>About</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <property name="frameShape">
+      <enum>QFrame::WinPanel</enum>
+     </property>
+     <property name="currentIndex">
+      <number>-1</number>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
