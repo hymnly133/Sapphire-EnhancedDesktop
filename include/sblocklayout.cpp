@@ -62,23 +62,67 @@ void SBlockLayout::updateAfterRemove(SUnit *aim, int indx, int indy)
 
 void SBlockLayout::resize(int sizeX, int sizeY,bool animated)
 {
-    for(int i=this->row;i<sizeX;i++){
-        for(int j=0;j<this->col;j++){
-            blocks[i][j] = new little_Block(this,i,j);
-                        blocks[i][j]->occupied = false;
-        }
-    }
-    this->row = sizeX;
 
-    for(int i=this->col;i<sizeY;i++){
-        for(int j=0;j<this->row;j++){
-            blocks[j][i] = new little_Block(this,j,i);
-            blocks[j][i]->occupied = false;
+    if(sizeX<=row&&sizeY<=col){
+        //缩小
+        qDebug()<<"缩小";
+
+        QList<SUnit* > temp;
+        for(int i=sizeX;i<row;i++){
+            for(int j=0;j<this->col;j++){
+                if(blocks[i][j]->occupied){
+                    temp.append(blocks[i][j]->content);
+                    blocks[i][j]->content->removeFromLayout();
+                }
+            }
         }
+        this->row = sizeX;
+
+        for(int i=sizeY;i<col;i++){
+            for(int j=0;j<this->row;j++){
+                if(blocks[j][i]->occupied){
+                    temp.append(blocks[j][i]->content);
+                    blocks[j][i]->content->removeFromLayout();
+                }
+            }
+        }
+        this->col = sizeY;
+
+        foreach (SUnit* unit, temp) {
+            clearPut(unit,true);
+        }
+        UpdateContentPositon();
+        return;
     }
-    this->col = sizeY;
-        SNotice::notice(QStringList()<<"列数："+QString::number(sizeX)<<"行数："+QString::number(sizeY),"重布局",5000);
-    UpdateContentPositon(animated);
+    else if(sizeX>=row&&sizeY>=col){
+        //增大
+        qDebug()<<"增大";
+        for(int i=this->row;i<sizeX;i++){
+            for(int j=0;j<this->col;j++){
+                blocks[i][j] = new little_Block(this,i,j);
+                blocks[i][j]->occupied = false;
+            }
+        }
+        this->row = sizeX;
+
+        for(int i=this->col;i<sizeY;i++){
+            for(int j=0;j<this->row;j++){
+                blocks[j][i] = new little_Block(this,j,i);
+                blocks[j][i]->occupied = false;
+            }
+        }
+        this->col = sizeY;
+
+        UpdateContentPositon(animated);
+        return;
+    }
+    else{
+        //分成先缩小在增大
+        resize(qMin(row,sizeX),qMin(col,sizeY));
+        resize(qMax(row,sizeX),qMax(col,sizeY));
+    }
+    saveLayout();
+    SNotice::notice(QStringList()<<"列数："+QString::number(sizeX)<<"行数："+QString::number(sizeY),"重布局",5000);
 }
 
 QPoint SBlockLayout::clearPutableInd(SUnit *aim)

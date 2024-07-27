@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "qprocess.h"
 #include "sbgshower.h"
 #include "shellmenuitem.h"
 #include "sinputdialog.h"
@@ -224,6 +225,7 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
 
     changeShower = new roundShower(this);
     changeShower->distri(&showerSize,&showerRadius);
+    changeShower->aliment = roundShower::Center;
     changeShower->setVisible(true);
     changeShower->move(0,0);
 
@@ -604,7 +606,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         event->accept();
         return;
     }
-
+    else if( event->key()==Qt::Key_F2){
+        if(pFocusedUnit!=nullptr){
+            if(pFocusedUnit->inherits("SFile")){
+                ((SFile*)pFocusedUnit)->renameWithDialog();
+                event->accept();
+            }
+        }
+    }
     event->ignore();
     return;
 }
@@ -622,10 +631,9 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     if(event->modifiers() == Qt::ShiftModifier){
-        // StyleSettingWindow* k = new StyleSettingWindow;
-        // k->show();
-        // SInputDialog* sid = new SInputDialog(this);
-        // SInputDialog::showInput("TestText");
+        StyleSettingWindow* k = new StyleSettingWindow;
+        k->show();
+        inside->printOccupied();
     }
     else
         myMenu->exec(event->globalPos());
@@ -647,7 +655,12 @@ void MainWindow::focusInEvent(QFocusEvent *event)
     pls->raise();
     // lower();
     qDebug()<<objectName()<<"FoucusIn";
+    qDebug()<<QCursor::pos();
+    // QProcess process;
+    // process.startDetached()
     scanForChange();
+    focusInPoint  = QCursor::pos();
+    focusin = true;
 }
 
 void MainWindow::focusOutEvent(QFocusEvent *event)
@@ -661,9 +674,7 @@ void MainWindow::enterEvent(QEvent *event)
 {
     activepmw = this;
     qDebug()<<objectName()<<"Enter";
-    // if(!onLoading)l
-    // // scanForChange();
-    // raise();
+
 }
 
 void MainWindow::leaveEvent(QEvent *event)

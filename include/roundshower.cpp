@@ -28,7 +28,6 @@ void roundShower::distriRadius(int *radiusdis)
 void roundShower::updateDisplay()
 {
     if(follow){
-        // qDebug()<<parentWidget()->size();
         setFixedSize(parentWidget()->size());
     }
 
@@ -45,10 +44,21 @@ void roundShower::paintEvent(QPaintEvent *event)
     QPainterPath path;
 
     //这里圆角区域需要根据dpi、size调整
+    QRectF aimrect;
     if(follow)
-        path.addRoundedRect(QRectF(0,0,aim_size().width(),aim_size().height()), aim_radius(), aim_radius());
-    else
-        path.addRoundedRect(QRectF((parentWidget()->width()-aim_size().width())/2,(parentWidget()->height()-aim_size().height())/2,aim_size().width(),aim_size().height()), aim_radius(), aim_radius());
+        aimrect = QRectF(0,0,aim_size().width(),aim_size().height()), aim_radius(), aim_radius();
+    else{
+        switch(aliment){
+
+        case Center:
+            aimrect=QRectF((parentWidget()->width()-aim_size().width())/2,(parentWidget()->height()-aim_size().height())/2,aim_size().width(),aim_size().height()), aim_radius(), aim_radius();
+            break;
+        case Default:
+            aimrect=QRectF(0,0,aim_size().width(),aim_size().height()), aim_radius(), aim_radius();
+            break;
+        }
+    }
+    path.addRoundedRect(aimrect,aim_radius(),aim_radius());
     painter.fillPath(path, Qt::white);
     painter.end();
     // 在窗口上绘制该圆角图片
@@ -58,7 +68,4 @@ void roundShower::paintEvent(QPaintEvent *event)
     painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
     painter.drawPixmap(0, 0, tem);
 
-    // painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    // painter.setPen(QPen(QColor(0xCA64EA), 1.0));
-    // painter.drawPath(path);
 }

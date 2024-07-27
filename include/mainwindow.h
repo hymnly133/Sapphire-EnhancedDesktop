@@ -29,6 +29,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(MainWindow *parent = nullptr,int screenInd=0);
     ~MainWindow();
+    //用于消除从外部程序回到Sapphire时的判断飘逸
+    QPoint focusInPoint;
+    bool focusin = false;
     LayerBackground* plsBG =nullptr;
     //顶层，用于绘制顶层特效
     LayerShower* pls;

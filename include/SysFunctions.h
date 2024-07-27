@@ -10,6 +10,8 @@
 class MainWindow;
 class SFile;
 
+#define numCelected pCelectedUnits.size()
+
 //标识初始化
 extern bool init;
 
@@ -28,7 +30,7 @@ extern MainWindow* activepmw;
 extern QMap<int,QScreen*> pscs;
 //desktop
 extern QDesktopWidget* pdt;
-
+extern SUnit* pFocusedUnit;
 //全局StyleHelper
 extern StyleHelper* psh;
 //移动中的Unit(待重构

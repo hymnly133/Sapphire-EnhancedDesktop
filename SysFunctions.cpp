@@ -40,7 +40,7 @@
 #include"QInputDialog"
 
 
-#define numCelect pCelectedUnits.size()
+
 
 static QMutex mutex;
 bool firstNotice = true;
@@ -58,6 +58,7 @@ QString* UserDesktopPath;
 QString* PublicDesktopPath;
 bool moving_global;
 QList<SUnit*> pCelectedUnits;
+SUnit* pFocusedUnit = nullptr;
 bool onLoading = true;
 QMap<QString,SFile*> nowExits;
 QMap<int,QJsonObject> UnusedJsons;
@@ -845,7 +846,7 @@ void scanForChange()
     foreach (QString path, keyList) {
         if(!QFileInfo::exists(path)){
             if(QFileInfo(path).isFile())continue;
-            if(QFileInfo(path).isShortcut())continue;
+            // if(QFileInfo(path).isShortcut())continue;
             if(QFileInfo(path).isSymLink())continue;
             loss[path] = nowExits[path];
         }
@@ -934,7 +935,7 @@ void dragOut()
 
 void cleanCelect()
 {
-    bool animation = numCelect>4;
+    bool animation = numCelected>4;
     foreach (auto k, pCelectedUnits) {
         k->setCelect(false,animation);
     }
@@ -955,7 +956,7 @@ void releaseCelect()
             processor->onProcessAnother(k);
         }
     }
-    if(numCelect<=1)cleanCelect();
+    if(numCelected<=1)cleanCelect();
     moving_global = false;
 }
 

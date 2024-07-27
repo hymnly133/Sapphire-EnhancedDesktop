@@ -16,6 +16,12 @@ public:
     void distri(QSize* sizedis,int* radiusdis);
     void distriRadius(int* radiusdis);
 
+    enum Aliment{
+        Center=0,
+        Default =1
+    };
+    Aliment aliment = Center;
+
     QSize aim_size(){
         if(follow) return parentWidget()->size();
         else return *pSize;

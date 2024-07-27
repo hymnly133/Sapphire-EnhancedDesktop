@@ -48,7 +48,8 @@ public:
 
     // SMultiFunc interface
     void setPix(QString pixPath, bool save) override;
-    void renameFile(QString newNameWithDot);
+    void renameFile(QString newNameWithSuffix);
+    void renameWithDialog();
 
 
     // SUnit interface

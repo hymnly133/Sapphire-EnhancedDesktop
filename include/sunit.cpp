@@ -217,6 +217,7 @@ void SUnit::setupMenu()
 
 void SUnit::mousePressEvent(QMouseEvent *event)
 {
+    qDebug()<<"UnitPress"<<QCursor::pos();
     if(event->button() == Qt::LeftButton){
         grabMouse();
         single_click_action();
@@ -268,6 +269,7 @@ void SUnit::mouseMoveEvent(QMouseEvent *event)
     }
     else if(premove){
         auto tem = event->pos();
+        qDebug()<<tem;
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
         if(dis>=2){
             dragOut();
@@ -279,6 +281,7 @@ void SUnit::enterEvent(QEvent *event){
     qDebug()<<objectName()<<"enter"<<(layout != nullptr);
 
     onFocus = true;
+    pFocusedUnit = this;
     mouse_enter_action();
     updateFocusAnimation();
     event->accept();
@@ -295,6 +298,7 @@ void SUnit::enterEvent(QEvent *event){
 void SUnit::leaveEvent(QEvent *event){
     qDebug()<<objectName()<<"leave";
     onFocus = false  ;
+    pFocusedUnit = nullptr;
     preSetLongFocus(false);
     mouse_leave_action();
     updateFocusAnimation();
@@ -615,6 +619,7 @@ void SUnit::updatePositionAnimation()
 
 void SUnit::onDragedOut()
 {
+    if(!premove)
     relativeP = mapFromGlobal(QCursor::pos());
     moving = true;
     preSetLongFocus(false);

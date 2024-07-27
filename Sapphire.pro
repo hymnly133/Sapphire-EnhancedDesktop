@@ -10,7 +10,7 @@ win32 {
     }
 }
 RC_FILE=Sapphire.rc
-VERSION = 1.2.8.3
+VERSION = 1.2.8.4
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8

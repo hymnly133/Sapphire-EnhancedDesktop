@@ -26,7 +26,9 @@
     setLayout(layout);
 
 
-    rs->distriRadius(&arect->nowRadius);
+    // rs->distriRadius(&arect->nowRadius);
+    rs->aliment = roundShower::Default;
+    rs->distri(&arect->nowSize,&arect->nowRadius);
     rs->raise();
     connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
         deleteLater();
@@ -35,6 +37,8 @@
         move(previousPos+pos);
         QColor tem = winThemeColor();
         tem.setAlpha(arect->nowAlpha);
+        rs->raise();
+
         pe->setColor(QPalette::Window,tem);
         setMinimumSize(size);
         update();
@@ -48,6 +52,7 @@
  void SInputDialog::setInfo(QString info)
  {
      infoLable->setText("->");
+     this->info = info;
      QFontMetrics fm(infoLable->font());
     textSize = fm.boundingRect(info).size();
      pe->setColor(QPalette::Window,Qt::transparent);
@@ -65,6 +70,7 @@
                         0,0);
      arect->setFinal();
      arect->start();
+     lineEdit->setText("");
  }
 
  SInputDialog* SInputDialog::showInput(QString info,QString defaultString, QPoint pos ,QWidget* parent)
@@ -113,6 +119,7 @@
 
 
      arect->start();
+
      setFixedSize(1,1);
      setVisible(true);
      show();

@@ -32,6 +32,7 @@ MyFileInfo path2MyFI(QString path,int size){
 }
 
 QString path2Name(QString path){
+    if(QFileInfo(path).isDir()) return QFileInfo(path).fileName();
     return QFileInfo(path).baseName();
 }
 
