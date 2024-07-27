@@ -11,7 +11,6 @@
 #include "sdock.h"
 #include"QInputDialog"
 #include "seditbox.h"
-#include "shidetextblock.h"
 #include "filefunc.h"
 #include "qgraphicseffect.h"
 #include "qmessagebox.h"

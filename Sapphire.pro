@@ -9,7 +9,7 @@ win32 {
     QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$$TARGET".exe" $$escape_expand(\n\t)
     }
 }
-RC_FILE=Sapphire.rc
+# RC_FILE=Sapphire.rc
 VERSION = 1.2.8.4
 msvc{
     message("using msvc")
@@ -33,7 +33,17 @@ message("using mingw")
 }
 QMAKE_LIBDIR += $$PWD/lib
 INCLUDEPATH+= $$PWD/include
+# INCLUDEPATH+= $$PWD/include/Ela
 INCLUDEPATH+= $$PWD/include/ContextMenu
+INCLUDEPATH+= $$PWD/include/SGUI
+INCLUDEPATH+= $$PWD/include/SUnit
+INCLUDEPATH+= $$PWD/include/SUnit/SContainer
+INCLUDEPATH+= $$PWD/include/Func
+INCLUDEPATH+= $$PWD/include/SLayer
+INCLUDEPATH+= $$PWD/include/SLayout
+INCLUDEPATH+= $$PWD/include/SObject
+INCLUDEPATH+= $$PWD/include/SWidget
+INCLUDEPATH+= $$PWD/include/Setting
 # INCLUDEPATH+= $$PWD/include/Ela
 # INCLUDEPATH+= $$PWD/include/Ela/Example
 # DEPENDPATH += $$PWD/include/Ela
@@ -54,88 +64,90 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++17
 
 
-SOURCES += SysFunctions.cpp \
-    filefunc.cpp \
-    include/ContextMenu/contextmenu1.cpp \
-    include/ContextMenu/sshellcontextmenu.cpp \
-    include/layerbackground.cpp \
-    include/picturebox.cpp \
-    include/repaintcounterunit.cpp \
-    include/roundshower.cpp \
-    include/sanimationrect.cpp \
-    include/sbgshower.cpp \
-    include/sblockcontainer.cpp \
-    include/sblocklayout.cpp \
-    include/scontainer.cpp \
-    include/sdock.cpp \
-    include/seditbox.cpp \
-    include/sfile.cpp \
-    include/shidetextblock.cpp \
-    include/sinputdialog.cpp \
-    include/slayout.cpp \
-    include/slinearlayout.cpp \
-    include/slineranimation.cpp \
-    include/smenu.cpp \
-    include/smultifunc.cpp \
-    include/snotice.cpp \
-    include/sshellfuncunit.cpp \
-    include/stooltip.cpp \
-    include/sunit.cpp \
-    layershower.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    screenfunc.cpp \
-    style.cpp\
+SOURCES += \
     include/ContextMenu/contextmenu.cpp \
+    include/ContextMenu/contextmenu1.cpp \
     include/ContextMenu/desktopmenu.cpp \
+    include/ContextMenu/layertoppainter.cpp \
     include/ContextMenu/shellitem.cpp \
     include/ContextMenu/shellmemmanager.cpp \
-    # include/settingwindow.cpp\
+    include/ContextMenu/sshellcontextmenu.cpp \
+    include/Func/SysFunctions.cpp \
+    include/Func/filefunc.cpp \
+    include/Func/screenfunc.cpp \
+    include/SGUI/sinputdialog.cpp \
+    include/SGUI/smenu.cpp \
+    include/SGUI/snotice.cpp \
+    include/SGUI/stooltip.cpp \
+    include/SLayer/layerbackground.cpp \
+    include/SLayer/layermousegetter.cpp \
+    include/SLayer/layershower.cpp \
+    include/SLayout/sblocklayout.cpp \
+    include/SLayout/slayout.cpp \
+    include/SLayout/slinearlayout.cpp \
+    include/SObject/sanimationrect.cpp \
+    include/SObject/slineranimation.cpp \
+    include/SUnit/repaintcounterunit.cpp \
+    include/SUnit/sblockcontainer.cpp \
+    include/SUnit/scontainer.cpp \
+    include/SUnit/sdock.cpp \
+    include/SUnit/seditbox.cpp \
+    include/SUnit/sfile.cpp \
+    include/SUnit/smultifunc.cpp \
+    include/SUnit/sshellfuncunit.cpp \
+    include/SUnit/sunit.cpp \
+    include/SWidget/picturebox.cpp \
+    include/SWidget/roundshower.cpp \
+    include/SWidget/sbgshower.cpp \
+    include/Setting/style.cpp \
+    include/mainwindow.cpp \
+    main.cpp
+
 
 HEADERS += \
     include/ContextMenu/contextmenu.h \
     include/ContextMenu/contextmenu1.h \
     include/ContextMenu/desktopmenu.h \
+    include/ContextMenu/layertoppainter.h \
     include/ContextMenu/shellitem.h \
     include/ContextMenu/shellmemmanager.h \
     include/ContextMenu/shellmenuitem.h \
     include/ContextMenu/sshellcontextmenu.h \
-    include/SQSS.h \
-    include/SysFunctions.h \
-    include/filefunc.h \
-    include/layerbackground.h \
-    include/layershower.h \
-    include/mainwindow.h \
-    include/picturebox.h \
-    include/repaintcounterunit.h \
-    include/roundshower.h \
-    include/sanimationrect.h \
-    include/sbgshower.h \
-    include/sblockcontainer.h \
-    include/sblocklayout.h \
-    include/scontainer.h \
-    include/screenfunc.h \
-    include/sdock.h \
-    include/seditbox.h \
-    # include/settingwindow.h \
-    include/sfile.h \
-    include/shidetextblock.h \
-    include/sinputdialog.h \
-    include/slayout.h \
-    include/slinearlayout.h \
-    include/slineranimation.h \
-    include/smenu.h \
-    include/smultifunc.h \
-    include/snotice.h \
-    include/sshellfuncunit.h \
-    include/stooltip.h \
-    include/style.h \
-    include/sunit.h
+    include/Func/SysFunctions.h \
+    include/Func/filefunc.h \
+    include/Func/screenfunc.h \
+    include/SGUI/sinputdialog.h \
+    include/SGUI/smenu.h \
+    include/SGUI/snotice.h \
+    include/SGUI/stooltip.h \
+    include/SLayer/layerbackground.h \
+    include/SLayer/layermousegetter.h \
+    include/SLayer/layershower.h \
+    include/SLayout/sblocklayout.h \
+    include/SLayout/slayout.h \
+    include/SLayout/slinearlayout.h \
+    include/SObject/sanimationrect.h \
+    include/SObject/slineranimation.h \
+    include/SUnit/repaintcounterunit.h \
+    include/SUnit/sblockcontainer.h \
+    include/SUnit/scontainer.h \
+    include/SUnit/sdock.h \
+    include/SUnit/seditbox.h \
+    include/SUnit/sfile.h \
+    include/SUnit/smultifunc.h \
+    include/SUnit/sshellfuncunit.h \
+    include/SUnit/sunit.h \
+    include/SWidget/picturebox.h \
+    include/SWidget/roundshower.h \
+    include/SWidget/sbgshower.h \
+    include/Setting/SQSS.h \
+    include/Setting/style.h \
+    include/mainwindow.h
 
 
 FORMS += \
-    mainwindow.ui \
-    styleSetting.ui
+    include/Setting/styleSetting.ui \
+    include/mainwindow.ui
 
 TRANSLATIONS += \
     Sapphire_zh_CN.ts \

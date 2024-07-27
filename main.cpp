@@ -3,11 +3,9 @@
 #include "sblockcontainer.h"
 #include "sdock.h"
 #include "seditbox.h"
-#include "layershower.h"
 #include "mainwindow.h"
 #include<windows.h>
 #include <QJsonObject>
-#include"shidetextblock.h"
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
