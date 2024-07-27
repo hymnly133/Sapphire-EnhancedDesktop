@@ -3,6 +3,7 @@
 #include "qevent.h"
 
 
+
 //启动
 void SetUp();
 

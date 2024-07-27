@@ -60,11 +60,12 @@ public:
     virtual bool ProcessPath(QString path);
 
     // QWidget interface
+    void setFullShow(bool val);
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
-    void setFullShow(bool val);
     // ED_Unit interface
 public:
     void onDragedOut() override;

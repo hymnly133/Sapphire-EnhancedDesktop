@@ -11,6 +11,7 @@
 #include"QMessageBox"
 #include "sfile.h"
 #include"snotice.h"
+#include "unitfunc.h"
 
 void SetUp()
 {
@@ -149,13 +150,13 @@ void checkForKey(QKeyEvent *event)
             for(int i = 0; i < list.count(); i++)
             {
                 QString path = list[i].toLocalFile();
-                QString newName =  (*UserDesktopPath)+"/"+QFileInfo(path).fileName();
-                bool removed = QFile::copy(path,newName);
-                qDebug()<<"move"<<newName;
-                if(removed){
-                    qDebug()<<"moved";
+                QString newPath =  okPathAbsolute((*UserDesktopPath)+"/"+QFileInfo(path).fileName());
+                bool Copied = QFile::copy(path,newPath);
+                qDebug()<<"Try to copy to"<<newPath;
+                if(Copied){
+                    qDebug()<<"Copid";
+                    activepmw->addAIcon(newPath,true);
                 }
-                activepmw->addAIcon(newName,true);
             }
         }
 
@@ -206,6 +207,9 @@ void checkForKey(QKeyEvent *event)
                 event->accept();
             }
         }
+    }
+    else if( event->key()==Qt::Key_Delete){
+        removeG();
     }
     event->ignore();
     return;

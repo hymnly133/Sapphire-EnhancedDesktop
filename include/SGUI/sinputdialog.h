@@ -25,12 +25,13 @@ public:
     QPalette* pe;
     QSize textSize;
 
-    void end();
+    void end(bool reject = false);
     static  SInputDialog* showInput(QString info,QString defaultString = "", QPoint pos = QPoint(-1,-1) ,QWidget* parent = nullptr);
 
 
 public: signals:
     void finalText(QString);
+    void rejected();
     // QWidget interface
 protected:
     void resizeEvent(QResizeEvent *event) override;

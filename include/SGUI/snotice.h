@@ -42,6 +42,7 @@ public:
     static QList<SNotice*> noticeList;
 
     static void notice(QStringList info, QString title ="", int time =3000);
+    static void notice(QString info, QString title ="", int time =3000);
     static int nowOKPosY(SNotice* aim);
     static void updateAllNoticeAnimation();
 

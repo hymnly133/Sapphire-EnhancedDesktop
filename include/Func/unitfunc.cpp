@@ -2,7 +2,7 @@
 #include "global.h"
 #include "scontainer.h"
 
-void dragOut()
+void dragOutG(SUnit *sender)
 {
     // if(pCelectedUnits.size()>=4){
     //     foreach (auto k, pCelectedUnits) {
@@ -15,7 +15,7 @@ void dragOut()
     moving_global = true;
 }
 
-void cleanCelect()
+void cleanCelect(SUnit *sender)
 {
     bool animation = numCelected>4;
     foreach (auto k, pCelectedUnits) {
@@ -25,7 +25,7 @@ void cleanCelect()
     moving_global = false;
 }
 
-void releaseCelect()
+void releaseCelect(SUnit *sender)
 {
     foreach (auto k, pCelectedUnits) {
         // k->setUpdatesEnabled(true);
@@ -38,11 +38,11 @@ void releaseCelect()
             processor->onProcessAnother(k);
         }
     }
-    if(numCelected<=1)cleanCelect();
+    if(numCelected<=1)cleanCelect(sender);
     moving_global = false;
 }
 
-void moveCelect()
+void moveCelect(SUnit *sender)
 {
     foreach (auto k, pCelectedUnits) {
         k->move(activepmw->mapFromGlobal(QCursor::pos())-k->relativeP);
@@ -63,6 +63,8 @@ void moveCelect()
         }
     }
 }
+
+
 
 QPair<SLayout*,QPoint > deepFind(SUnit *aim)
 {
@@ -108,4 +110,34 @@ QList<SUnit *> units(){
         res.append(pmw->findChildren<SUnit*>());
     }
     return res;
+}
+
+void switchSimpleModeG(SUnit *sender)
+{
+    eachDoAsUnit({
+        unit->setSimpleMode(!unit->simpleMode);
+    });
+}
+
+void swtichAlwayShowG(SUnit *sender)
+{
+    eachDoAsUnit({
+        unit->setAlwaysShow(!unit->alwaysShow);
+    });
+}
+
+
+void switchFullShowG(SUnit *sender)
+{
+    eachDoAsUnit({
+        if(unit->inherits("SMultiFunc"))
+        ((SMultiFunc*)unit)->setFullShow(!((SMultiFunc*)unit)->fullShow);
+    });
+}
+
+void removeG(SUnit *sender)
+{
+    eachDoAsUnit({
+        unit->remove();
+    });
 }

@@ -21,8 +21,7 @@ LayerShower::LayerShower(MainWindow *parent,int screenId)
 {
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowFlags(Qt::FramelessWindowHint );
-    setAttribute(Qt::WA_TransparentForMouseEvents);
-
+    setAttribute(Qt::WA_TransparentForMouseEvents);;
     pmw = parent;
     this->screenId = screenId;
     inplace(this);

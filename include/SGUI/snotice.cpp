@@ -26,7 +26,7 @@ SNotice::SNotice(QWidget *parent)
     endTimer->setSingleShot(true);
 
     infoFont = new QFont(qApp->font().family(), 10, QFont::Bold);   //字体，大小，粗体，斜体
-    infoFont->setCapitalization(QFont::Capitalize);   //设置字母大小写
+    // infoFont->setCapitalization(QFont::Capitalize);   //设置字母大小写
 
 
     setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -139,6 +139,11 @@ void SNotice::notice(QStringList info, QString title, int time)
     notice->setTitle(title);
     notice->setStayTime(time);
     notice->comeout();
+}
+
+void SNotice::notice(QString info, QString title, int time)
+{
+    notice(QStringList()<<info,title,time);
 }
 
 int SNotice::nowOKPosY(SNotice *aim)

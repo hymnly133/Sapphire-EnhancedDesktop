@@ -216,7 +216,7 @@ public:
 
 
     //移除
-    virtual void Remove();
+    virtual void remove();
 
     //Resize之后触发
     virtual void afterResize(QResizeEvent* event);

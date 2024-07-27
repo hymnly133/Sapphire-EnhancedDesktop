@@ -4,10 +4,10 @@
 #include "guifunc.h"
 #include "mainwindow.h"
 #include "qdir.h"
-#include "qfileiconprovider.h"
 #include "qregularexpression.h"
 #include "qwinfunctions.h"
 #include "sfile.h"
+#include "sinputdialog.h"
 #include "windows.h"
 #include "shellapi.h"
 #include "commoncontrols.h"
@@ -15,7 +15,7 @@
 #include <Shlobj.h>
 #include"tchar.h"
 #include"snotice.h"
-
+#include <unistd.h>
 MyFileInfo::MyFileInfo(QString path, int size)
 {
     type = TYPE::SINGLE;
@@ -112,7 +112,7 @@ QMap<int,QPixmap> path2Icon(QString path,int size){
     }
 
     else
-    res[0] = resizeToRect(getWinIcon(toWindowsPath(path)));
+        res[0] = resizeToRect(getWinIcon(toWindowsPath(path)));
 
     //针对steam游戏
     QSettings shortcut(qfileinfo.filePath(), QSettings::IniFormat);
@@ -257,23 +257,6 @@ void OpenFileProperty(QString path)
     ShellExecuteEx(&sei);
 }
 
-void creatAFile(QString name)
-{
-    QString filePath = *UserDesktopPath+"/"+name;
-
-    QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly))
-    {
-        // 文件已成功打开
-
-        file.close(); // 关闭文件
-        qDebug() << "文件已创建：" << filePath;
-    }
-    else
-    {
-        qDebug() << "无法创建文件：" << filePath;
-    }
-}
 
 bool isPic(QString pah)
 {
@@ -295,11 +278,23 @@ void scanForChange()
     QList<QString> keyList = nowExits.keys();
     QMap<QString,SFile*> loss;
     QVector<QString> newFiles;
+    //使用QFileInfo判断
+
+    // foreach (QString path, keyList) {
+    //     if(!QFileInfo::exists(path)){
+    //         if(QFileInfo(path).isFile())continue;
+    //         // if(QFileInfo(path).isShortcut())continue;
+    //         if(QFileInfo(path).isSymLink())continue;
+    //         loss[path] = nowExits[path];
+    //     }
+    //     else if(ExcludeFiles.contains( QFileInfo(path).fileName())){
+    //         loss[path] = nowExits[path];
+    //     }
+    // }
+
+    //使用自编写判断
     foreach (QString path, keyList) {
-        if(!QFileInfo::exists(path)){
-            if(QFileInfo(path).isFile())continue;
-            // if(QFileInfo(path).isShortcut())continue;
-            if(QFileInfo(path).isSymLink())continue;
+        if(!fileExist(path)){
             loss[path] = nowExits[path];
         }
         else if(ExcludeFiles.contains( QFileInfo(path).fileName())){
@@ -332,6 +327,7 @@ void scanForChange()
     foreach (QString name, pPathDir.entryList()) {
         QString absolute = pPathDir.absoluteFilePath(name);
         if(!nowExits.contains(absolute)){
+            if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) continue;
             newFiles.append(absolute);
         }
     }
@@ -340,10 +336,10 @@ void scanForChange()
     QList<QString> removed = loss.keys();
     foreach (QString path, removed) {
         if(nowExits.contains(path))
-            nowExits[path]->Remove();
+            nowExits[path]->remove();
         removefiles<<path;
-        //提示
     }
+    //提示
     if(!removefiles.empty())
         SNotice::notice(removefiles,"移除文件",5000);
 
@@ -351,11 +347,114 @@ void scanForChange()
     foreach (QString newfile, newFiles) {
         pmws[0]->addAIcon(newfile);
         pmws[0]->endUpdate();
-        newfiles<<newfile;
-        //提示
     }
+    //提示
     if(!newfiles.empty())
         SNotice::notice(newfiles,"新增文件",5000);
 
     writeJson();
+}
+
+
+
+
+
+void fileCreator::creatNewFile(FileType type)
+{
+    QString defaultname ="";
+    switch (type) {
+
+    case txt:
+        defaultname = "新建 文本文档.txt";
+
+        break;
+    case docx:
+
+        defaultname = "新建 Word文档.docx";
+        break;
+    case pptx:
+
+        defaultname = "新建 Powerpoint演示文稿.pptx";
+        break;
+    case empty:
+
+        break;
+    }
+    SInputDialog* sid = SInputDialog::showInput("请输入文件名",defaultname);
+    connect(sid,&SInputDialog::finalText,activepmw,[=](QString name){
+        creatAFileInDesktop(name,true);
+    });
+}
+
+bool creatAFileInDesktop(QString name,bool notice)
+{
+    if(name=="") name = "空文件";
+
+    QString path = okPathAbsolute(*UserDesktopPath+"/"+name);
+
+
+    bool ret = creatAFile(path);
+    if(ret){
+        return activepmw->addAIcon(path,notice);
+    }
+    else{
+        return false;
+    }
+}
+
+bool creatAFile(const QString &absolutePath){
+    qDebug()<<"SystemCreate"<<absolutePath;
+    QFile file(absolutePath);
+    if (file.open(QIODevice::WriteOnly))
+    {
+        // 文件已成功打开
+        file.close(); // 关闭文件
+        qDebug() << "文件已创建：" << absolutePath;
+        return true;
+    }
+    else
+    {
+        qDebug() << "无法创建文件：" << absolutePath;
+        return false;
+    }
+}
+
+bool fileExist(const QString &path){
+    if(QFileInfo((path)).isDir()&&QFileInfo::exists(path)) return true;
+    if(QFileInfo::exists(path)) return true;
+    if(QFileInfo(path).exists())return true;
+    if (FILE *file = fopen(toWindowsPath(path).toStdString().c_str(), "r")) {
+        fclose(file);
+        return true;
+    }
+    if (access(toWindowsPath(path).toStdString().c_str(), F_OK) == 0)
+    {
+        printf("1.txt exists.\n");
+        return true;
+    }
+    return false;
+
+}
+
+QString okName(QString fileName)
+{
+    QString okPath = okPathAbsolute(*UserDesktopPath+fileName);
+    return okPath.mid(okPath.lastIndexOf("/"),okPath.length());
+}
+
+QString okPathAbsolute(QString absolutePath)
+{
+    if(QFileInfo::exists(absolutePath)){
+        QFileInfo finfo(absolutePath);
+        int existNums = 0;
+        QString newName = finfo.baseName()+QString("(%1).").arg(existNums)+finfo.suffix();
+        while(QFileInfo::exists(finfo.path()+"/"+newName)){
+            existNums++;
+            newName = finfo.baseName()+QString("(%1).").arg(existNums)+finfo.suffix();
+        }
+
+        SNotice::notice(QStringList()<<"文件已存在，重定向为"<<newName,"文件重定向");
+        return finfo.path()+"/"+newName;
+    }
+    return absolutePath;
 }

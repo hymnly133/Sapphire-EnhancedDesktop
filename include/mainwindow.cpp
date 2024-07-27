@@ -77,12 +77,12 @@ void MainWindow::setupActions()
         }
     })
 
-    QAction *creatNewAction = new QAction(myMenu);
-    creatNewAction->setText("新建组件");
-    myMenu->addAction(creatNewAction);
+    QAction *creatNewUnitAction = new QAction(myMenu);
+    creatNewUnitAction->setText("新建组件");
+    myMenu->addAction(creatNewUnitAction);
 
-    SMenu *creatNewMenu = new SMenu();
-    creatNewAction->setMenu(creatNewMenu);
+    SMenu *creatNewUnitMenu = new SMenu();
+    creatNewUnitAction->setMenu(creatNewUnitMenu);
 
 
     #ifdef QT_DEBUG
@@ -98,31 +98,31 @@ void MainWindow::setupActions()
     #endif
 
 
-    SET_ANCTION(act6,小型格子,creatNewMenu,{
+    SET_ANCTION(act6,小型格子,creatNewUnitMenu,{
         auto bc = new SBlockContainer(inside,2,2,2,2,5,10,10);
     })
 
 
 
-    SET_ANCTION(act7,中型格子,creatNewMenu,{
+    SET_ANCTION(act7,中型格子,creatNewUnitMenu,{
         auto bc = new SBlockContainer(inside,3,3,3,3,5,15,15);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act8,大型格子,creatNewMenu,{
+    SET_ANCTION(act8,大型格子,creatNewUnitMenu,{
         auto bc = new SBlockContainer(inside,4,4,4,4,5,20,20);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act9,Dock栏,creatNewMenu,{
+    SET_ANCTION(act9,Dock栏,creatNewUnitMenu,{
         auto dock = new SDock(inside);
         // InitAUnit(dock);
     })
 
 
-    SET_ANCTION(act10,设置箱,creatNewMenu,{
+    SET_ANCTION(act10,设置箱,creatNewUnitMenu,{
         auto dock = new SEditBox(inside);
         // InitAUnit(dock);
     })
@@ -130,16 +130,38 @@ void MainWindow::setupActions()
 
 #ifdef QT_DEBUG
 
-    SET_ANCTION(act11,重绘盒,creatNewMenu,{
+    SET_ANCTION(act11,重绘盒,creatNewUnitMenu,{
         auto dock = new RepaintCounterUnit(inside);
         // InitAUnit(dock);
     })
 #endif
 
-    SET_ANCTION(act12,系统盒子,creatNewMenu,{
+    SET_ANCTION(act12,系统盒子,creatNewUnitMenu,{
         auto dock = new SShellFuncUnit(inside);
         // InitAUnit(dock);
     })
+
+
+    QAction *creatNewFileAction = new QAction(myMenu);
+    creatNewFileAction->setText("新建文件");
+    myMenu->addAction(creatNewFileAction);
+
+    SMenu *creatNewFileMenu = new SMenu();
+    creatNewFileAction->setMenu(creatNewFileMenu);
+
+    SET_ANCTION(act13,文本文档,creatNewFileMenu,{
+        fileCreator::creatNewFile(FileType::txt);
+                                                   });
+    SET_ANCTION(act14,PPT演示文稿,creatNewFileMenu,{
+        fileCreator::creatNewFile(FileType::pptx);
+    });
+    SET_ANCTION(act15,Word文档,creatNewFileMenu,{
+        fileCreator::creatNewFile(FileType::docx);
+    });
+    SET_ANCTION(act16,空文件,creatNewFileMenu,{
+        fileCreator::creatNewFile(FileType::empty);
+    });
+
 }
 void MainWindow::setupUnits()
 {
@@ -228,9 +250,9 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     showerSizeAnimation = new QPropertyAnimation(this,"showerSize");
     showerRadiusAnimation = new QPropertyAnimation(this,"showerRadius");
     showerSizeAnimation->setDuration(500);
-    showerSizeAnimation->setEasingCurve(QEasingCurve::InSine);
+    showerSizeAnimation->setEasingCurve(QEasingCurve::InOutCubic);
     showerRadiusAnimation->setDuration(500);
-    showerRadiusAnimation->setEasingCurve(QEasingCurve::InSine);
+    showerRadiusAnimation->setEasingCurve(QEasingCurve::InOutCubic);
 
     showerAnimations = new QParallelAnimationGroup(this);
     showerAnimations->addAnimation(showerRadiusAnimation);
@@ -408,28 +430,24 @@ void MainWindow::updata_animation()
 
 }
 
-void MainWindow::addAIcon(QString path,bool notice)
+bool MainWindow::addAIcon(QString path,bool notice)
 {
-    if(nowExits.contains(path)){
-        SNotice::notice(QStringList()<<"文件已存在");
-    }
-    else{
-        addAIcon(path2MyFI(path),notice);
-    }
-
+    return addAIcon(path2MyFI(path),notice);
 }
 
-void MainWindow::addAIcon(QFileInfo qinfo , bool notice)
+bool MainWindow::addAIcon(QFileInfo qinfo , bool notice)
 {
-     addAIcon(MyFileInfo(qinfo),notice);
+    return addAIcon(MyFileInfo(qinfo),notice);
 }
 
-void MainWindow::addAIcon(MyFileInfo info,bool notice)
+bool MainWindow::addAIcon(MyFileInfo info,bool notice)
 {
 
-    if(!inside->OKForDefaultPut(new SFile())) return ;
-
-    qDebug() <<"Adding to Desktop"<< info.name << info.type;
+    qDebug()<<"Mainwindow try to add a info"<<info.filePath;
+    if(!inside->OKForDefaultPut(new SFile())){
+        SNotice::notice("布局无法容纳目标，请调整布局","布局错误");
+        return false;
+    };
 
     SFile *tem = nullptr;
     tem = new SFile(inside);
@@ -441,9 +459,13 @@ void MainWindow::addAIcon(MyFileInfo info,bool notice)
         tem->raise();
         if(notice)
         SNotice::notice(QStringList()<<tem->filePath,"增添文件",3000);
+        return true;
     }
 
+    return false;
+
 }
+
 
 void MainWindow::appendPoints(QPoint p)
 {
@@ -461,6 +483,7 @@ void MainWindow::updatePer01second()
 
     // qDebug()<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0));
 }
+
 
 
 void MainWindow::dropEvent(QDropEvent *e)

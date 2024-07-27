@@ -26,7 +26,7 @@ SBlockContainer::SBlockContainer(SLayout *dis, int outsizex, int outsizey, int r
 
     outSizeAnimation = new QPropertyAnimation(this,"outSizeFix");
     outSizeAnimation->setDuration(focus_animation_time);
-    outSizeAnimation->setEasingCurve(QEasingCurve::InSine);
+    outSizeAnimation->setEasingCurve(QEasingCurve::InOutCubic);
 
     connect(this,&::SBlockContainer::outSizeFix_changed,this,[=](double val){
         whenLongFocusAnimationChange();

@@ -109,10 +109,10 @@ public:
 
     void updata_animation();
 
-    //各种添加SFile的方法
-    void addAIcon(QString path, bool notice = false);
-    void addAIcon(QFileInfo info, bool notice = false);
-    void addAIcon(MyFileInfo info, bool notice = false);
+    //各种添加SFile的方法(不创建文件）
+    bool addAIcon(QString path, bool notice = false);
+    bool addAIcon(QFileInfo info, bool notice = false);
+    bool addAIcon(MyFileInfo info, bool notice = false);
 
 
 

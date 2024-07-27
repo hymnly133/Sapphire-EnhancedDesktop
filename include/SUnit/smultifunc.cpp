@@ -17,6 +17,7 @@
 #include "sfile.h"
 #include"stooltip.h"
 #include"global.h"
+#include "unitfunc.h"
 
 #define SET_ANCTION(NAME,TEXT,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\
@@ -35,7 +36,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
 
     // 初始化内部组件
     vl = new QVBoxLayout(this);
-    vl->setContentsMargins(0, 0, 0, 0);
+    vl->setContentsMargins(0, 3, 0, 0);
     vl->addSpacing(0);
 
     gv = new PictureBox(this);
@@ -96,7 +97,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
     })
 
     SET_ANCTION(act2,切换铺满,{
-        setFullShow(!fullShow);
+        switchFullShowG(this);
     })
 
     connect(this,&SMultiFunc::nowDefaultScale_changed,this,[=](double val){
@@ -296,7 +297,12 @@ void SMultiFunc::dropEvent(QDropEvent *event)
 void SMultiFunc::setFullShow(bool val)
 {
     fullShow = val;
-
+    if(val){
+        vl->setContentsMargins(0, 0, 0, 0);
+    }
+    else{
+        vl->setContentsMargins(0, 3, 0, 0);
+    }
     if(fullShow||simpleMode)
         lb->setVisible(false);
     else

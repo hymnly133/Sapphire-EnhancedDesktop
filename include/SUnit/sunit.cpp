@@ -203,16 +203,16 @@ void SUnit::setupMenu()
     });
 
     SET_ANCTION(act5,切换精简,{
-        changeSimpleMode();
+        switchSimpleModeG(this);
     });
 
     SET_ANCTION(act6,切换始终显示,{
-        setAlwaysShow(!alwaysShow);
+        swtichAlwayShowG(this);
     });
 
 
     SET_ANCTION(act7,删除,{
-        Remove();
+        removeG(this);
     });
 
 
@@ -227,7 +227,7 @@ void SUnit::mousePressEvent(QMouseEvent *event)
         premove = true;
         relativeP = event->pos();
         if(!pCelectedUnits.contains(this))
-            cleanCelect();
+            cleanCelect(this);
         setCelect(true);
     }
     event->accept();
@@ -240,7 +240,7 @@ void SUnit::mouseReleaseEvent(QMouseEvent *event)
     releaseMouse();
     mouse_release_action();
     if(moving){
-        releaseCelect();
+        releaseCelect(this);
     }
     event->accept();
 }
@@ -256,26 +256,14 @@ void SUnit::mouseMoveEvent(QMouseEvent *event)
     event->accept();
     if (moving)
     {
-        //processor
-        // QPoint ind = pmw->inside->SLayout::pos2Ind(pmwPos);
-        // SUnit* aim = pmw->inside->SLayout::ind2Unit(ind);
-        // if(aim!=nullptr){
-        //     aim->preSetLongFocus(true);
-        // }
-        // foreach (SUnit* tem, *(pmw->inside->contents)) {
-        //     if(tem!=aim &&tem->preLongFocus){
-        //         tem->preSetLongFocus(false);
-        //     }
-        // }
-        moveCelect();
-        // tryToSwitch(event);
+        moveCelect(this);
     }
     else if(premove){
         auto tem = event->pos();
         qDebug()<<tem;
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
         if(dis>=2){
-            dragOut();
+            dragOutG(this);
         }
     }
 }
@@ -531,9 +519,15 @@ void SUnit::wheelEvent(QWheelEvent *event)
     }
 }
 
-void SUnit::Remove()
+void SUnit::remove()
 {
     removeFromLayout();
+    if(pCelectedUnits.contains(this)){
+        pCelectedUnits.removeOne(this);
+    }
+    if(pFocusedUnit&&pFocusedUnit==this){
+        pFocusedUnit = nullptr;
+    }
     deleteLater();
 }
 

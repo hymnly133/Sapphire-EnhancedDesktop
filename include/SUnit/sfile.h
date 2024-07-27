@@ -56,7 +56,7 @@ public:
 
     // SUnit interface
 public:
-    void Remove() override;
+    void remove() override;
 };
 
 inline SFile::SFile(const SFile &other):SFile(other.layout,other.sizeX,other.sizeY){}

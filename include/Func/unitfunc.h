@@ -2,15 +2,38 @@
 #define UNITFUNC_H
 
 #include "slayout.h"
+#define eachDoAsUnit(FUNC)\
+if(numCelected>=1){\
+    foreach (SUnit* unit, pCelectedUnits)\
+    FUNC \
+}\
+else if(sender){\
+    SUnit* unit = sender;\
+    FUNC \
+}\
+else if(pFocusedUnit){\
+SUnit* unit = pFocusedUnit;\
+    FUNC \
+}\
+
+
+
 
 //拖出
-void dragOut();
+void dragOutG(SUnit* sender = nullptr);
 //移动选择的组件
-void moveCelect();
+void moveCelect(SUnit* sender = nullptr);
 //清楚选择的组件
-void cleanCelect();
+void cleanCelect(SUnit* sender = nullptr);
 //释放选择的组件
-void releaseCelect();
+void releaseCelect(SUnit* sender = nullptr);
+
+//所有组件内部函数的全局版
+void switchSimpleModeG(SUnit* sender = nullptr);
+void swtichAlwayShowG(SUnit* sender = nullptr);
+void switchFullShowG(SUnit* sender = nullptr);
+
+void removeG(SUnit* sender = nullptr);
 
 QPair<SLayout *, QPoint> deepFind(SUnit* aim);
 

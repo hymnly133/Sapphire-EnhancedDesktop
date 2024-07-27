@@ -1,4 +1,6 @@
 #include "SysFunctions.h"
+#include "global.h"
+#include "qtextcodec.h"
 #include "sfile.h"
 #include "sblockcontainer.h"
 #include "sdock.h"
@@ -20,16 +22,14 @@
 
 int main(int argc, char *argv[])
 {
-
+    QTextCodec *code = QTextCodec::codecForName("UTF-8");
+    QTextCodec::setCodecForLocale(code);
 
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     // 除以96之后即可转换成dpi的数值,以2k屏幕为例,Windows默认dpi是125%,这里的值就是:1.25
 
-
     QApplication a(argc, argv);
-    double dpi  = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
-    qDebug()<<dpi;
     // eApp->init();
 
 

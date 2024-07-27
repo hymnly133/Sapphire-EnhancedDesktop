@@ -53,7 +53,10 @@ template<class T>
 struct LimitedVal:public Val<T>{
     T min;
     T max;
-    LimitedVal<T>(QString fullname,T *pval,T min,T max):Val<T>(fullname,pval),min(min),max(max){};
+    LimitedVal<T>(QString fullname,T *pval,T min,T max):Val<T>(fullname,pval){
+        this->min =min;
+        this->max = max;
+          };
 };
 
 struct boolVal:public Val<bool>

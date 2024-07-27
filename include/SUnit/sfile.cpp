@@ -38,7 +38,7 @@ SFile::SFile(SLayout *dis, int sizex, int sizey,QString filePath):SMultiFunc(dis
         renameWithDialog();
     })
     SET_ANCTION(actSoftDelet,软删除,{
-        SMultiFunc::Remove();
+        SMultiFunc::remove();
     })
 
     SET_ANCTION(actOpenFileProperty,属性,{
@@ -155,7 +155,7 @@ void SFile::renameWithDialog()
 
 
 
-void SFile::Remove()
+void SFile::remove()
 {
     if(nowExits.contains(filePath)){
         nowExits.remove(filePath);
@@ -171,7 +171,7 @@ void SFile::Remove()
         qDebug()<<"Deleted";
     }
 
-    SUnit::Remove();
+    SUnit::remove();
 }
 
 
@@ -179,6 +179,7 @@ void SFile::loadFromMyFI(MyFileInfo info,bool init){
 
     filePath = info.filePath;
     if(QFileInfo(filePath).isDir()) isDir = true;
+
     nowExits[filePath] = this;
 
 

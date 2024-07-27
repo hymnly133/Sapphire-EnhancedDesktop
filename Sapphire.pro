@@ -1,15 +1,14 @@
 QT += core gui widgets winextras network concurrent quick qml
 win32 {
 
-    CONFIG(debug, debug|release) {
-    //debug
-    QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/debug/$$TARGET".exe" $$escape_expand(\n\t)
-    }else{
-    //release
-    QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$$TARGET".exe" $$escape_expand(\n\t)
-    }
+    # CONFIG(debug, debug|release) {
+    # //debug
+    # QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/debug/$$TARGET".exe" $$escape_expand(\n\t)
+    # }else{
+    # //release
+    # QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$$TARGET".exe" $$escape_expand(\n\t)
+    # }
 }
-# RC_FILE=Sapphire.rc
 VERSION = 1.2.8.4
 msvc{
     message("using msvc")

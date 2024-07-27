@@ -1,9 +1,39 @@
 #ifndef FILEFUNC_H
 #define FILEFUNC_H
-
 #include "qfileinfo.h"
 #include "qpixmap.h"
 #include "style.h"
+#include"QFileInfo"
+
+// void ScreatNewFile(FileType type){}
+enum FileType{
+    txt=0,
+    docx=1,
+    pptx=2,
+    empty=3
+};
+
+class fileCreator:public QObject{
+    Q_OBJECT
+public:
+
+    // 从已有预设的类型新建文件,用于菜单调用
+    static void creatNewFile(FileType type);
+
+};
+
+// 在桌面路径创建name文件，并添加到软件
+bool creatAFileInDesktop(QString name, bool notice = false);
+
+// 获取输入的文件路径，并创建文件的主程序，作为系统方法，不与桌面相关
+static bool creatAFile(const QString &filePath);
+
+//若重复文件，进行重命名(传入绝对路径）
+QString okPathAbsolute(QString absolutePath);
+
+//若重复文件，进行重命名(传入filename,只针对UserDesktopPath）
+QString okName(QString fileName);
+
 struct MyFileInfo
 {
     //定义返回的结构体
@@ -35,6 +65,8 @@ struct MyFileInfo
 
 
 
+
+
 //转化为MyFileInfo
 MyFileInfo path2MyFI(QString path,int size=512);
 
@@ -59,5 +91,8 @@ QList<MyFileInfo> scanalldesktopfiles();
 
 //从QFileInfo转化
 QList<MyFileInfo>getFormFileInfo(QFileInfo x);
+
+bool fileExist(const QString& path);
+
 
 #endif // FILEFUNC_H

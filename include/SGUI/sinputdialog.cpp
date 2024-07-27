@@ -62,9 +62,12 @@
      infoLable->setVisible(true);
  }
 
- void SInputDialog::end()
+ void SInputDialog::end(bool reject)
  {
-     emit finalText(lineEdit->text());
+     if(reject)
+        emit rejected();
+     else
+        emit finalText(lineEdit->text());
      arect->stop();
      arect->setEndValue(QPoint(0,0),
                         QSize(1,size().height()),
@@ -148,7 +151,10 @@
  void SInputDialog::keyPressEvent(QKeyEvent *event)
  {
      if(event->key()==Qt::Key_Enter){
-         close();
+        end();
+     }
+     if(event->key()==Qt::Key_Escape){
+        end(true);
      }
  }
 
