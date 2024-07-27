@@ -1,4 +1,6 @@
 #include "sunit.h"
+#include "global.h"
+#include "guifunc.h"
 #include "mainwindow.h"
 #include "qaction.h"
 #include "qapplication.h"
@@ -15,6 +17,7 @@
 #include"stooltip.h"
 #include <cmath>
 #include "QBitmap"
+#include "unitfunc.h"
 
 #define SET_ANCTION(NAME,TEXT,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\

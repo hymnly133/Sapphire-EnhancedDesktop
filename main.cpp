@@ -16,6 +16,7 @@
 #include "repaintcounterunit.h"
 #include "sshellfuncunit.h"
 #include"QProcess"
+#include "userfunc.h"
 
 int main(int argc, char *argv[])
 {

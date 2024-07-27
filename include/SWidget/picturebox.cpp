@@ -2,6 +2,7 @@
 #include "SysFunctions.h"
 #include <QPainter>
 #include <QDebug>
+#include "guifunc.h"
 #include "style.h"
 
 

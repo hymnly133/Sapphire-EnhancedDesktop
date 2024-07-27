@@ -1,5 +1,6 @@
 #include "snotice.h"
 #include "SysFunctions.h"
+#include "global.h"
 #include "mainwindow.h"
 #include "qpainter.h"
 #define SET_ANIMATION(ANIMATION,NAME,TIME)\

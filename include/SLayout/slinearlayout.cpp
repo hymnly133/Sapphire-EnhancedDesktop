@@ -1,5 +1,6 @@
 #include "slinearlayout.h"
 #include "SysFunctions.h"
+#include "global.h"
 
 SLinearLayout::SLinearLayout(QWidget *parent)
     : SLayout(parent)

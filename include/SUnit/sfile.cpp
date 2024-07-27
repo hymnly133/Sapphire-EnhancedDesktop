@@ -1,3 +1,4 @@
+#include "global.h"
 #include "sinputdialog.h"
 #include"sunit.h"
 #include "sfile.h"

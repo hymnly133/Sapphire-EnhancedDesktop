@@ -1,6 +1,7 @@
 #include "sinputdialog.h"
 #include"QWidget"
 #include "SysFunctions.h"
+#include "global.h"
 #include "mainwindow.h"
 #include "qevent.h"
 #include "qlabel.h"

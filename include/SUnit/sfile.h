@@ -1,6 +1,8 @@
 #ifndef SFILE_H
 #define SFILE_H
 
+#include "filefunc.h"
+#include "qfileinfo.h"
 #include "smultifunc.h"
 #include <QWidget>
 //新增

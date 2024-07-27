@@ -1,6 +1,6 @@
 #include "sshellfuncunit.h"
+#include "guifunc.h"
 #include "qevent.h"
-#include "qfileiconprovider.h"
 #include "smenu.h"
 #include"stooltip.h"
 #include"QProcess"

@@ -1,11 +1,13 @@
 #include "slayout.h"
 #include "SysFunctions.h"
+#include "global.h"
 #include "mainwindow.h"
 #include "qtimer.h"
 #include<algorithm>
 #include"QFuture"
 #include "scontainer.h"
 #include "screenfunc.h"
+#include "unitfunc.h"
 #include<QtConcurrent/QtConcurrent>
 
 

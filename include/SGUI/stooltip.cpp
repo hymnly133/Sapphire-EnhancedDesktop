@@ -1,5 +1,6 @@
 #include "stooltip.h"
 #include "SysFunctions.h"
+#include "global.h"
 #include "mainwindow.h"
 #include "qpainter.h"
 #include "screenfunc.h"

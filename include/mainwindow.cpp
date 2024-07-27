@@ -1,10 +1,7 @@
 #include "mainwindow.h"
-#include "qprocess.h"
+#include "global.h"
 #include "sbgshower.h"
-#include "shellmenuitem.h"
-#include "sinputdialog.h"
 #include "snotice.h"
-#include "sshellcontextmenu.h"
 #include "sshellfuncunit.h"
 #include "sblockcontainer.h"
 #include "sfile.h"
@@ -29,13 +26,13 @@
 #include"ContextMenu/contextmenu.h"
 #include "QThread"
 #include"style.h"
-#include"qmenu.h"
 #include"QClipboard"
 #include"QMimeData"
+#include "unitfunc.h"
+#include "userfunc.h"
 #include <Shlobj.h>
 #include <shlwapi.h>
 #include <windows.h>
-#include"desktopmenu.h"
 
 #define SET_ANCTION(NAME,TEXT,MENU,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\
@@ -529,92 +526,7 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-
-    if( event ->matches( QKeySequence::Copy ) )
-    {
-
-        QList<QUrl> copyfiles;
-        foreach (SUnit* unit, pCelectedUnits) {
-            if(unit->inherits("SFile")){
-                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
-                if(url.isValid()){
-                    copyfiles.push_back(url);
-                }
-            }
-        }
-        qDebug()<<"Copied"<<copyfiles;
-
-        QMimeData *data=new QMimeData;
-        data->setUrls(copyfiles);
-
-        QClipboard *clip=QApplication::clipboard();
-        clip->setMimeData(data);
-        event->accept();
-        return;
-    }
-    else if( event ->matches( QKeySequence::Paste ) ){
-
-        QClipboard *clip=QApplication::clipboard();
-        if(clip->mimeData()->hasUrls())//处理期望数据类型
-        {
-            QList<QUrl> list = clip->mimeData()->urls();//获取数据并保存到链表中
-            for(int i = 0; i < list.count(); i++)
-            {
-                QString path = list[i].toLocalFile();
-                QString newName =  (*UserDesktopPath)+"/"+QFileInfo(path).fileName();
-                bool removed = QFile::copy(path,newName);
-                qDebug()<<"move"<<newName;
-                if(removed){
-                    qDebug()<<"moved";
-                }
-                addAIcon(newName,true);
-            }
-        }
-
-        event->accept();
-        return;
-    }
-    else if(event->matches(QKeySequence::Cut)){
-        QList<QUrl> copyfiles;
-        foreach (SUnit* unit, pCelectedUnits) {
-            if(unit->inherits("SFile")){
-                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
-                if(url.isValid()){
-                    copyfiles.push_back(url);
-
-                }
-            }
-        }
-        qDebug()<<"Cut"<<copyfiles;
-
-        QMimeData *data=new QMimeData;
-        data->setUrls(copyfiles);
-
-        QClipboard *clip=QApplication::clipboard();
-        clip->setMimeData(data);
-
-        foreach (SUnit* unit, pCelectedUnits) {
-            if(unit->inherits("SFile")){
-                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
-                if(url.isValid()){
-                    QFile::remove(((SFile*)unit)->filePath);
-                }
-            }
-        }
-
-        event->accept();
-        return;
-    }
-    else if( event->key()==Qt::Key_F2){
-        if(pFocusedUnit!=nullptr){
-            if(pFocusedUnit->inherits("SFile")){
-                ((SFile*)pFocusedUnit)->renameWithDialog();
-                event->accept();
-            }
-        }
-    }
-    event->ignore();
-    return;
+    checkForKey(event);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
@@ -734,8 +646,6 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
     // // SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
     // SNotice::notice(QStringList()<<"infoTestinfoTestinfoTestinfoTestinfoTest","TitleTest");
 #endif
-    // SNotice::notice(QStringList()<<"infoTestfdfdfghgfdfghjhgfdhgffghfhdgfggfhdfghdfghdffdfdfdsdsdssds","TitleTest");
-    // raiseLayers();
     pls->raise();
 
 }

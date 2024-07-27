@@ -1,13 +1,9 @@
 #include<windows.h>
-#include "filefunc.h"
+#include "global.h"
 #include"mainwindow.h"
 #include "layershower.h"
-#include "qapplication.h"
-#include "qbitmap.h"
 #include "qpainter.h"
-#include "qpainterpath.h"
 #include "qscreen.h"
-#include "scontainer.h"
 #include "screenfunc.h"
 #include"windows.h"
 #include "shlobj.h"
@@ -34,164 +30,19 @@
 #include <QMutex>
 #include <dwmapi.h>
 #include <QStandardPaths>
-#include"sfile.h"
 #include"QWindowStateChangeEvent"
-#include"snotice.h"
 #include"QInputDialog"
 
 
 
 
 static QMutex mutex;
-bool firstNotice = true;
-bool init = false;
-bool isQuit = false;
-QMap<int,MainWindow*> pmws;
-MainWindow* activepmw = nullptr;
-SUnit* processor;
-QMap<int,QScreen*> pscs;
-int screenNum;
-int jsonNum;
-StyleHelper* psh;
-QDesktopWidget* pdt;
-QString* UserDesktopPath;
-QString* PublicDesktopPath;
-bool moving_global;
-QList<SUnit*> pCelectedUnits;
-SUnit* pFocusedUnit = nullptr;
-bool onLoading = true;
-QMap<QString,SFile*> nowExits;
-QMap<int,QJsonObject> UnusedJsons;
-QList<QString> ExcludeFiles;
+
 
 QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
 
 HWND shelldlldefview = NULL;
-
-
-#define AUTO_RUN_KEY	"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
-//设置/取消自启动
-//isStart: true(开机启动)    false(开机不启动)
-
-void SetUp()
-{
-    QString application_name = QApplication::applicationName();//获取应用名称
-    QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
-    enable_auto_run = !settings->value(application_name).isNull();
-
-    ExcludeFiles.append("desktop.ini");
-
-    qDebug()<<"Setting Up...";
-    UserDesktopPath = new  QString(QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0]);
-    qDebug()<<"User Desktop:"<<*UserDesktopPath;
-    PublicDesktopPath=new QString("C:/Users/Public/Desktop");
-    qDebug()<<"Public Desktop:"<<*PublicDesktopPath;
-    pdt = QApplication::desktop();
-    pscs[0]=QGuiApplication::primaryScreen();
-
-    Shift_Global = -pscs[0]->virtualGeometry().topLeft();
-
-
-
-    // 通过循环可以遍历每个显示器
-    QList<QScreen *> list_screen = QGuiApplication::screens();
-    screenNum = list_screen.size();
-
-    for (int i = 0; i < screenNum; i++)
-    {
-        QScreen * qs =list_screen.at(i);
-        QRect rect = qs->geometry();
-        qDebug()<<"Setting Screen"<<i<< rect<< (pscs[0] == qs);
-        pscs[i] = list_screen[i];
-    }
-    qDebug()<<"Setting layerShower";
-
-    QMap<int,QJsonObject> jsons = readJson();
-    jsonNum = jsons.size();
-
-    qDebug()<<"Find"<<jsonNum<<"Jsons";
-    qDebug()<<"Find"<<screenNum<<"Screens";
-
-
-    if(jsonNum == 0){
-        //初始化
-        init = true;
-        if(screenNum!=1)
-            QMessageBox::about(NULL, "提示",QString( "没有布局文件，即将初始化~\n你有%1个屏幕，将分别初始化\n请注意弹出窗口！").arg(screenNum));
-        else{
-            QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化~\n请注意弹出窗口！");
-        }
-
-        qDebug()<<"Scaning";
-        QList<MyFileInfo> iconns = scanalldesktopfiles();
-        for(int i=0;i<screenNum;i++){
-            qDebug()<<"Processing Mainwindow"<<i;
-            pmws[i] = new MainWindow(nullptr,i);
-            iconns = pmws[i]->Init(iconns);
-        }
-        if(!iconns.empty()){
-            QMessageBox::about(nullptr,"(⊙o⊙)！！",QString("你选择的布局不足以容纳所有图标，请重启软件并重新选择布局\n（剩余：%1个）").arg(iconns.size()));
-            isQuit = true;
-            return;
-        }
-    }
-    else{
-        if(jsonNum<screenNum)
-            QMessageBox::about(nullptr,"注意！",QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化\n请注意弹出窗口！").arg(jsonNum).arg(screenNum));
-        if(jsonNum>screenNum){
-            QMessageBox::about(nullptr,"注意！",QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！多余的桌面数据不会被清理").arg(jsonNum).arg(screenNum));
-            for(int i=screenNum;i<jsonNum;i++){
-                UnusedJsons[i] = jsons[i];
-            }
-        }
-        //加载
-        for(int i=0;i<screenNum;i++){
-            qDebug()<<"Processing Mainwindow"<<i;
-            pmws[i] = new MainWindow(nullptr,i);
-            if(jsons.contains(i)){
-                pmws[i]->load_json(jsons[i]);
-            }
-            else{
-                pmws[i]->Init();
-            }
-        }
-
-    }
-    for(int i=0;i<screenNum;i++){
-        pmws[i]->endUpdate();
-        pmws[i]->show();
-    }
-
-    qDebug()<<"Final:";
-    for(int i=0;i<screenNum;i++){
-        qDebug()<<"Mainwindow"<<i<<pmws[i]->mapToGlobal(QPoint(0,0));
-    }
-    activepmw = pmws[0];
-    if(init)
-    {
-        SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
-        SNotice::notice(QStringList()<<"为了使用部分桌面功能"<<"Sapphire会开始使用管理员权限","有关管理员权限",5000);
-    }
-
-    onLoading  =false;
-}
-
-
-void setMyAppAutoRun(bool isStart)
-{
-    QString application_name = QApplication::applicationName();//获取应用名称
-    QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
-    if(isStart)
-    {
-        QString application_path = QApplication::applicationFilePath();//找到应用的目录
-        settings->setValue(application_name, application_path.replace("/", "\\"));//写入注册表
-    }
-    else
-    {
-        settings->remove(application_name);		//从注册表中删除
-    }
-}
 
 void customMessageHandler(QtMsgType type,
                           const QMessageLogContext &context,
@@ -254,110 +105,9 @@ QRect AbsoluteRect(QWidget* aim){
     return QRect(pos.x()+tem.x(),pos.y()+tem.y(),tem.width(),tem.height());
 }
 
-
-
-void paintRect(QWidget* aim,QColor color){
-    bool another = true;
-
-    if(aim->inherits("SUnit")) {
-        color.setAlpha(color.alpha()*((SUnit*)aim)->nowPadRatio);
-        another = ((SUnit*)aim)->showRect;
-    }
-    if(ShowRect&(another)){
-        QPainter painter(aim);
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(color);
-        painter.drawRect(aim->rect());;
-    }
-}
-
 double rectLen(int w,int h){
     return sqrt(w*w+h*h);
 }
-
-void paintLight(QWidget* aim,QColor color){
-    // qDebug()<<"Light color"<<color;
-    bool another = true;
-    bool choosen = false;
-    int aim_alpha_start = light_alpha_start;
-    int aim_alpha_end= light_alpha_end;
-    if(aim->inherits("SUnit")) {
-        aim_alpha_end*=((SUnit*)aim)->nowPadRatio;
-        aim_alpha_start+=((SUnit*)aim)->nowPadRatio;
-        // qDebug()<<color.alpha();
-        another = ((SUnit*)aim)->showLight;
-    }
-
-
-    if(ShowLight&(another)){
-        auto pos =aim->mapFromGlobal(aim->cursor().pos());
-        QRadialGradient* radialGradient;
-        if(enable_light_track&&choosen){
-            radialGradient = new QRadialGradient(aim->width()/2 , aim->height()/2, rectLen(aim->width(),aim->height())/2,pos.x() ,pos.y());
-        }
-        else{
-            radialGradient = new QRadialGradient(aim->width()/2 , aim->height()/2, rectLen(aim->width(),aim->height())/2,0, aim->height());
-        }
-        //创建了一个QRadialGradient对象实例，参数分别为中心坐标，半径长度和焦点坐标,如果需要对称那么中心坐标和焦点坐标要一致
-        QPainter painter(aim);
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setPen(Qt::NoPen);
-        color.setAlpha(aim_alpha_start);
-        if(aim->inherits("SUnit")) {
-            color.setAlpha(color.alpha()*((SUnit*)aim)->nowPadRatio);
-        }
-        radialGradient->setColorAt(0,color);
-        color.setAlpha(aim_alpha_end);
-        if(aim->inherits("SUnit")) {
-            color.setAlpha(color.alpha()*((SUnit*)aim)->nowPadRatio);
-            // qDebug()<<color.alpha();
-        }
-        radialGradient->setColorAt(1.0,color);
-        painter.setBrush(QBrush(*radialGradient));
-        painter.drawRect(aim->rect());//在相应的坐标画出来
-    }
-}
-
-void paintSide(QWidget* aim,QColor color){
-    bool another = true;
-    if(aim->inherits("SUnit")){
-
-        another = ((SUnit*)aim)->showSide;
-        // 恢复默认混合模式，绘制边框，如果没有则不用
-        if(ShowSide&&another){
-            QPainter painter(aim);
-            QPainterPath path;
-            //这里圆角区域需要根据dpi、size调整
-            path.addRoundedRect(QRectF(aim->rect()).adjusted(1.5, 1.5, -1.5, -1.5), unit_radius, unit_radius);
-            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-            painter.setPen(QPen(QColor(0xCA64EA), 1.0));
-            painter.drawPath(path);
-        }
-    }
-    else if(ShowSide){
-        QPainter p(aim);
-        p.setPen(color); //设置画笔记颜色
-        p.drawRect(0, 0, aim->width() -1, aim->height() -1); //绘制边框
-    }
-}
-
-void mouse_move(int x,int y){
-
-    qDebug()<<"move"<<x<<y;
-    // pmw->move(x,y);
-}
-
-void mouse_on(int x,int y){
-
-    qDebug()<<"on"<<x<<y;
-}
-
-void mouse_off(int x,int y){
-
-    qDebug()<<"off"<<x<<y;
-}
-
 
 QString toWindowsPath(QString const& linuxPath)
 {
@@ -478,33 +228,6 @@ void inplace2(QWidget* pmw2) {
     // 如果找到了符合条件的 WorkerW 窗口，设置 Qt 窗口的父窗口
 }
 
-QList<MyFileInfo> scandesktopfiles(const QString &desktopPath)
-{
-    //对于指定桌面路径，返还桌面路径中的文件信息的列表
-    QList<MyFileInfo> files;
-    QDir desktopDir(desktopPath);
-    desktopDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
-    QFileInfoList fileInfoList=desktopDir.entryInfoList();
-    foreach(const QFileInfo &x,fileInfoList)
-    {
-        files.append(MyFileInfo(x));
-    }
-    std::sort(files.begin(), files.end());
-    return files;
-}
-
-QList<MyFileInfo> scanalldesktopfiles()
-{
-    //寻找桌面路径，并返回两个桌面中所有文件信息的列表
-    QList<MyFileInfo> files;
-
-    files.append(scandesktopfiles(*PublicDesktopPath));
-    files.append(scandesktopfiles(*UserDesktopPath));
-
-    std::sort(files.begin(),files.end());
-    qDebug()<<*PublicDesktopPath<<*UserDesktopPath;
-    return files;
-}
 
 QString GetCorrectUnicode(const QByteArray &ba)
 {
@@ -605,12 +328,6 @@ QColor pixmapMainColor(QPixmap p, double bright) //p为目标图片 bright为亮
                   int(bright*b/t)>255?255:int(bright*b/t)); //最后返回的值是亮度系数×平均数,若超出255则设置为255也就是最大值，防止乘与亮度系数后导致某些值大于255的情况。
 }
 
-void repaintAround(QWidget* aim){
-    auto tem = aim->geometry();
-    auto rrect = QRect(tem.x()-100,tem.y()-100,tem.width()+200,tem.height()+200);
-    pmws[screenInd(aim)]->repaint(rrect);
-
-}
 
 QString  getDesktopPath()
 {
@@ -748,49 +465,6 @@ QMap<int,QJsonObject> readJson(){
 
 
 
-bool isPic(QString pah)
-{
-    bool bRet = false;
-    QFile fi(pah);
-    if (fi.open(QIODevice::ReadOnly)) {
-        QPixmap pix;
-        pix.loadFromData(fi.readAll());
-        bRet = !pix.isNull();
-        fi.close();
-    }
-    return bRet;
-}
-
-SUnit *from_json(QJsonObject data, SLayout *layout)
-{
-    QString name = data.value("Class").toString();
-    QString newname = name.replace("ED_","S");
-    int id = QMetaType::type(name.toStdString().c_str());
-    if (id == QMetaType::UnknownType){
-        qDebug()<<"error0";
-        id = QMetaType::type(newname.toStdString().c_str());
-        if(id == QMetaType::UnknownType){
-            qDebug()<<"error1";
-            return nullptr;
-        }
-    }
-    qDebug()<<name;
-    // auto k = QMetaType::create(id);
-    SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
-    unit->setPMW(layout->pmw);
-    unit->setParent(layout->pContainer);
-    unit->load_json(data);
-    return unit;
-}
-
-QList<SUnit *> units(){
-    QList<SUnit*> res;
-    foreach(auto pmw,pmws){
-        res.append(pmw->findChildren<SUnit*>());
-    }
-    return res;
-}
-
 QString shellrun(QString filename, QString para)
 {
     HINSTANCE hNewExe = ShellExecuteA(NULL, "open", filename.toLocal8Bit(), para.toLocal8Bit(), NULL, SW_SHOW);
@@ -836,77 +510,7 @@ QString shellrun(QString filename, QString para)
     return sRet;
 }
 
-void scanForChange()
-{
-    if(onLoading) return;
-    //Scan For Loss
-    QList<QString> keyList = nowExits.keys();
-    QMap<QString,SFile*> loss;
-    QVector<QString> newFiles;
-    foreach (QString path, keyList) {
-        if(!QFileInfo::exists(path)){
-            if(QFileInfo(path).isFile())continue;
-            // if(QFileInfo(path).isShortcut())continue;
-            if(QFileInfo(path).isSymLink())continue;
-            loss[path] = nowExits[path];
-        }
-        else if(ExcludeFiles.contains( QFileInfo(path).fileName())){
-            loss[path] = nowExits[path];
-        }
-    }
 
-
-
-
-    //Scan For New
-    QDir uPathDir(*UserDesktopPath);
-    qDebug()<<"Scanningfor"<<*UserDesktopPath;
-    uPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
-    QStringList files = uPathDir.entryList();
-    foreach (QString name, files) {
-        QString absolute = uPathDir.absoluteFilePath(name);
-        if(!nowExits.contains(absolute)){
-            if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) continue;
-            newFiles.append(absolute);
-        }
-    }
-
-
-
-    QDir pPathDir(*PublicDesktopPath);
-    qDebug()<<"Scanningfor"<<*PublicDesktopPath;
-    pPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
-
-    foreach (QString name, pPathDir.entryList()) {
-        QString absolute = pPathDir.absoluteFilePath(name);
-        if(!nowExits.contains(absolute)){
-            newFiles.append(absolute);
-        }
-    }
-
-    QStringList removefiles;
-    QList<QString> removed = loss.keys();
-    foreach (QString path, removed) {
-        if(nowExits.contains(path))
-            nowExits[path]->Remove();
-        removefiles<<path;
-        //提示
-    }
-    if(!removefiles.empty())
-    SNotice::notice(removefiles,"移除文件",5000);
-
-    QStringList newfiles;
-    foreach (QString newfile, newFiles) {
-        pmws[0]->addAIcon(newfile);
-        pmws[0]->endUpdate();
-        newfiles<<newfile;
-        //提示
-    }
-    if(!newfiles.empty())
-    SNotice::notice(newfiles,"新增文件",5000);
-
-    writeJson();
-}
 QRect Point2Rect(QPoint point0, QPoint point1)
 {
     QPoint fixPoint0 = point0;
@@ -918,89 +522,7 @@ QRect Point2Rect(QPoint point0, QPoint point1)
     int h = qAbs(fixPoint0.y() - fixPoint1.y()) + 1;
     return QRect(x, y, w, h);  // 画长方形
 }
-void dragOut()
-{
-    // if(pCelectedUnits.size()>=4){
-    //     foreach (auto k, pCelectedUnits) {
-    //         k->setUpdatesEnabled(false);
-    //     }
-    // }
-    foreach (auto k, pCelectedUnits) {
-        k->onDragedOut();
-    }
-    moving_global = true;
-}
 
 
 
-void cleanCelect()
-{
-    bool animation = numCelected>4;
-    foreach (auto k, pCelectedUnits) {
-        k->setCelect(false,animation);
-    }
-    pCelectedUnits.clear();
-    moving_global = false;
-}
 
-void releaseCelect()
-{
-    foreach (auto k, pCelectedUnits) {
-        // k->setUpdatesEnabled(true);
-        QPair<SLayout*,QPoint >res = deepFind(k);
-        res.first->putUnit(k,res.second,true);
-        k->moving = false;
-        k->premove = false;
-        k->updateFocusAnimation();
-        if(processor!=nullptr){
-            processor->onProcessAnother(k);
-        }
-    }
-    if(numCelected<=1)cleanCelect();
-    moving_global = false;
-}
-
-void moveCelect()
-{
-    foreach (auto k, pCelectedUnits) {
-        k->move(activepmw->mapFromGlobal(QCursor::pos())-k->relativeP);
-        // k->update();
-    }
-
-    //processor
-    if(pCelectedUnits.size()==1){
-        QPoint ind = activepmw->inside->SLayout::pos2Ind(activepmw->mapFromGlobal(QCursor::pos()));
-        SUnit* aim = activepmw->inside->SLayout::ind2Unit(ind);
-        if(aim!=nullptr){
-            aim->preSetLongFocus(true);
-        }
-        foreach (SUnit* tem, *(activepmw->inside->contents)) {
-            if(tem!=aim &&tem->preLongFocus){
-                tem->preSetLongFocus(false);
-            }
-        }
-    }
-}
-
-QPair<SLayout*,QPoint > deepFind(SUnit *aim)
-{
-    foreach(SContainer* container,*(activepmw->inside->insideContainers)){
-        if(container->geometry().contains(aim->geometry().center())){
-            QPoint ind = container->inside->clearPutableInd(aim);
-            if(ind!=QPoint(-1,-1)){
-                return QPair<SLayout*,QPoint>(container->inside,ind);
-            }
-        }
-    }
-
-    return QPair<SLayout*,QPoint>(activepmw->inside,activepmw->inside->clearPutableInd(aim));
-}
-
-void resizeForActiveMW()
-{
-    int sizeX = QInputDialog::getInt(nullptr,"重布局","请输入布局列数(根据屏幕宽度)",activepmw->inside->row,1,1000,2);
-    int sizeY = QInputDialog::getInt(nullptr,"重布局","请输入布局行数(根据屏幕高度)",activepmw->inside->col,1,1000,2);
-    if(!sizeX) sizeX=10;
-    if(!sizeY) sizeY=10;
-    activepmw->inside->resize(sizeX,sizeY);
-}

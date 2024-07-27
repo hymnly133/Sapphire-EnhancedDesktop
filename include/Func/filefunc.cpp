@@ -1,16 +1,20 @@
 #include "filefunc.h"
 #include "SysFunctions.h"
+#include "global.h"
+#include "guifunc.h"
 #include "mainwindow.h"
 #include "qdir.h"
 #include "qfileiconprovider.h"
 #include "qregularexpression.h"
 #include "qwinfunctions.h"
+#include "sfile.h"
 #include "windows.h"
 #include "shellapi.h"
 #include "commoncontrols.h"
 #include "Commctrl.h"
 #include <Shlobj.h>
 #include"tchar.h"
+#include"snotice.h"
 
 MyFileInfo::MyFileInfo(QString path, int size)
 {
@@ -68,64 +72,34 @@ QPixmap getWinIcon(QString path){
     return res;
 }
 
-QPixmap resizeToRect(QPixmap source){
-    qDebug()<<"Resizing from"<<source.size();
-    QImage image = source.toImage();
-    qDebug()<<"image"<<image.size();
-    int width = source.width();
-    int height = source.height();
 
-
-    int start = 0;
-    bool find = false;
-    for(start = 0;start<=width-2&&!find;start++){
-        //横向扫描
-        for(int j=start;j<=width-1;j++){
-            QColor pix = image.pixelColor(QPoint(j,start));
-            if(pix.alpha()!=0){
-                find = true;
-                break;
-            }
-        }
-        //竖向扫描
-        for(int j=start;j<=height-1;j++){
-            QColor pix = image.pixelColor(QPoint(start,j));
-            if(pix.alpha()!=0){
-                find = true;
-                break;
-            }
-        }
+QList<MyFileInfo> scandesktopfiles(const QString &desktopPath)
+{
+    //对于指定桌面路径，返还桌面路径中的文件信息的列表
+    QList<MyFileInfo> files;
+    QDir desktopDir(desktopPath);
+    desktopDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
+    QFileInfoList fileInfoList=desktopDir.entryInfoList();
+    foreach(const QFileInfo &x,fileInfoList)
+    {
+        files.append(MyFileInfo(x));
     }
-
-    int end=qMax(width,height)-1;
-    find = false;
-    for(;end>=start &&!find;end--){
-        //横向扫描
-        for(int j=0;j<=end;j++){
-            QColor pix = image.pixelColor(QPoint(j,end));
-            if(pix.alpha()!=0){
-                find = true;
-                break;
-            }
-        }
-        //竖向扫描
-        for(int j=0;j<=end;j++){
-            QColor pix = image.pixelColor(QPoint(end,j));
-            if(pix.alpha()!=0){
-                find = true;
-                break;
-            }
-        }
-    }
-
-    int f_start = qBound(0,start-1,qMin(width-1,height-1));
-    int f_end = qBound(0,end,qMin(width-1,height-1));
-    QPixmap res = source.copy(f_start,f_start,f_end+2-f_start,f_end+2-f_start);
-    // qDebug()<<"Start"<<start<<"End"<<end<<"Result Size"<<res.size();
-    return res;
+    std::sort(files.begin(), files.end());
+    return files;
 }
 
+QList<MyFileInfo> scanalldesktopfiles()
+{
+    //寻找桌面路径，并返回两个桌面中所有文件信息的列表
+    QList<MyFileInfo> files;
 
+    files.append(scandesktopfiles(*PublicDesktopPath));
+    files.append(scandesktopfiles(*UserDesktopPath));
+
+    std::sort(files.begin(),files.end());
+    qDebug()<<*PublicDesktopPath<<*UserDesktopPath;
+    return files;
+}
 
 QMap<int,QPixmap> path2Icon(QString path,int size){
     QMap<int,QPixmap> res;
@@ -299,4 +273,89 @@ void creatAFile(QString name)
     {
         qDebug() << "无法创建文件：" << filePath;
     }
+}
+
+bool isPic(QString pah)
+{
+    bool bRet = false;
+    QFile fi(pah);
+    if (fi.open(QIODevice::ReadOnly)) {
+        QPixmap pix;
+        pix.loadFromData(fi.readAll());
+        bRet = !pix.isNull();
+        fi.close();
+    }
+    return bRet;
+}
+
+void scanForChange()
+{
+    if(onLoading) return;
+    //Scan For Loss
+    QList<QString> keyList = nowExits.keys();
+    QMap<QString,SFile*> loss;
+    QVector<QString> newFiles;
+    foreach (QString path, keyList) {
+        if(!QFileInfo::exists(path)){
+            if(QFileInfo(path).isFile())continue;
+            // if(QFileInfo(path).isShortcut())continue;
+            if(QFileInfo(path).isSymLink())continue;
+            loss[path] = nowExits[path];
+        }
+        else if(ExcludeFiles.contains( QFileInfo(path).fileName())){
+            loss[path] = nowExits[path];
+        }
+    }
+
+
+
+
+    //Scan For New
+    QDir uPathDir(*UserDesktopPath);
+    qDebug()<<"Scanningfor"<<*UserDesktopPath;
+    uPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
+    QStringList files = uPathDir.entryList();
+    foreach (QString name, files) {
+        QString absolute = uPathDir.absoluteFilePath(name);
+        if(!nowExits.contains(absolute)){
+            if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) continue;
+            newFiles.append(absolute);
+        }
+    }
+
+
+
+    QDir pPathDir(*PublicDesktopPath);
+    qDebug()<<"Scanningfor"<<*PublicDesktopPath;
+    pPathDir.setFilter(QDir::Files|QDir::Dirs|QDir::NoDotAndDotDot|QDir::System);
+
+    foreach (QString name, pPathDir.entryList()) {
+        QString absolute = pPathDir.absoluteFilePath(name);
+        if(!nowExits.contains(absolute)){
+            newFiles.append(absolute);
+        }
+    }
+
+    QStringList removefiles;
+    QList<QString> removed = loss.keys();
+    foreach (QString path, removed) {
+        if(nowExits.contains(path))
+            nowExits[path]->Remove();
+        removefiles<<path;
+        //提示
+    }
+    if(!removefiles.empty())
+        SNotice::notice(removefiles,"移除文件",5000);
+
+    QStringList newfiles;
+    foreach (QString newfile, newFiles) {
+        pmws[0]->addAIcon(newfile);
+        pmws[0]->endUpdate();
+        newfiles<<newfile;
+        //提示
+    }
+    if(!newfiles.empty())
+        SNotice::notice(newfiles,"新增文件",5000);
+
+    writeJson();
 }

@@ -1,6 +1,5 @@
 #ifndef SCREENFUNC_H
 #define SCREENFUNC_H
-#include "SysFunctions.h"
 #include "qwidget.h"
 
 extern QPoint Shift_Global;

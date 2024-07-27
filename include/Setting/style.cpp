@@ -1,11 +1,13 @@
 #include "style.h"
 #include "SysFunctions.h"
+#include "global.h"
 #include "mainwindow.h"
 #include "qfileinfo.h"
 #include "qsettings.h"
 #include"QInputDialog"
 #include"SNotice.h"
 #include"ui_styleSetting.h""
+#include "userfunc.h"
 #include "QProcess"
 int unfocused_alpha = 130;
 int focused_alpha = 220;

@@ -16,6 +16,7 @@
 #include"QFileDialog"
 #include "sfile.h"
 #include"stooltip.h"
+#include"global.h"
 
 #define SET_ANCTION(NAME,TEXT,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\

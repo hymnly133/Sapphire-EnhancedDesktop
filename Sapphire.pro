@@ -74,7 +74,11 @@ SOURCES += \
     include/ContextMenu/sshellcontextmenu.cpp \
     include/Func/SysFunctions.cpp \
     include/Func/filefunc.cpp \
+    include/Func/global.cpp \
+    include/Func/guifunc.cpp \
     include/Func/screenfunc.cpp \
+    include/Func/unitfunc.cpp \
+    include/Func/userfunc.cpp \
     include/SGUI/sinputdialog.cpp \
     include/SGUI/smenu.cpp \
     include/SGUI/snotice.cpp \
@@ -115,7 +119,11 @@ HEADERS += \
     include/ContextMenu/sshellcontextmenu.h \
     include/Func/SysFunctions.h \
     include/Func/filefunc.h \
+    include/Func/global.h \
+    include/Func/guifunc.h \
     include/Func/screenfunc.h \
+    include/Func/unitfunc.h \
+    include/Func/userfunc.h \
     include/SGUI/sinputdialog.h \
     include/SGUI/smenu.h \
     include/SGUI/snotice.h \

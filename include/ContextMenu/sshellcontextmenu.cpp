@@ -1,5 +1,6 @@
 #include "sshellcontextmenu.h"
 #include "SysFunctions.h"
+#include "global.h"
 #include "mainwindow.h"
 #include <windows.h>
 #include <windowsx.h>

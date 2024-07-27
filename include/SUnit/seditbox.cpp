@@ -1,10 +1,12 @@
 #include "seditbox.h"
 #include "SysFunctions.h"
+#include "global.h"
 #include "mainwindow.h"
 #include "qmessagebox.h"
 #include"qcheckbox.h"
 #include"QSlider"
 #include "screenfunc.h"
+#include "userfunc.h"
 
 
 

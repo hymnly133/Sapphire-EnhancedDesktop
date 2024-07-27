@@ -8,6 +8,7 @@
 #include "QScreen"
 #include "QThread"
 #include"QStyle"
+#include "global.h"
 #include "mainwindow.h"
 #include "sinputdialog.h"
 #include "stooltip.h"
