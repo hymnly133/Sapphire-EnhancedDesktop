@@ -9,7 +9,7 @@ win32 {
     # QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$$TARGET".exe" $$escape_expand(\n\t)
     # }
 }
-VERSION = 1.2.8.4
+VERSION = 1.2.8.5
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8

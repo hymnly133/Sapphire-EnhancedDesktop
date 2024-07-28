@@ -170,6 +170,38 @@ void MainWindow::setupActions()
         fileCreator::creatNewFile(FileType::empty);
     });
 
+    QAction *systemSettingMenuAction = new QAction(myMenu);
+    systemSettingMenuAction->setText("系统设置");
+    myMenu->addAction(systemSettingMenuAction);
+
+    connect(systemSettingMenuAction,&QAction::triggered,this,[=](){
+        qDebug()<<"triggered";
+            shellrun("ms-settings:");
+    });
+
+    SMenu *systemSettingMenu = new SMenu();
+    systemSettingMenuAction->setMenu(systemSettingMenu);
+    SET_ANCTION(act00,主面板,systemSettingMenu,{
+        shellrun("ms-settings:");
+    });
+    SET_ANCTION(act17,显示设置,systemSettingMenu,{
+        shellrun("ms-settings:display");
+    });
+    SET_ANCTION(act18,个性化,systemSettingMenu,{
+        shellrun("ms-settings:personalization");
+    });
+    SET_ANCTION(act21,网络和Internet,systemSettingMenu,{
+        shellrun("ms-settings:network-status");
+    });
+    SET_ANCTION(act19,电源和睡眠,systemSettingMenu,{
+        shellrun("ms-settings:powersleep");
+    });
+    SET_ANCTION(act22,Windows更新,systemSettingMenu,{
+        shellrun("ms-settings:windowsupdate");
+    });
+    SET_ANCTION(act20,系统信息,systemSettingMenu,{
+        shellrun("ms-settings:about");
+    });
 }
 void MainWindow::setupUnits()
 {

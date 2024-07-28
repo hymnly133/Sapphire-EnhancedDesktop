@@ -29,10 +29,6 @@ SShellFuncUnit::SShellFuncUnit(SLayout *dis):SMultiFunc(dis)
 
     SET_ANCTION(actOpenSetting,Win11设置,windowsMenu,{
         SToolTip::Tip(shellrun("ms-settings:wheel"));
-        // QProcess process;
-        // process.setProgram("cmd.exe");
-        // process.setArguments({"ms-settings:wheel"});
-        // process.start();
                                          });
 
     SET_ANCTION(actOpenControl,控制面板,windowsMenu,{
