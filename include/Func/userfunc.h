@@ -10,6 +10,9 @@ void SetUp();
 //设置自启
 void setMyAppAutoRun(bool isStart);
 
+//设置创建注册表数据
+void setSapphireRegDate(bool isSet);
+
 //检查快捷键
 void checkForKey(QKeyEvent* event);
 

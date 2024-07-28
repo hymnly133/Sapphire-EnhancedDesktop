@@ -381,12 +381,13 @@ void fileCreator::creatNewFile(FileType type)
         break;
     }
     SInputDialog* sid = SInputDialog::showInput("请输入文件名",defaultname);
+    QPoint nowPos = QCursor::pos();
     connect(sid,&SInputDialog::finalText,activepmw,[=](QString name){
-        creatAFileInDesktop(name,true);
+        creatAFileInDesktop(name,true,nowPos);
     });
 }
 
-bool creatAFileInDesktop(QString name,bool notice)
+bool creatAFileInDesktop(QString name, bool notice, QPoint globalPos)
 {
     if(name=="") name = "空文件";
 
@@ -395,7 +396,7 @@ bool creatAFileInDesktop(QString name,bool notice)
 
     bool ret = creatAFile(path);
     if(ret){
-        return activepmw->addAIcon(path,notice);
+        return activepmw->addAIcon(path,notice,globalPos);
     }
     else{
         return false;

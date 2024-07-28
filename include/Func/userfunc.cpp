@@ -3,6 +3,7 @@
 #include "filefunc.h"
 #include "global.h"
 #include "qclipboard.h"
+#include "qdir.h"
 #include "qmimedata.h"
 #include "qscreen.h"
 #include "qstandardpaths.h"
@@ -155,7 +156,7 @@ void checkForKey(QKeyEvent *event)
                 qDebug()<<"Try to copy to"<<newPath;
                 if(Copied){
                     qDebug()<<"Copid";
-                    activepmw->addAIcon(newPath,true);
+                    activepmw->addAIcon(newPath,true,QCursor::pos());
                 }
             }
         }
@@ -227,11 +228,37 @@ void resizeForActiveMW()
 void setMyAppAutoRun(bool isStart)
 {
     QString application_name = QApplication::applicationName();//获取应用名称
+
+
+    //清理旧数据
+    QSettings *settingsold = new QSettings(AUTO_RUN_KEY_OLD, QSettings::NativeFormat);
+    if(settingsold->contains(application_name)){
+        settingsold->remove(application_name);
+    }
+
+
+
     QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
     if(isStart)
     {
         QString application_path = QApplication::applicationFilePath();//找到应用的目录
-        settings->setValue(application_name, application_path.replace("/", "\\"));//写入注册表
+        settings->setValue(application_name, "\""+application_path.replace("/", "\\")+"\"");//写入注册表
+    }
+    else
+    {
+        settings->remove(application_name);		//从注册表中删除
+    }
+}
+
+void setSapphireRegDate(bool isSet)
+{
+    QString application_name = QApplication::applicationName();//获取应用名称
+
+    QSettings *settings = new QSettings(SAPPHIRE_REG_PATH, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
+    if(isSet)
+    {
+        QString application_path = QApplication::applicationFilePath();//找到应用的目录
+        settings->setValue(application_name+"Path", application_path.replace("/", "\\"));//写入注册表
     }
     else
     {

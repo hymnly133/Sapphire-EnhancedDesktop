@@ -95,7 +95,10 @@ void SMenu::showEvent(QShowEvent *event)
 
     qDebug()<<"ShowSize"<<size();
     qDebug()<<"ShowPos"<<pos();
-    aimSize = size();
+    if(firstShow){
+        aimSize = size();
+        firstShow = false;
+    }
     previousPos = pos();
     arect->setStartValue(QPoint(0,0),
                          QSize(aimSize.width()*0.5,1),

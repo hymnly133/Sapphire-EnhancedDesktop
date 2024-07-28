@@ -20,6 +20,7 @@ public:
     void updateDefaultScale();
     double nowDefaultScale = 0.5;
     bool fullShow = false;
+    bool requireMulti = false;
     QString name;
     PictureBox* gv ;
 

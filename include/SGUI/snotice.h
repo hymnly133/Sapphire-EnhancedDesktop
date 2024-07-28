@@ -33,6 +33,7 @@ public:
     void comeout();
     void end();
     void whenAnimationUpdate();
+    bool onEnd = false;
 
     static int spaceBetweenNotice;
     static int borad;
@@ -40,6 +41,7 @@ public:
     static int boradInfo;
     static int spaceBetweenTileInfo;
     static QList<SNotice*> noticeList;
+    static void endOne();
 
     static void notice(QStringList info, QString title ="", int time =3000);
     static void notice(QString info, QString title ="", int time =3000);

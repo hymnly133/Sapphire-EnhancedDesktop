@@ -22,6 +22,13 @@
 
 int main(int argc, char *argv[])
 {
+#ifndef QT_DEBUG
+
+    qInstallMessageHandler(customMessageHandler);
+
+#endif
+
+    qDebug()<<"Sapphire Startup";
     QTextCodec *code = QTextCodec::codecForName("UTF-8");
     QTextCodec::setCodecForLocale(code);
 
@@ -71,11 +78,7 @@ int main(int argc, char *argv[])
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
 
-    #ifndef QT_DEBUG
 
-    qInstallMessageHandler(customMessageHandler);
-
-    #endif
 
 
 

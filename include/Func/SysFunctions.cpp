@@ -409,7 +409,7 @@ void writeJson(){
 
     QByteArray byte_array = document.toJson(QJsonDocument::Indented);
     QString json_str(byte_array);
-    QFile file("content.json");
+    QFile file(QApplication::applicationDirPath()+"/content.json");
 
 
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate))
@@ -426,7 +426,7 @@ void writeJson(){
 QMap<int,QJsonObject> readJson(){
     QMap<int,QJsonObject> res;
 
-    QFile file("content.json");
+    QFile file(QApplication::applicationDirPath()+"/content.json");
 
     if(!file.exists()){
 

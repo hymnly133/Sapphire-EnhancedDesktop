@@ -33,7 +33,7 @@
 #include <Shlobj.h>
 #include <shlwapi.h>
 #include <windows.h>
-
+#include"stooltip.h"
 #define SET_ANCTION(NAME,TEXT,MENU,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\
 MENU->addAction(NAME);\
@@ -134,6 +134,14 @@ void MainWindow::setupActions()
         auto dock = new RepaintCounterUnit(inside);
         // InitAUnit(dock);
     })
+    SET_ANCTION(act151,lowerAndUpdate,myMenu,{
+        qDebug()<<changeShower->geometry();
+        changeShower->lower();
+        changeShower->setVisible(!changeShower->isVisible());
+        changeShower->updateDisplay();
+        changeShower->update();
+        // InitAUnit(dock);
+    })
 #endif
 
     SET_ANCTION(act12,系统盒子,creatNewUnitMenu,{
@@ -199,10 +207,9 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
 {
     setObjectName("MainWindow"+QString::number(screenInd));
     ui->setupUi(this);
-
+    bgPicPath = QApplication::applicationDirPath()+QString("/UserBG%1.png").arg(screenInd);
     this->screenInd = screenInd;
     setFocusPolicy( Qt::StrongFocus );
-
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
     // setWindowFlags(Qt::FramelessWindowHint);
@@ -210,10 +217,11 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     inplace(this);
     positionToScreen(this,screenInd);
     //shift:Windows主屏幕位于全局的位置;
+    if(QFile::exists(bgPicPath)){
+        setFixedSize(pscs[screenInd]->size());
+    }
 
-
-
-    // plsBG = new LayerBackground(this,screenInd);
+    showerSize = size();
 
     plsB = new LayerShower(this,screenInd);
     plsB->layer = LayerShower::Bottom;
@@ -231,11 +239,11 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updatePer01second())); // slotCountMessage是我们需要执行的响应函数
-    timer->start(50);                                                   // 每隔0.1s
+    // timer->start(50);                                                   // 每隔0.1s
 
 
     connect(this,&MainWindow::showerSize_changed,this,[=](QSize val){
-        changeShower->repaint();
+        changeShower->update();
     });
 
     connect(this,&MainWindow::showerRadius_changed,this,[=](int val){
@@ -244,7 +252,7 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     changeShower = new roundShower(this);
     changeShower->distri(&showerSize,&showerRadius);
     changeShower->aliment = roundShower::Center;
-    changeShower->setVisible(true);
+    changeShower->setVisible(false);
     changeShower->move(0,0);
 
     showerSizeAnimation = new QPropertyAnimation(this,"showerSize");
@@ -262,15 +270,23 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     connect(showerAnimations,&QParallelAnimationGroup::finished,this,[=](){
         if (showeredVisibal){
             inside->setVisible(true);
-            changeShower->lower();
+            changeShower->setVisible(false);
         }
     });
 
-    setTransparent(true);
+
     setShoweredVisibal(true);
-    updateBG();
 
 
+    //检测是否有自选背景
+    if(QFile::exists(bgPicPath)){
+
+        setBackgoundPic(QImage(bgPicPath));
+        setTransparent(false);
+    }
+    else{
+        setTransparent(true);
+    }
 }
 
 
@@ -343,6 +359,11 @@ QList<MyFileInfo> MainWindow::Init(QList<MyFileInfo> data)
 
 void MainWindow::endUpdate()
 {
+    setTransparent(transparent);
+    showerSize = size();
+    if(changeShower)
+    changeShower->updateDisplay();
+
     if(inside!=nullptr)
     foreach(SUnit *content , *(inside->contents))
     {
@@ -380,21 +401,14 @@ void MainWindow::capture()
     buffer = grab(rect());
 }
 
-void MainWindow::updateBG()
-{
-    if(transparent){
-        if(!bgshower->cap)
-        capture();
-    }
-    else{
-        bgshower->captrued = bg;
-    }
-}
 
 void MainWindow::setShoweredVisibal(bool val){
     // changeShower->raise();
 
-    if (!val){
+    if(val){
+
+    }
+    else{
         foreach (SUnit* content,*(inside->contents)) {
             if(content->alwaysShow)
             content->setVisible(false);
@@ -407,13 +421,59 @@ void MainWindow::setShoweredVisibal(bool val){
         }
 
         inside->setVisible(false);
+        changeShower->setVisible(true);
+        changeShower->raise();
     }
 
 
     showeredVisibal = val;
-
-
     updata_animation();
+}
+
+void MainWindow::setBackgoundPic(QImage image)
+{
+    if(image.isNull()){
+        SNotice::notice("无法读取文件,设置壁纸失败","抱歉");
+        return;
+    }
+    setTransparent(false);
+    image.save(bgPicPath);
+    bg = QPixmap::fromImage(image);
+
+    double window_width, window_height;
+    double image_width, image_height;
+    double r1, r2, r;
+
+    window_width = width();
+    window_height = height();
+
+    image_width = bg.width();
+    image_height = bg.height();
+
+    r1 = window_width / image_width;
+    r2 = window_height / image_height;
+
+    r = qMax(r1, r2);
+    QSize displaySize =QSize(image_width * r +1, image_height * r +1);
+    bg = bg.scaled(displaySize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    QSize actualSize = displaySize;
+    int off_x = 0;
+    int off_y = 0 ;
+
+
+    if(displaySize.width()>=window_width){
+        actualSize.setWidth(window_width);
+        off_x = -(displaySize.width()-window_width)/2;
+    }
+
+    if(displaySize.height()>=window_height){
+        actualSize.setHeight(window_height);
+        off_y = -(displaySize.height()-window_height)/2;
+    }
+
+    bg = bg.copy(off_x,off_y,actualSize.width(),actualSize.height());
+
 }
 
 void MainWindow::updata_animation()
@@ -430,17 +490,17 @@ void MainWindow::updata_animation()
 
 }
 
-bool MainWindow::addAIcon(QString path,bool notice)
+bool MainWindow::addAIcon(QString path,bool notice, QPoint globalPos)
 {
-    return addAIcon(path2MyFI(path),notice);
+    return addAIcon(path2MyFI(path),notice,globalPos);
 }
 
-bool MainWindow::addAIcon(QFileInfo qinfo , bool notice)
+bool MainWindow::addAIcon(QFileInfo qinfo , bool notice, QPoint globalPos)
 {
-    return addAIcon(MyFileInfo(qinfo),notice);
+    return addAIcon(MyFileInfo(qinfo),notice,globalPos);
 }
 
-bool MainWindow::addAIcon(MyFileInfo info,bool notice)
+bool MainWindow::addAIcon(MyFileInfo info,bool notice, QPoint globalPos)
 {
 
     qDebug()<<"Mainwindow try to add a info"<<info.filePath;
@@ -450,12 +510,22 @@ bool MainWindow::addAIcon(MyFileInfo info,bool notice)
     };
 
     SFile *tem = nullptr;
-    tem = new SFile(inside);
+    tem = new SFile();
+
     tem->loadFromMyFI(info,true);
+
     // qDebug()<<tem->colorAlpha;
 
     if (tem)
     {
+        if(globalPos==QPoint(-1,-1)){
+            inside->defaultPut(tem,false);
+        }
+        else{
+            tem->setParent(this);
+            tem->move(mapFromGlobal(globalPos));
+            inside->clearPut(tem,false);
+        }
         tem->raise();
         if(notice)
         SNotice::notice(QStringList()<<tem->filePath,"增添文件",3000);
@@ -627,23 +697,27 @@ void MainWindow::showEvent(QShowEvent *event)
 
 void MainWindow::paintEvent(QPaintEvent *ev)
 {
-    QPainter paint(this);
-    paint.setPen(Qt::transparent);
-    paint.setBrush(QColor(0, 0, 0, 1));
-    paint.drawRect(rect());
+    if((!showeredVisibal)||(showeredVisibal&&showerAnimations->state()==QAnimationGroup::Running)){
+        QPainter painter(this);
 
-    if (!transparent)
+
+
+        painter.drawPixmap(rect(), buffer);
+        qDebug()<<"paintBuffer";
+    }
+    else if (!transparent)
     {
         QPainter painter(this);
         painter.drawPixmap(rect(), bg);
+        qDebug()<<"paintBG";
     }
-    // qDebug()<<showeredVisibal;
-    // qDebug()<<(showerAnimations->state()==QAnimationGroup::Running);
-    if((!showeredVisibal)||(showeredVisibal&&showerAnimations->state()==QAnimationGroup::Running)){
-        QPainter painter(this);
-        painter.drawPixmap(rect(), buffer);
-    }
+
     Q_UNUSED(ev);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
@@ -659,7 +733,6 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
     // inside->printOccupied();
     pls->clearTooltip();
     pls->clearInputDialog();
-
     if(firstNotice&&init){
         firstNotice = false;
     }
@@ -728,21 +801,7 @@ void MainWindow::onSelectBackground()
     qDebug() << "Selected file:" << fileName; // 调试输出文件路径
     if (!fileName.isEmpty())
     {
-        if (fileName.endsWith(".png") || fileName.endsWith(".jpg") || fileName.endsWith(".bmp"))
-        {
-            QPalette palette;
-            QPixmap pixmap(fileName);
-            if (pixmap.isNull())
-            {
-                qDebug() << "Failed to load image";
-            }
-            else
-            {
-                bg = pixmap;
-                update();
-                qDebug() << "Image set as background";
-            }
-        }
+        setBackgoundPic(QImage(fileName));
     }
 }
 
@@ -759,11 +818,15 @@ void MainWindow::setTransparent(bool val)
         setFixedSize(pscs[screenInd]->availableSize());
     }
     else{
-            // setFixedSize(pscs[screenInd]->size()-QSize(10,10));
-            setFixedSize(pscs[screenInd]->availableSize());
+        setFixedSize(pscs[screenInd]->size());
+    }
+    showerSize = size();
+    if(changeShower){
+        changeShower->updateDisplay();
+        changeShower->update();
     }
     update();
-    updateBG();
+    // updateBG();
 }
 
 void MainWindow::setBlur(bool val)
@@ -772,6 +835,6 @@ void MainWindow::setBlur(bool val)
     bgshower->setEnabled(val);
     bgshower->setVisible(val);
     bgshower->lower();
-    updateBG();
+    // updateBG();
     // qDebug()<<transparent<<val;
 }

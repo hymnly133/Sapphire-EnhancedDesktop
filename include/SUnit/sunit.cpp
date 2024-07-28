@@ -746,6 +746,7 @@ double SUnit::aim_padRatio(){
 
 void SUnit::setCelect(bool newOnCelected, bool disableAnimation )
 {
+
     if(newOnCelected){
         if(!pCelectedUnits.contains(this))
             pCelectedUnits.append(this);
@@ -753,6 +754,8 @@ void SUnit::setCelect(bool newOnCelected, bool disableAnimation )
     else{
         if(pCelectedUnits.contains(this))
             pCelectedUnits.removeOne(this);
+        premove = false;
+
     }
     onCelect = newOnCelected;
     if(pCelectedUnits.size()>4||disableAnimation)

@@ -15,6 +15,7 @@ public:
     QSize aimSize;
     QPoint previousPos;
     QPoint aimPos;
+    bool firstShow = true;
 
     void init();
     void raiseAction(QAction* action);

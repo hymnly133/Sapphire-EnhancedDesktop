@@ -101,6 +101,7 @@ bool SFile::ProcessPath(QString path)
     if(isDir){
         QString newName =  filePath+"/"+QFileInfo(path).fileName();
         removed = QFile::rename(path,newName);
+
         qDebug()<<"new name"<<newName;
     }
     else{
@@ -163,7 +164,7 @@ void SFile::remove()
 
     bool res = QFile::moveToTrash(filePath);
     if(!res){
-    qDebug()<<"Unable to delete";
+    qDebug()<<"Unable to delete local file";
     // QString cmd = "del \""+filePath+"\"";
     // system(cmd.toStdString().c_str());
     }
@@ -178,7 +179,10 @@ void SFile::remove()
 void SFile::loadFromMyFI(MyFileInfo info,bool init){
 
     filePath = info.filePath;
-    if(QFileInfo(filePath).isDir()) isDir = true;
+    if(QFileInfo(filePath).isDir()){
+        isDir = true;
+        requireMulti = true;
+    }
 
     nowExits[filePath] = this;
 

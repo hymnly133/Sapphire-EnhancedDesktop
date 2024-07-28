@@ -4,7 +4,10 @@
 #include "mainwindow.h"
 
 #define numCelected pCelectedUnits.size()
-#define AUTO_RUN_KEY	"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+#define AUTO_RUN_KEY	"HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"
+#define AUTO_RUN_KEY_OLD	"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+
+#define SAPPHIRE_REG_PATH "HKEY_CURRENT_USER\\Software\\Hymnly\\Sapphire"
 //标识初始化
 extern bool init;
 

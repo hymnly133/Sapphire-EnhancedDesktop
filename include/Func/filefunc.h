@@ -23,7 +23,7 @@ public:
 };
 
 // 在桌面路径创建name文件，并添加到软件
-bool creatAFileInDesktop(QString name, bool notice = false);
+bool creatAFileInDesktop(QString name, bool notice = false,QPoint globalPos = QPoint(-1,-1));
 
 // 获取输入的文件路径，并创建文件的主程序，作为系统方法，不与桌面相关
 static bool creatAFile(const QString &filePath);

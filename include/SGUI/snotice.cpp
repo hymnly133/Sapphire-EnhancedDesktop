@@ -19,7 +19,7 @@ SNotice::SNotice(QWidget *parent)
     : QWidget{parent}
 {
     rs = new roundShower(this);
-    titleFont = new QFont(qApp->font().family(), 20, QFont::Bold);   //字体，大小，粗体，斜体
+    titleFont = new QFont(qApp->font().family(), 15, QFont::Bold);   //字体，大小，粗体，斜体
     titleFont->setCapitalization(QFont::Capitalize);   //设置字母大小写
 
     endTimer = new QTimer(this);
@@ -86,6 +86,9 @@ void SNotice::setStayTime(int time)
 
 void SNotice::comeout()
 {
+    if(nowOKPosY(this)>=activepmw->height()*0.4){
+        endOne();
+    }
     noticeList.append(this);
     aimSize = QSize(qMax(titleSize.width(),infoSize.width())+borad*2,titleSize.height()+infoSize.height()+borad*2+spaceBetweenTileInfo);
 
@@ -108,6 +111,7 @@ void SNotice::comeout()
 
 void SNotice::end()
 {
+    onEnd = true;
     arect->stop();
 
     arect->setEndValue(QPoint(0,0),
@@ -126,6 +130,19 @@ void SNotice::whenAnimationUpdate()
     setFixedSize(arect->nowSize);
     update();
 }
+
+void SNotice::endOne()
+{
+    if(noticeList.empty()) return;
+    foreach (SNotice* notice, noticeList) {
+        if(!notice->onEnd){
+            notice->end();
+            return;
+        }
+    }
+}
+
+
 
 void SNotice::notice(QStringList info, QString title, int time)
 {
@@ -146,6 +163,7 @@ void SNotice::notice(QString info, QString title, int time)
     notice(QStringList()<<info,title,time);
 }
 
+//从MainWindow顶端到将要显示通知的顶端的距离
 int SNotice::nowOKPosY(SNotice *aim)
 {
     int res = spaceBetweenNotice;

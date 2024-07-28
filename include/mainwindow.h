@@ -29,6 +29,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(MainWindow *parent = nullptr,int screenInd=0);
     ~MainWindow();
+
+    QString bgPicPath;
+
     //用于消除从外部程序回到Sapphire时的判断飘逸
     QPoint focusInPoint;
     bool focusin = false;
@@ -64,7 +67,7 @@ public:
     void appendPoints(QPoint p);
 
     //用于双击隐藏
-    roundShower* changeShower;
+    roundShower* changeShower = nullptr;
     QSize showerSize;
 
     bool showeredVisibal = false;
@@ -100,19 +103,19 @@ public:
     void endUpdate();
     //捕获当前屏幕
     void capture();
-    //更新模糊显示器，未启用
-    void updateBG();
+    // //更新模糊显示器，未启用
+    // void updateBG();
     //设置双击隐藏
     void setShoweredVisibal(bool val);
 
-
+    void setBackgoundPic(QImage image);
 
     void updata_animation();
 
     //各种添加SFile的方法(不创建文件）
-    bool addAIcon(QString path, bool notice = false);
-    bool addAIcon(QFileInfo info, bool notice = false);
-    bool addAIcon(MyFileInfo info, bool notice = false);
+    bool addAIcon(QString path, bool notice = false,QPoint globalPos = QPoint(-1,-1));
+    bool addAIcon(QFileInfo info, bool notice = false,QPoint globalPos = QPoint(-1,-1));
+    bool addAIcon(MyFileInfo info, bool notice = false,QPoint globalPos = QPoint(-1,-1));
 
 
 
@@ -167,6 +170,8 @@ protected:
     void showEvent(QShowEvent *event) override;
 
     void paintEvent(QPaintEvent * ev) override;
+
+    void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // MAINWINDOW_H

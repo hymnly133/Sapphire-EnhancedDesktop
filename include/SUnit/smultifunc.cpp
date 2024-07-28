@@ -210,6 +210,7 @@ void SMultiFunc::setLongFocus(bool val)
     bool set = false;
 
     if(val&& !pCelectedUnits.empty()&&moving_global &&!pCelectedUnits.contains(this)){
+        if(numCelected==1||(numCelected>=1&&requireMulti))
         processor = this;
         onCelectedProcessor(true);
         set = true;
@@ -246,8 +247,7 @@ void SMultiFunc::onProcessAnother(SUnit *another)
     if(another->inherits("SFile")){
         bool removed = ProcessPath(((SFile*)another)->filePath);
         if(removed){
-            another->removeFromLayout();
-            another->deleteLater();
+            another->remove();
         }
     }
 }

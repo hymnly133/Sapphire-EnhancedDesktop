@@ -91,7 +91,7 @@ void LayerShower::paintEvent(QPaintEvent *event)
                 QRect aimRect = Point2Rect(point0,point1);
 
                 QPainter painter(this);
-                painter.setClipRect(aimRect);
+                // painter.setClipRect(aimRect);
                 painter.setPen(QColor("green"));
                 painter.setBrush(tem);
                 painter.drawRect(aimRect);

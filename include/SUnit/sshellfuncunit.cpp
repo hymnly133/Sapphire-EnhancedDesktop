@@ -12,6 +12,7 @@ QAction *NAME = new QAction(#TEXT);\
 
 SShellFuncUnit::SShellFuncUnit(SLayout *dis):SMultiFunc(dis)
 {
+    requireMulti = true;
     QImage im;
     im.load(":/icon/sysicon/Computer");
     setPix((resizeToRect(QPixmap::fromImage(im))));

@@ -50,7 +50,7 @@ void moveCelect(SUnit *sender)
     }
 
     //processor
-    if(pCelectedUnits.size()==1){
+    if(!pCelectedUnits.empty()){
         QPoint ind = activepmw->inside->SLayout::pos2Ind(activepmw->mapFromGlobal(QCursor::pos()));
         SUnit* aim = activepmw->inside->SLayout::ind2Unit(ind);
         if(aim!=nullptr){

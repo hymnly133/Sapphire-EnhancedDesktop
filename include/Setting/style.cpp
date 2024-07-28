@@ -144,9 +144,9 @@ void StyleHelper::Add(QString name, double * pval,double min,double max)
 
 void StyleHelper::readStyleIni()
 {
-    QFileInfo fi("style.ini");
+    QFileInfo fi(QApplication::applicationDirPath()+"/style.ini");
     if(fi.exists()){
-        QSettings *styleIni = new QSettings("style.ini", QSettings::IniFormat);
+        QSettings *styleIni = new QSettings(QApplication::applicationDirPath()+"/style.ini", QSettings::IniFormat);
         QMutableListIterator<boolVal*> iterator0(boolStyles);
         while (iterator0.hasNext()) {
             iterator0.next();
@@ -181,7 +181,7 @@ void StyleHelper::readStyleIni()
 
 void StyleHelper::writeStyleIni()
 {
-    QSettings *styleIni = new QSettings("style.ini", QSettings::IniFormat);
+    QSettings *styleIni = new QSettings(QApplication::applicationDirPath()+"/style.ini", QSettings::IniFormat);
     QMutableListIterator<boolVal*> iterator0(boolStyles);
     while (iterator0.hasNext()) {
         iterator0.next();
