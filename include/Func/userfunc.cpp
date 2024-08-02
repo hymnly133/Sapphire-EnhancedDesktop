@@ -114,8 +114,7 @@ void SetUp()
     activepmw = pmws[0];
     if(init)
     {
-        SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
-        SNotice::notice(QStringList()<<"为了使用部分桌面功能"<<"Sapphire会开始使用管理员权限","有关管理员权限",5000);
+        SNotice::notice(QStringList()<<"为了您拥有更好的体验，Sapphire编写了使用手册"<<"您可以在软件目录内找到","欢迎使用Sapphire！",15000);
     }
 
     onLoading  =false;
