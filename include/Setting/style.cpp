@@ -31,7 +31,7 @@ int icon_shadow_blur_radius = 40;
 int unit_shadow_alpha = 120;
 int unit_shadow_blur_radius = 8;
 
-int unit_radius = 30;
+int unit_radius = 15;
 int position_animation_time = 100;
 int focus_animation_time = 100;
 
@@ -61,7 +61,7 @@ bool enable_auto_run = 0;
 bool enable_resize_to_rect = 0;
 
 bool enable_refresh_animation=0;
-bool enable_background_transparent = 0;
+bool enable_background_transparent = 1;
 QString user_font = "";
 
 
