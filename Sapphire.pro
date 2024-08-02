@@ -1,15 +1,7 @@
 QT += core gui widgets winextras network concurrent quick qml
-win32 {
 
-    # CONFIG(debug, debug|release) {
-    # //debug
-    # QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/debug/$$TARGET".exe" $$escape_expand(\n\t)
-    # }else{
-    # //release
-    # QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$$TARGET".exe" $$escape_expand(\n\t)
-    # }
-}
-VERSION = 1.3.0.0
+
+
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8
@@ -23,15 +15,18 @@ msvc{
     #     LIBS += -L$$PWD/lib/ -lelawidgettools
     # }
 }
-
 mingw{
 message("using mingw")
 RC_FILE=Sapphire.rc
+# VERSION = 1.3.0.0
 # LIBS += -L$$PWD/lib/ -lelawidgettools
 
 }
+
+
 QMAKE_LIBDIR += $$PWD/lib
 INCLUDEPATH+= $$PWD/include
+INCLUDEPATH+= $$PWD
 # INCLUDEPATH+= $$PWD/include/Ela
 INCLUDEPATH+= $$PWD/include/ContextMenu
 INCLUDEPATH+= $$PWD/include/SGUI
@@ -153,7 +148,8 @@ HEADERS += \
     include/Setting/SQSS.h \
     include/Setting/sblocklayoutsettingwindow.h \
     include/Setting/style.h \
-    include/mainwindow.h
+    include/mainwindow.h \
+    version.h
 
 
 FORMS += \
