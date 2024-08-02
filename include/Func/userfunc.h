@@ -1,5 +1,6 @@
 #ifndef USERFUNC_H
 #define USERFUNC_H
+#include "mainwindow.h"
 #include "qevent.h"
 
 
@@ -16,7 +17,13 @@ void setSapphireRegDate(bool isSet);
 //检查快捷键
 void checkForKey(QKeyEvent* event);
 
-//重布局主屏幕
-void resizeForActiveMW();
+//重新调整对应的BlockLayout
+void resizeForWithDialog(SBlockLayout* aimlayout);
 
+//模式切换
+void toDesktopMode();
+void toEditMode();
+void switchMode();
+
+void SExit();
 #endif // USERFUNC_H

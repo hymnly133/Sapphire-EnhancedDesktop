@@ -23,27 +23,12 @@
 #include"QFileDialog"
 #include"stooltip.h"
 #include"snotice.h"
-#define SET_ANCTION(NAME,TEXT,FUCTION)\
-QAction *NAME = new QAction(#TEXT);\
-    myMenu->addAction(NAME);\
-    connect(NAME, &QAction::triggered, this, [=]()FUCTION);
 
 SFile::SFile(SLayout *dis, int sizex, int sizey,QString filePath):SMultiFunc(dis,sizex,sizey)
 {
     if(filePath!="")
     loadFromPath(filePath,true);
 
-
-    SET_ANCTION(actRename,重命名,{
-        renameWithDialog();
-    })
-    SET_ANCTION(actSoftDelet,软删除,{
-        SMultiFunc::remove();
-    })
-
-    SET_ANCTION(actOpenFileProperty,属性,{
-        OpenFileProperty(this->filePath);
-    })
 }
 
 
@@ -56,9 +41,19 @@ void SFile::mouse_enter_action(){
 
 void SFile::double_click_action(QMouseEvent *event){
     //最终双击执行
-    QString cmd= QString("file:///")+filePath;
-    qDebug("cmd = %s",qPrintable(cmd));
-    QDesktopServices::openUrl(QUrl(cmd));
+    open();
+}
+
+void SFile::open(bool Admin)
+{
+    if(Admin){
+        shellrun(filePath,"",true);
+    }
+    else{
+        QString cmd= QString("file:///")+filePath;
+        qDebug("cmd = %s",qPrintable(cmd));
+        QDesktopServices::openUrl(QUrl(cmd));
+    }
 }
 
 
@@ -82,9 +77,9 @@ void SFile::load_json(QJsonObject rootObject)
 void SFile::processorTip()
 {
     if(isDir)
-        SToolTip::Tip("移动至“"+name+"”");
+        SToolTip::tip("移动至“"+name+"”");
     else
-        SToolTip::Tip("用“"+name+"”打开");;
+        SToolTip::tip("用“"+name+"”打开");;
 }
 
 void SFile::onShiftContextMenu(QContextMenuEvent *event)
@@ -154,6 +149,12 @@ void SFile::renameWithDialog()
     connect(sip,&SInputDialog::finalText,this,&SFile::renameFile);
 }
 
+void SFile::setName(QString name)
+{
+    SMultiFunc::setName(name);
+    setObjectName(this->name);
+}
+
 
 
 void SFile::remove()
@@ -173,6 +174,41 @@ void SFile::remove()
     }
 
     SUnit::remove();
+}
+
+void SFile::setupDesktopMenu()
+{
+    SUnit::setupDesktopMenu();
+
+    SET_ANCTION(actOpen,打开,desktopMenu,this,{
+        open();
+    });
+
+    if(!isDir){
+        SET_ANCTION(actOpenAdmin,以管理员身份打开,desktopMenu,this,{
+            open(true);
+        });
+    }
+
+
+    SET_ANCTION(actRename,重命名,desktopMenu,this,{
+        renameWithDialog();
+    });
+
+#ifdef QT_DEBUG
+
+    SET_ANCTION(actSoftDelet,软删除,desktopMenu,this,{
+        SMultiFunc::remove();
+    });
+#endif
+
+    SET_ANCTION(actDelete,删除,desktopMenu,this,{
+        remove();
+    });
+
+    SET_ANCTION(actOpenFileProperty,属性,desktopMenu,this,{
+        OpenFileProperty(this->filePath);
+    })
 }
 
 

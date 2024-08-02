@@ -387,11 +387,21 @@ void fileCreator::creatNewFile(FileType type)
     });
 }
 
+void fileCreator::creatNewDir()
+{
+    QString defaultname ="新文件夹";
+    SInputDialog* sid = SInputDialog::showInput("请输入文件夹名",defaultname);
+    QPoint nowPos = QCursor::pos();
+    connect(sid,&SInputDialog::finalText,activepmw,[=](QString name){
+        creatADirInDesktop(name,true,nowPos);
+    });
+}
+
 bool creatAFileInDesktop(QString name, bool notice, QPoint globalPos)
 {
     if(name=="") name = "空文件";
 
-    QString path = okPathAbsolute(*UserDesktopPath+"/"+name);
+    QString path = okPath(*UserDesktopPath+"/"+name);
 
 
     bool ret = creatAFile(path);
@@ -399,23 +409,6 @@ bool creatAFileInDesktop(QString name, bool notice, QPoint globalPos)
         return activepmw->addAIcon(path,notice,globalPos);
     }
     else{
-        return false;
-    }
-}
-
-bool creatAFile(const QString &absolutePath){
-    qDebug()<<"SystemCreate"<<absolutePath;
-    QFile file(absolutePath);
-    if (file.open(QIODevice::WriteOnly))
-    {
-        // 文件已成功打开
-        file.close(); // 关闭文件
-        qDebug() << "文件已创建：" << absolutePath;
-        return true;
-    }
-    else
-    {
-        qDebug() << "无法创建文件：" << absolutePath;
         return false;
     }
 }
@@ -437,25 +430,127 @@ bool fileExist(const QString &path){
 
 }
 
-QString okName(QString fileName)
-{
-    QString okPath = okPathAbsolute(*UserDesktopPath+fileName);
-    return okPath.mid(okPath.lastIndexOf("/"),okPath.length());
+bool creatAFile(const QString &absolutePath){
+    qDebug()<<"SystemCreate"<<absolutePath;
+    QFile file(absolutePath);
+    if (file.open(QIODevice::WriteOnly))
+    {
+        // 文件已成功打开
+        file.close(); // 关闭文件
+        qDebug() << "文件已创建：" << absolutePath;
+        return true;
+    }
+    else
+    {
+        qDebug() << "无法创建文件：" << absolutePath;
+        return false;
+    }
 }
 
-QString okPathAbsolute(QString absolutePath)
+
+QString okName(QString fileName)
+{
+    QString resOkPath = okPath(*UserDesktopPath+'/'+fileName);
+    return resOkPath.mid(resOkPath.lastIndexOf("/")+1,resOkPath.length());
+}
+
+QString okPath(QString absolutePath)
 {
     if(QFileInfo::exists(absolutePath)){
         QFileInfo finfo(absolutePath);
         int existNums = 0;
-        QString newName = finfo.baseName()+QString("(%1).").arg(existNums)+finfo.suffix();
+        QString nametemplate;
+        if(finfo.suffix()==""){
+            nametemplate = "(%1)";
+        }
+        else{
+            nametemplate = "(%1).";
+        }
+        QString newName = finfo.baseName()+nametemplate.arg(existNums)+finfo.suffix();
         while(QFileInfo::exists(finfo.path()+"/"+newName)){
             existNums++;
-            newName = finfo.baseName()+QString("(%1).").arg(existNums)+finfo.suffix();
+            newName = finfo.baseName()+nametemplate.arg(existNums)+finfo.suffix();
         }
 
-        SNotice::notice(QStringList()<<"文件已存在，重定向为"<<newName,"文件重定向");
+        SNotice::notice(QStringList()<<"已存在，重定向为"<<newName,"重定向");
         return finfo.path()+"/"+newName;
     }
     return absolutePath;
+}
+
+bool creatADir(const QString &dirPath)
+{
+        //创建文件夹
+    QDir dir(dirPath);
+
+    if (!dir.exists())
+    {
+        bool res =  dir.mkdir(dirPath);
+        if(res){
+            qDebug()<<"创建成功";
+        }
+        else{
+            qDebug()<<"创建失败";
+        }
+        return res;
+    }
+    qDebug()<<"已存在";
+    return true;
+}
+
+bool creatADirInDesktop(QString name, bool notice, QPoint globalPos)
+{
+    if(name=="") name = "新文件夹";
+
+    QString path = okPath(*UserDesktopPath+"/"+name);
+
+
+    bool ret = creatADir(path);
+    if(ret){
+        return activepmw->addAIcon(path,notice,globalPos);
+    }
+    else{
+        return false;
+    }
+}
+
+bool copyDir(const QString& fromDir, const QString& toDir, bool coverFileIfExist)
+{
+
+    QDir sourceDir(fromDir);
+    QDir targetDir(toDir);
+
+    if (!targetDir.exists())
+    {    //如果目标目录不存在，则进行创建
+        if (!targetDir.mkdir(targetDir.absolutePath())) return false;
+    }
+
+    QFileInfoList fileInfoList = sourceDir.entryInfoList();
+    foreach(QFileInfo fileInfo, fileInfoList)
+    {
+        if (fileInfo.fileName() == "." || fileInfo.fileName() == "..") continue;
+
+        if (fileInfo.isDir())
+        {    // 当为目录时，递归的进行copy
+            if (!copyDir(fileInfo.filePath(),
+                            targetDir.filePath(fileInfo.fileName()),
+                            coverFileIfExist))
+                return false;
+        }
+        else
+        {   //当允许覆盖操作时，将旧文件进行删除操作
+            if (coverFileIfExist && targetDir.exists(fileInfo.fileName()))
+            {
+                targetDir.remove(fileInfo.fileName());
+            }
+
+            // 进行文件拷贝
+            if (!QFile::copy(fileInfo.filePath(), targetDir.filePath(fileInfo.fileName())))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+
 }

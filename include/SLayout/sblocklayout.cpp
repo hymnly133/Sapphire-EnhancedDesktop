@@ -2,12 +2,16 @@
 #include "SysFunctions.h"
 #include "screenfunc.h"
 #include"SNotice.h"
-SBlockLayout::SBlockLayout(QWidget *father, int row, int col, int borad_space,int space_x,int space_y):SLayout(father) {
+
+
+SBlockLayout::SBlockLayout(QWidget *father, int row, int col, double boradXR, double boradYR, double spaceXR, double spaceYR):SLayout(father)
+{
     this->row = row;
     this->col = col;
-    this->space = borad_space;
-    this->spaceX = space_x;
-    this->spaceY = space_y;
+    this->boradXR = boradXR;
+    this->boradYR = boradYR;
+    this->spaceXR = spaceXR;
+    this->spaceYR = spaceYR;
     this->pContainer = father;
     for(int i=0;i<row;i++){
         for(int k=0;k<col;k++){
@@ -19,11 +23,12 @@ SBlockLayout::SBlockLayout(QWidget *father, int row, int col, int borad_space,in
 }
 
 QPoint SBlockLayout::pos2Ind(int posx,int posy){
-    int tem1 =W_Block_Clean();
-    int tem2 = H_Block_Clean();
-    return QPoint((posx-space)/(tem1+spaceX),(posy-space)/(tem2+spaceY));
+    double tem1 =W_Block_Clean();
+    double tem2 = H_Block_Clean();
+    return QPoint((posx-boradXPix())/(tem1+spaceXPix()),(posy-boradXPix())/(tem2+spaceYPix()));
 }
 
+//从Block序号获取中心坐标
 //从Block序号获取中心坐标
 
 
@@ -60,8 +65,12 @@ void SBlockLayout::updateAfterRemove(SUnit *aim, int indx, int indy)
     }
 }
 
-void SBlockLayout::resize(int sizeX, int sizeY,bool animated)
+void SBlockLayout::resize(int sizeX, int sizeY, double boradXR, double boradYR, double spaceXR, double spaceYR, bool animated)
 {
+    this->boradXR = boradXR;
+    this->boradYR = boradYR;
+    this->spaceXR = spaceXR;
+    this->spaceYR = spaceYR;
 
     if(sizeX<=row&&sizeY<=col){
         //缩小
@@ -128,18 +137,18 @@ void SBlockLayout::resize(int sizeX, int sizeY,bool animated)
 QPoint SBlockLayout::clearPutableInd(SUnit *aim)
 {
     auto pos = pContainer->mapFromGlobal(aim->mapToGlobal(QPoint(0,0)));
-    int posx = pos.x();
-    int posy = pos.y();
-    int mindeltaw=W_Container();
-    int mindeltah=H_Container();
-    int bpw,bph;
+    double posx = pos.x();
+    double posy = pos.y();
+    double mindeltaw=W_Container();
+    double mindeltah=H_Container();
+    double bpw,bph;
     bpw=bph=-1;
     for(int i=0;i<row;i++)
     {
         for(int j=0;j<col;j++)
         {
-            int deltaw=abs(posx-space-i*(W_Block_Clean()+spaceX));
-            int deltah=abs(posy-space-j*(H_Block_Clean()+spaceY));
+            double deltaw=abs(posx-boradXPix()-i*(W_Block_Clean()+spaceXPix()));
+            double deltah=abs(posy-boradYPix()-j*(H_Block_Clean()+spaceYPix()));
             if((deltaw+deltah<mindeltaw+mindeltah)&&(OKForUnit(aim,i,j)))
             {
                 mindeltaw=deltaw;
@@ -181,8 +190,8 @@ void SBlockLayout::printOccupied()
 QSize SBlockLayout::ind2Size(int xind, int yind)
 {
     auto aim = ind2Unit(xind,yind);
-    int w = W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceX;
-    int h = H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceY;
+    double w = W_Block_Clean()*aim->sizeX+(aim->sizeX-1)*spaceXPix();
+    double h = H_Block_Clean()*aim->sizeY+(aim->sizeY-1)*spaceYPix();
 
     return QSize(w,h);
 }
@@ -228,9 +237,12 @@ QJsonObject SBlockLayout::to_json()
     QJsonObject rootObject = SLayout::to_json();
     rootObject.insert("row",row);
     rootObject.insert("col",col);
-    rootObject.insert("space",space);
-    rootObject.insert("spaceX",spaceX);
-    rootObject.insert("spaceY",spaceY);
+    // rootObject.insert("space",space);
+
+    rootObject.insert("boradXR",boradXR);
+    rootObject.insert("boradYR",boradYR);
+    rootObject.insert("spaceXR",spaceXR);
+    rootObject.insert("spaceYR",spaceYR);
     return rootObject;
 }
 
@@ -245,9 +257,18 @@ void SBlockLayout::load_json(QJsonObject rootObject)
 
     row = rootObject.value("row").toInt();
     col = rootObject.value("col").toInt();
-    space = rootObject.value("space").toInt();
-    spaceX = rootObject.value("spaceX").toInt();
-    spaceY = rootObject.value("spaceY").toInt();
+
+    if(rootObject.contains("space")){
+        //旧数据，进行转化
+    }
+    else{
+        boradXR = rootObject.value("boradXR").toDouble();
+        boradYR = rootObject.value("boradYR").toDouble();
+        spaceXR = rootObject.value("spaceXR").toDouble();
+        spaceYR = rootObject.value("spaceYR").toDouble();
+    }
+
+
 
 
     for(int i=0;i<row;i++){

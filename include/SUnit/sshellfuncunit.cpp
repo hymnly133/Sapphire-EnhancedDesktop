@@ -17,43 +17,8 @@ SShellFuncUnit::SShellFuncUnit(SLayout *dis):SMultiFunc(dis)
     im.load(":/icon/sysicon/Computer");
     setPix((resizeToRect(QPixmap::fromImage(im))));
     setName("我的电脑");
-    windowsMenu = new SMenu();
 
-    QAction* windowsMenuAction  =new QAction(this);
-    windowsMenuAction->setText("Windows功能");
-    windowsMenuAction->setMenu(windowsMenu);
 
-    myMenu->addAction(windowsMenuAction);
-    // myMenu->setDefaultAction(windowsMenuAction);
-    myMenu->raiseAction(windowsMenuAction);
-
-    SET_ANCTION(actOpenSetting,Win11设置,windowsMenu,{
-        SToolTip::Tip(shellrun("ms-settings:wheel"));
-                                         });
-
-    SET_ANCTION(actOpenControl,控制面板,windowsMenu,{
-
-        QProcess::startDetached("control");
-    });
-
-    SET_ANCTION(actOpenComMana,计算机管理,windowsMenu,{
-        SToolTip::Tip(shellrun("compmgmt.msc"));
-        // QProcess process;
-        // process.setProgram("cmd.exe");
-        // process.setArguments({"compmgmt.msc"});
-        // process.start();
-    });
-
-    SET_ANCTION(actOpenSysAdvance,高级系统设置,windowsMenu,{
-        SToolTip::Tip(shellrun("SystemPropertiesAdvanced"));
-    });
-
-    SET_ANCTION(actOpenDustBin,打开回收站,windowsMenu,{
-        SToolTip::Tip(shellrun("explorer","::{645FF040-5081-101B-9F08-00AA002F954E}"));
-    });
-    SET_ANCTION(actClean,清空回收站,windowsMenu,{
-        SHEmptyRecycleBin(NULL,NULL,NULL);
-    });
 }
 
 
@@ -70,7 +35,7 @@ void SShellFuncUnit::load_json(QJsonObject rootObject)
 
 void SShellFuncUnit::processorTip()
 {
-    SToolTip::Tip("移动到回收站");
+    SToolTip::tip("移动到回收站");
 }
 
 void SShellFuncUnit::double_click_action(QMouseEvent *event)
@@ -123,6 +88,42 @@ bool SShellFuncUnit::ProcessPath(QString path)
 void SShellFuncUnit::onShiftContextMenu(QContextMenuEvent *event)
 {
     // windowsMenu->exec(event->globalPos());
+}
+
+void SShellFuncUnit::setupDesktopMenu()
+{
+    SMultiFunc::setupDesktopMenu();
+
+    SET_ANCTION(actOpenSetting,Win设置,desktopMenu,{
+        SToolTip::tip(shellrun("ms-settings:wheel"));
+    });
+
+    SET_ANCTION(actOpenControl,控制面板,desktopMenu,{
+
+        QProcess::startDetached("control");
+    });
+
+    SET_ANCTION(actOpenComMana,计算机管理,desktopMenu,{
+        SToolTip::tip(shellrun("compmgmt.msc"));
+        // QProcess process;
+        // process.setProgram("cmd.exe");
+        // process.setArguments({"compmgmt.msc"});
+        // process.start();
+    });
+
+    SET_ANCTION(actOpenSysAdvance,高级系统设置,desktopMenu,{
+        SToolTip::tip(shellrun("SystemPropertiesAdvanced"));
+    });
+    SET_ANCTION(actOpenTaskmgr,任务管理器,desktopMenu,{
+        SToolTip::tip(shellrun("taskmgr"));
+    });
+
+    SET_ANCTION(actOpenDustBin,打开回收站,desktopMenu,{
+        SToolTip::tip(shellrun("explorer","::{645FF040-5081-101B-9F08-00AA002F954E}"));
+    });
+    SET_ANCTION(actClean,清空回收站,desktopMenu,{
+        SHEmptyRecycleBin(NULL,NULL,NULL);
+    });
 }
 
 

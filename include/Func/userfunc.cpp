@@ -7,6 +7,7 @@
 #include "qmimedata.h"
 #include "qscreen.h"
 #include "qstandardpaths.h"
+#include "sblocklayoutsettingwindow.h"
 #include "screenfunc.h"
 #include"QInputDialog"
 #include"QMessageBox"
@@ -19,6 +20,9 @@ void SetUp()
     QString application_name = QApplication::applicationName();//获取应用名称
     QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
     enable_auto_run = !settings->value(application_name).isNull();
+
+    initiateDesktop();
+
 
     ExcludeFiles.append("desktop.ini");
 
@@ -151,8 +155,13 @@ void checkForKey(QKeyEvent *event)
             for(int i = 0; i < list.count(); i++)
             {
                 QString path = list[i].toLocalFile();
-                QString newPath =  okPathAbsolute((*UserDesktopPath)+"/"+QFileInfo(path).fileName());
-                bool Copied = QFile::copy(path,newPath);
+                QString newPath =  okPath((*UserDesktopPath)+"/"+QFileInfo(path).fileName());
+                bool Copied = false;
+                if(QFileInfo(path).isFile())
+                    Copied = QFile::copy(path,newPath);
+                else
+                    Copied = copyDir(path,newPath,true);
+
                 qDebug()<<"Try to copy to"<<newPath;
                 if(Copied){
                     qDebug()<<"Copid";
@@ -212,18 +221,21 @@ void checkForKey(QKeyEvent *event)
     else if( event->key()==Qt::Key_Delete){
         removeG();
     }
+    else if( event->matches(QKeySequence::Refresh)||event->key()==Qt::Key_F5){
+        foreach (auto pmw, pmws) {
+            pmw->refresh();
+        }
+        event->accept();
+    }
+    else if( event->matches(QKeySequence::New)){
+        activepmw->creatNewFileMenu->exec(QCursor::pos());
+        event->accept();
+        return;
+    }
     event->ignore();
     return;
 }
 
-void resizeForActiveMW()
-{
-    int sizeX = QInputDialog::getInt(nullptr,"重布局","请输入布局列数(根据屏幕宽度)",activepmw->inside->row,1,1000,2);
-    int sizeY = QInputDialog::getInt(nullptr,"重布局","请输入布局行数(根据屏幕高度)",activepmw->inside->col,1,1000,2);
-    if(!sizeX) sizeX=10;
-    if(!sizeY) sizeY=10;
-    activepmw->inside->resize(sizeX,sizeY);
-}
 
 void setMyAppAutoRun(bool isStart)
 {
@@ -264,4 +276,45 @@ void setSapphireRegDate(bool isSet)
     {
         settings->remove(application_name);		//从注册表中删除
     }
+}
+
+
+void toDesktopMode()
+{
+    editMode = false;
+    SNotice::notice("切换为桌面模式","模式切换",1000);
+}
+
+void toEditMode()
+{
+    editMode = true;
+    SNotice::notice("切换为编辑模式","模式切换",1000);
+}
+
+void SExit()
+{
+    foreach(auto pmw,pmws){
+        pmw->close();
+        if(pmw->plsBG!=nullptr)
+            pmw->plsBG->close();
+        pmw->pls->close();
+        // pmw->plsB->close();
+    }
+}
+
+void switchMode()
+{
+    if(editMode){
+        toDesktopMode();
+    }
+    else{
+        toEditMode();
+    }
+}
+
+
+void resizeForWithDialog(SBlockLayout *aimlayout)
+{
+    SBlockLayoutSettingWindow* dialog = new SBlockLayoutSettingWindow(aimlayout);
+    dialog->show();
 }

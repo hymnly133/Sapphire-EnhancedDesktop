@@ -8,16 +8,16 @@ class SBlockLayout:public SLayout
     struct little_Block{
         int indX;
         int indY;
-        int posX(){
-            return playout->space+indX*(playout->spaceX+w());
+        double posX(){
+            return playout->boradXPix()+indX*(playout->spaceXPix()+w());
         };
-        int posY(){
-            return playout->space+indY*(playout->spaceY+h());
+        double posY(){
+            return playout->boradYPix()+indY*(playout->spaceYPix()+h());
         };
-        int w(){
+        double w(){
             return playout->W_Block_Clean();
         };
-        int h(){
+        double h(){
             return playout->H_Block_Clean();
         };
         bool occupied;
@@ -40,34 +40,60 @@ public:
     int col;
     int W_Container(){
         if(useStandaloneRect){
-            return standaloneRect.width()-2*space;
+            return standaloneRect.width();
         }
         else{
-            return pContainer->width()-2*space;
+            return pContainer->width();
         }
     };
     int H_Container(){
         if(useStandaloneRect){
-            return standaloneRect.height()-2*space;
+            return standaloneRect.height();
         }
         else{
-            return pContainer->height()-2*space;
+            return pContainer->height();
         }
     };
-    int W_Block_Clean(){
-        return (W_Container()-(row-1)*spaceX)/row;
+
+
+    //表示占总Block_Clean长度的比率
+    //如：spaceXR=0.1，表示2000像素长度中有200像素用于分割，若十行则是每行200/9
+    double boradXR;
+    double boradYR;
+    double spaceXR;
+    double spaceYR;
+
+    //x行，spacexr，
+    //w = WC*(row)+WC*spacexr*(row-1)+WC*boradxr*2
+    //w = WC*(row+(row-1)*spacexr+boradxr*2)
+    //w = WC*(row(1+spacexr)-spacexr+boradxr*2);
+
+    double W_Block_Clean(){
+        return W_Container()/(row*(1+spaceXR)-spaceXR+boradXR*2);
     };
-    int H_Block_Clean(){
-        return (H_Container()-(col-1)*spaceY)/col;
+    double H_Block_Clean(){
+        return H_Container()/(col*(1+spaceYR)-spaceYR+boradYR*2);
     };
-    int space;
-    int spaceX;
-    int spaceY;
+
+    //对应的单个像素值
+    double boradXPix(){
+        return W_Block_Clean()*boradXR;
+    }
+    double boradYPix(){
+        return H_Block_Clean()*boradYR;
+    }
+    double spaceXPix(){
+        return W_Block_Clean()*spaceXR;
+    }
+    double spaceYPix(){
+        return H_Block_Clean()*spaceYR;
+    }
+
 
     little_Block* blocks[50][50];
 
 
-    SBlockLayout(QWidget *father,int row =10, int col=10,int borad_space=5,int space_x=5,int space_y=5);
+    SBlockLayout(QWidget *father, int row =10, int col=10, double boradXR=0.05, double boradYR=0.05, double spaceXR=0.1, double spaceYR=0.1);
 
     QPoint pos2Ind(int posx,int posy)override;
 
@@ -97,7 +123,7 @@ public:
     void updateAfterPut(SUnit *, int, int) override;
     void updateAfterRemove(SUnit *, int, int) override;
 
-    void resize(int sizeX, int sizeY, bool animated = true);
+    void resize(int sizeX, int sizeY, double boradXR=0.05, double boradYR=0.05, double spaceXR=0.1, double spaceYR=0.1,bool animated = true);
     // ED_Layout interface
 public:
     QPoint clearPutableInd(SUnit *aim) override;

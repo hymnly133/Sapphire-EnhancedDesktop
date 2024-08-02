@@ -2,6 +2,7 @@
 #define SBLOCKCONTAINER_H
 
 #include <QWidget>
+#include "global.h"
 #include "sblocklayout.h"
 #include "scontainer.h"
 
@@ -10,15 +11,16 @@ class SBlockContainer : public SContainer
     Q_OBJECT
     Q_PROPERTY(double outSizeFix MEMBER outSizeFix NOTIFY outSizeFix_changed);
 public:
-    explicit SBlockContainer(SLayout* dis = nullptr,int outsizex = 3,int outsizey = 3,int row=3,int cal =3,int space = 2, int spaceX= 4,int spaceY=4);
+    explicit SBlockContainer(SLayout* dis = nullptr,int outsizex = 3,int outsizey = 3,int row=3,int col =3,
+                             double boradXR=0.05, double boradYR=0.05, double spaceXR=0.1, double spaceYR=0.1);
 
     SBlockContainer(const SBlockContainer &other);
     // virtual void InitLayout();
-    void Say();
+    void Say() override;
     bool enableLongFocusEffect = 0;
     double outSizeFix = 1;
     double aim_outSizeFix(){
-        if(onLongFocus){
+        if(onLongFocus&&!editMode){
             return long_focus_container_fix_ratio;
         }
         else{
@@ -30,8 +32,11 @@ public:
 protected:
     void paintEvent(QPaintEvent *event);
 
+
+
 signals:
     void outSizeFix_changed(double);
+
 
 public slots:
     // ED_Unit interface
@@ -70,6 +75,10 @@ public:
     // ED_Unit interface
 public:
     void setLongFocus(bool) override;
+
+    // SUnit interface
+public:
+    void setupEditMenu() override;
 };
 
 Q_DECLARE_METATYPE(SBlockContainer)

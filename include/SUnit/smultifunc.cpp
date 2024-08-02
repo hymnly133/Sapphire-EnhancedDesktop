@@ -19,10 +19,6 @@
 #include"global.h"
 #include "unitfunc.h"
 
-#define SET_ANCTION(NAME,TEXT,FUCTION)\
-QAction *NAME = new QAction(#TEXT);\
-    myMenu->addAction(NAME);\
-    connect(NAME, &QAction::triggered, this, [=]()FUCTION);
 
 
 
@@ -87,18 +83,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
     lb->setGraphicsEffect(text_shadow);
 
 
-    SET_ANCTION(act1,选择图标,{
-        QString tem =  QFileDialog::getOpenFileName(nullptr,tr("open a file."),"D:/");
-        if(!tem.isEmpty()){
-            setPix(tem,true);
-            writeJson();
-            gv->updateDispaly();
-        }
-    })
 
-    SET_ANCTION(act2,切换铺满,{
-        switchFullShowG(this);
-    })
 
     connect(this,&SMultiFunc::nowDefaultScale_changed,this,[=](double val){
         whenFocusAnimationChange();
@@ -232,7 +217,7 @@ void SMultiFunc::setLongFocus(bool val)
         if(set)
             processorTip();
         else
-            SToolTip::Tip(name);
+            SToolTip::tip(name);
     }
 
 }
@@ -255,6 +240,23 @@ void SMultiFunc::onProcessAnother(SUnit *another)
 bool SMultiFunc::ProcessPath(QString path)
 {
     return true;
+}
+
+void SMultiFunc::setupEditMenu()
+{
+    SUnit::setupEditMenu();
+    SET_ANCTION(act1,选择图标,editMenu,this,{
+        QString tem =  QFileDialog::getOpenFileName(nullptr,tr("open a file."),"D:/");
+        if(!tem.isEmpty()){
+            setPix(tem,true);
+            writeJson();
+            gv->updateDispaly();
+        }
+    })
+
+    SET_ANCTION(act2,切换铺满,editMenu,this,{
+        switchFullShowG(this);
+    })
 }
 
 void SMultiFunc::dragEnterEvent(QDragEnterEvent *event)
@@ -287,6 +289,7 @@ void SMultiFunc::dropEvent(QDropEvent *event)
         {
             ProcessPath(list[i].toLocalFile());
         }
+        event->acceptProposedAction();
     }
     else
     {

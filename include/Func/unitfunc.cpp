@@ -1,14 +1,33 @@
 #include "unitfunc.h"
 #include "global.h"
+#include "qmimedata.h"
 #include "scontainer.h"
-
-void dragOutG(SUnit *sender)
+#include"QDrag"
+#include"sfile.h"
+void dragOutG(SUnit *sender, QMouseEvent *event)
 {
     // if(pCelectedUnits.size()>=4){
     //     foreach (auto k, pCelectedUnits) {
     //         k->setUpdatesEnabled(false);
     //     }
     // }
+    if(event!=nullptr&&event->modifiers()==Qt::ControlModifier){
+    //应用拖出事件
+        QList<QUrl> urls;
+        foreach (auto k, pCelectedUnits) {
+            if(k->inherits("SFile")){
+                urls<<QUrl("file:///"+((SFile*)k)->filePath);
+            }
+        }
+        QMimeData *mimeData = new QMimeData;
+        mimeData->setUrls(urls);
+        QDrag* drag = new QDrag(activepmw);//拖拽控件
+        drag->setMimeData(mimeData);//加载数据
+        drag->exec(Qt::MoveAction | Qt::CopyAction | Qt::LinkAction,Qt::CopyAction);
+
+        return;
+    }
+
     foreach (auto k, pCelectedUnits) {
         k->onDragedOut();
     }
@@ -61,8 +80,40 @@ void moveCelect(SUnit *sender)
                 tem->preSetLongFocus(false);
             }
         }
+
+        //尝试切换屏幕
+        if(screenNum>1){
+            //多屏切换
+            qDebug()<<"try to scan for switch pmw";
+            foreach(auto pmw,pmws){
+                if(pmw->geometry().contains(QCursor::pos()) && pmw!=activepmw){
+                    qDebug()<<"ScreenChange! "<<pmw->objectName()<<"Should Be The Aim";
+                    foreach (SUnit* tem, pCelectedUnits) {
+                        tem->onSwitch(pmw);
+                    }
+                    //清楚原屏幕的长聚焦
+                    foreach (SUnit* tem, *(activepmw->inside->contents)) {
+                        tem->preSetLongFocus(false);
+                    }
+                    activepmw = pmw;
+                    break;
+                }
+            }
+        }
+
+
     }
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -139,5 +190,53 @@ void removeG(SUnit *sender)
 {
     eachDoAsUnit({
         unit->remove();
-    });
+    })
+}
+
+void requireContexMenu(QContextMenuEvent *event, SUnit *sender)
+{
+    if(!pCelectedUnits.empty()){
+        if(!sender->onCelect){
+            cleanCelect();
+            if(editMode)
+            sender->editMenu->exec(event->globalPos());
+            else
+                sender->desktopMenu->exec(event->globalPos());
+
+        }
+        else{
+            activepmw->multiMenu->exec(event->globalPos());
+        }
+    }
+    else{
+        if(editMode)
+            sender->editMenu->exec(event->globalPos());
+        else
+            sender->desktopMenu->exec(event->globalPos());
+    }
+}
+
+void updateCelect(SUnit *sender)
+{
+    if(activepmw->celectPointList.size()==2){
+        QRect aimRect = Point2Rect(activepmw->celectPointList[0],activepmw->celectPointList[1]);
+        foreach (SUnit* k , *(activepmw->inside->contents)) {
+            if(!pCelectedUnits.contains(k)){
+                if(aimRect.contains( k->geometry().center())){
+                    qDebug()<<"CONTAIN";
+                    pCelectedUnits.append(k);
+                    k->setCelect(true);
+                }
+            }
+            else{
+                if(!aimRect.contains( k->geometry().center())){
+                    qDebug()<<"RELEASE";
+                    k->setCelect(false);
+
+                }
+            }
+        }
+    }
+    activepmw->pls->raise();
+    activepmw->pls->update();
 }

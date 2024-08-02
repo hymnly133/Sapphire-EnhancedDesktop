@@ -44,9 +44,6 @@ SNotice::SNotice(QWidget *parent)
     connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){
 
         updateAllNoticeAnimation();
-        // update();
-        // qDebug()<<this->pos();
-        // setVisible(true);
     });
 
     connect(endTimer,&QTimer::timeout,this,[=](){
@@ -101,7 +98,8 @@ void SNotice::comeout()
                        230,unit_radius);
 
 
-    move(QPoint((pmws[0]->width()-aimSize.width())/2,nowOKPosY(this)));
+    QPoint shift = activepmw->pls->mapFromGlobal(activepmw->mapToGlobal(QPoint(0,0)));
+    move(QPoint((activepmw->width()-aimSize.width())/2,nowOKPosY(this))+shift);
     arect->start();
     endTimer->start(staytime);
     setEnabled(true);
@@ -126,7 +124,8 @@ void SNotice::whenAnimationUpdate()
 {
 
     // qDebug()<<pos()<<size();
-    move(QPoint(pmws[0]->width()/2,nowOKPosY(this))+arect->nowPos);
+    QPoint shift = activepmw->pls->mapFromGlobal(activepmw->mapToGlobal(QPoint(0,0)));
+    move(QPoint(activepmw->width()/2,nowOKPosY(this))+shift+arect->nowPos);
     setFixedSize(arect->nowSize);
     update();
 }
@@ -204,7 +203,7 @@ void SNotice::paintEvent(QPaintEvent *event)
     //    font.setUnderline(true); //设置下划线
     //    font.setOverline(true); //设置上划线
     // font.setLetterSpacing(QFont::AbsoluteSpacing, 10); //设置字符间的间距
-    int Xshift =  mapFromGlobal(pmws[0]->mapToGlobal(QPoint(pmws[0]->width()/2,0))).x();
+    int Xshift =  mapFromGlobal(activepmw->mapToGlobal(QPoint(activepmw->width()/2,0))).x();
 
     painter.setFont(*titleFont);
     QRect titleRect = QRect(-aimSize.width()/2+borad+Xshift,borad,titleSize.width(),titleSize.height());

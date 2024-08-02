@@ -12,6 +12,7 @@ enum FileType{
     pptx=2,
     empty=3
 };
+//用于提供用户调用的含GUI的方法
 
 class fileCreator:public QObject{
     Q_OBJECT
@@ -19,6 +20,7 @@ public:
 
     // 从已有预设的类型新建文件,用于菜单调用
     static void creatNewFile(FileType type);
+    static void creatNewDir();
 
 };
 
@@ -26,10 +28,19 @@ public:
 bool creatAFileInDesktop(QString name, bool notice = false,QPoint globalPos = QPoint(-1,-1));
 
 // 获取输入的文件路径，并创建文件的主程序，作为系统方法，不与桌面相关
-static bool creatAFile(const QString &filePath);
+bool creatAFile(const QString &filePath);
+
+// 在桌面路径创建name文件夹，并添加到软件
+bool creatADirInDesktop(QString name, bool notice = false,QPoint globalPos = QPoint(-1,-1));
+
+//获取输入的文件夹路径，并创建文件夹的主程序去，作为系统方法，不与桌面相关
+bool creatADir(const QString & dirPath);
+
+//复制文件夹的系统方法
+bool copyDir(const QString& fromDir, const QString& toDir, bool coverFileIfExist);
 
 //若重复文件，进行重命名(传入绝对路径）
-QString okPathAbsolute(QString absolutePath);
+QString okPath(QString absolutePath);
 
 //若重复文件，进行重命名(传入filename,只针对UserDesktopPath）
 QString okName(QString fileName);

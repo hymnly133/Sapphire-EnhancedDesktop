@@ -42,23 +42,45 @@ void SToolTip::setInfo(QString info)
     QFontMetrics fm(*font);
     QRect rec = fm.boundingRect(info);
     this->info = info;
+
+    //加边框
     aimSize = rec.size()+QSize(20,20);
-    QPoint tem = previousPos;
-    if(tem.x()+aimSize.width()>pmws[0]->width()){
-        aimPos = QPoint(-13-aimSize.width(),8);
-        left = true;
-    }
-    else{
-        aimPos = QPoint(13,8);
-    }
 
     //这个就获得了字符串所占的像素宽度
 }
 
 void SToolTip::comeout()
 {
+    QPoint tem = previousPos;
+    if(tem.x()+aimSize.width()>pmws[0]->width()){
+        //左侧显示
+        left = true;
+    }
 
-    arect->setStartValue(QPoint(0,8),
+
+    int aimX=0;
+    int aimY=0;
+    if(left)
+        aimX-=aimSize.width();
+
+    if(up)
+        aimY = -aimSize.height()-5;
+    else
+        aimY = 8;
+
+    if(shift){
+        if(left)
+            aimX -=13;
+        else
+            aimX +=13;
+    }
+
+
+    aimPos = QPoint(aimX,aimY);
+
+
+
+    arect->setStartValue(QPoint(0,aimPos.y()),
                          QSize(0,aimSize.height()),
                          0,0);
 
@@ -69,6 +91,7 @@ void SToolTip::comeout()
 
     arect->start();
     setVisible(true);
+    emit startToShow();
     show();
 }
 
@@ -77,7 +100,7 @@ void SToolTip::end()
     arect->stop();
 
 
-    arect->setEndValue(QPoint(0,8),
+    arect->setEndValue(QPoint(0,aimPos.y()),
                        QSize(0,aimSize.height()),
                        0,0);
     arect->setFinal();
@@ -85,27 +108,22 @@ void SToolTip::end()
 
 
     arect->start();
+    emit startToEnd();
 }
 
-void SToolTip::Tip(QString info)
+SToolTip* SToolTip::tip(QString info, QPoint pos, bool shift,bool up)
 {
-    qDebug()<<"tipCalled";
-    Tip(QCursor::pos(),info);
-}
-
-void SToolTip::Tip(QPoint pos, QString info)
-{
-    //global pos
     SToolTip* Tip = new SToolTip(activepmw->pls);
-    Tip->previousPos = activepmw->mapFromGlobal(pos);
+    if(pos==NO_POS)
+        Tip->previousPos = activepmw->pls->mapFromGlobal(QCursor::pos());
+    else
+        Tip->previousPos = activepmw->pls->mapFromGlobal(pos);
+    Tip->shift = shift;
+    Tip->up = up;
     Tip->move(Tip->previousPos);
     Tip->setInfo(info);
     Tip->comeout();
-}
-
-void SToolTip::Tip(QWidget *aim, QPoint pos, QString info)
-{
-    Tip(aim->mapToGlobal(pos),info);
+    return Tip;
 }
 
 

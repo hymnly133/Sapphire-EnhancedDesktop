@@ -20,20 +20,22 @@ LayerShower::LayerShower(MainWindow *parent,int screenId)
     : QWidget{nullptr}
 {
     setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::FramelessWindowHint );
-    setAttribute(Qt::WA_TransparentForMouseEvents);;
+    setWindowFlags(Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TransparentForMouseEvents);
     pmw = parent;
     this->screenId = screenId;
     inplace(this);
     positionToScreen(this,screenId);
+    setFixedSize(size()*2);
 
-    qDebug()<<"Layer Shower Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0)) ;
+    qDebug()<<"Layer Shower Information:"<<rect()<<pos()<<geometry()<<mapToGlobal(QPoint(0,0));
     show();
     setVisible(true);
 }
 
 void LayerShower::clearTooltip()
 {
+    qDebug()<<"Cleared";
     QList<SToolTip*> list = this->findChildren<SToolTip*>();
     foreach (auto tem, list) {
         tem->end();
@@ -86,10 +88,11 @@ void LayerShower::paintEvent(QPaintEvent *event)
         if(pmw!=nullptr)
             if(pmw->celectPointList.size()==2){
                 // qDebug()<<"paintrect";
-                QPoint point0 = pmw->celectPointList[0];
-                QPoint point1 = pmw->celectPointList[1];
+                QPoint shift = mapFromGlobal(pmw->mapToGlobal(QPoint(0,0)));
+                QPoint point0 = pmw->celectPointList[0]+shift;
+                QPoint point1 = pmw->celectPointList[1]+shift;
                 QRect aimRect = Point2Rect(point0,point1);
-
+                //
                 QPainter painter(this);
                 // painter.setClipRect(aimRect);
                 painter.setPen(QColor("green"));

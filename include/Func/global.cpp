@@ -20,3 +20,5 @@ bool onLoading = true;
 QMap<QString,SFile*> nowExits;
 QMap<int,QJsonObject> UnusedJsons;
 QList<QString> ExcludeFiles;
+
+bool editMode = false;

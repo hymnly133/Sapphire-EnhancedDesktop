@@ -33,30 +33,27 @@
 #include <Shlobj.h>
 #include <shlwapi.h>
 #include <windows.h>
+#include"saction.h"
 #include"stooltip.h"
-#define SET_ANCTION(NAME,TEXT,MENU,FUCTION)\
-QAction *NAME = new QAction(#TEXT);\
-MENU->addAction(NAME);\
-connect(NAME, &QAction::triggered, this, [=]()FUCTION);
 
-void MainWindow::setupActions()
+
+void MainWindow::setupDesktopMenu()
 {
     // 只要将某个QAction添加给对应的窗口, 这个action就是这个窗口右键菜单中的一个菜单项了
     // 在窗口中点击鼠标右键, 就可以显示这个菜单
-    myMenu = new SMenu(pls);
+    desktopMenu = new SMenu(this);
+    desktopMenu->ismain = true;
     // 给当前窗口添加QAction对象
+    SET_ANCTION(act01,刷新,desktopMenu,this,
+                {refresh();})
 
-    SET_ANCTION(act1,改变可见,myMenu,
+    SET_ANCTION(act1,改变可见,desktopMenu,this,
     { setShoweredVisibal(!showeredVisibal); })
 
-    SET_ANCTION(act2,切换精简,myMenu,
-    {
-    for(SUnit* content:*(inside->contents)){
-        content->changeSimpleMode();
-    }})
 
 
-    SET_ANCTION(act3,映射文件,myMenu,
+
+    SET_ANCTION(act3,映射文件,desktopMenu,this,
     {
         QFileDialog* fd = new QFileDialog();
         QStringList filePaths =QFileDialog::getOpenFileNames(this, QStringLiteral("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
@@ -65,64 +62,137 @@ void MainWindow::setupActions()
         }
     })
 
-    SET_ANCTION(act4,退出程序,myMenu,
-    {
 
-    foreach(auto pmw,pmws){
-            pmw->close();
-            if(plsBG!=nullptr)
-            plsBG->close();
-            pls->close();
-            plsB->close();
-        }
+    QAction *creatNewFileAction = new QAction(desktopMenu);
+    creatNewFileAction->setText("新建");
+    desktopMenu->addAction(creatNewFileAction);
+
+    creatNewFileMenu = new SMenu();
+    creatNewFileAction->setMenu(creatNewFileMenu);
+
+    SET_ANCTION(actNewDir,文件夹,creatNewFileMenu,this,{
+        fileCreator::creatNewDir();
+    });
+
+    SET_ANCTION(act13,文本文档,creatNewFileMenu,this,{
+        fileCreator::creatNewFile(FileType::txt);
+                                                   });
+    SET_ANCTION(act14,PPT演示文稿,creatNewFileMenu,this,{
+        fileCreator::creatNewFile(FileType::pptx);
+    });
+    SET_ANCTION(act15,Word文档,creatNewFileMenu,this,{
+        fileCreator::creatNewFile(FileType::docx);
+    });
+    SET_ANCTION(act16,空文件,creatNewFileMenu,this,{
+        fileCreator::creatNewFile(FileType::empty);
+    });
+
+
+    QAction *systemSettingMenuAction = new QAction(desktopMenu);
+    systemSettingMenuAction->setText("系统设置");
+    desktopMenu->addAction(systemSettingMenuAction);
+
+    connect(systemSettingMenuAction,&QAction::triggered,this,[=](){
+        qDebug()<<"triggered";
+            shellrun("ms-settings:");
+    });
+
+    SMenu *systemSettingMenu = new SMenu();
+    systemSettingMenuAction->setMenu(systemSettingMenu);
+    SET_ANCTION(act00,主面板,systemSettingMenu,this,{
+        shellrun("ms-settings:");
+    });
+    SET_ANCTION(act17,显示设置,systemSettingMenu,this,{
+        shellrun("ms-settings:display");
+    });
+    SET_ANCTION(act18,个性化,systemSettingMenu,this,{
+        shellrun("ms-settings:personalization");
+    });
+    SET_ANCTION(act21,网络和Internet,systemSettingMenu,this,{
+        shellrun("ms-settings:network-status");
+    });
+    SET_ANCTION(act19,电源和睡眠,systemSettingMenu,this,{
+        shellrun("ms-settings:powersleep");
+    });
+    SET_ANCTION(act22,Windows更新,systemSettingMenu,this,{
+        shellrun("ms-settings:windowsupdate");
+    });
+    SET_ANCTION(act20,系统信息,systemSettingMenu,this,{
+        shellrun("ms-settings:about");
+    });
+
+
+    SET_ANCTION(actToEditMode,编辑模式,desktopMenu,this,
+    {
+            toEditMode();
     })
 
-    QAction *creatNewUnitAction = new QAction(myMenu);
+
+    SET_ANCTION(act4,退出程序,desktopMenu,this,
+    {
+        SExit();
+    })
+}
+
+
+void MainWindow::setupEditMenu()
+{
+    editMenu = new SMenu(this);
+    editMenu->ismain = true;
+
+
+    SET_ANCTION(act2,切换精简,editMenu,this,
+        {
+            for(SUnit* content:*(inside->contents)){
+                content->changeSimpleMode();
+            }})
+
+    QAction *creatNewUnitAction = new QAction(editMenu);
     creatNewUnitAction->setText("新建组件");
-    myMenu->addAction(creatNewUnitAction);
+    editMenu->addAction(creatNewUnitAction);
 
     SMenu *creatNewUnitMenu = new SMenu();
     creatNewUnitAction->setMenu(creatNewUnitMenu);
 
 
-    #ifdef QT_DEBUG
+#ifdef QT_DEBUG
 
-    SET_ANCTION(act5,获取背景,myMenu,{
+    SET_ANCTION(act5,获取背景,editMenu,this,{
         capture();
     })
 
-    SET_ANCTION(actupdate,EndUpdate,myMenu,{
+    SET_ANCTION(actupdate,EndUpdate,editMenu,this,{
         endUpdate();
     })
 
-    #endif
+#endif
 
 
-    SET_ANCTION(act6,小型格子,creatNewUnitMenu,{
-        auto bc = new SBlockContainer(inside,2,2,2,2,5,10,10);
+    SET_ANCTION(act6,小型格子,creatNewUnitMenu,this,{
+        auto bc = new SBlockContainer(inside,2,2,2,2);
     })
 
 
 
-    SET_ANCTION(act7,中型格子,creatNewUnitMenu,{
-        auto bc = new SBlockContainer(inside,3,3,3,3,5,15,15);
+    SET_ANCTION(act7,中型格子,creatNewUnitMenu,this,{
+        auto bc = new SBlockContainer(inside,3,3,3,3);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act8,大型格子,creatNewUnitMenu,{
-        auto bc = new SBlockContainer(inside,4,4,4,4,5,20,20);
+    SET_ANCTION(act8,大型格子,creatNewUnitMenu,this,{
+        auto bc = new SBlockContainer(inside,4,4,4,4);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act9,Dock栏,creatNewUnitMenu,{
+    SET_ANCTION(act9,Dock栏,creatNewUnitMenu,this,{
         auto dock = new SDock(inside);
         // InitAUnit(dock);
     })
 
 
-    SET_ANCTION(act10,设置箱,creatNewUnitMenu,{
+    SET_ANCTION(act10,设置箱,creatNewUnitMenu,this,{
         auto dock = new SEditBox(inside);
         // InitAUnit(dock);
     })
@@ -130,11 +200,12 @@ void MainWindow::setupActions()
 
 #ifdef QT_DEBUG
 
-    SET_ANCTION(act11,重绘盒,creatNewUnitMenu,{
+    SET_ANCTION(act11,重绘盒,creatNewUnitMenu,this,{
         auto dock = new RepaintCounterUnit(inside);
         // InitAUnit(dock);
     })
-    SET_ANCTION(act151,lowerAndUpdate,myMenu,{
+
+    SET_ANCTION(act151,lowerAndUpdate,editMenu,this,{
         qDebug()<<changeShower->geometry();
         changeShower->lower();
         changeShower->setVisible(!changeShower->isVisible());
@@ -144,65 +215,49 @@ void MainWindow::setupActions()
     })
 #endif
 
-    SET_ANCTION(act12,系统盒子,creatNewUnitMenu,{
+    SET_ANCTION(act12,系统盒子,creatNewUnitMenu,this,{
         auto dock = new SShellFuncUnit(inside);
         // InitAUnit(dock);
     })
 
+    SET_ANCTION(act14,调整布局,editMenu,this,{
+        resizeForWithDialog(inside);
+    })
 
-    QAction *creatNewFileAction = new QAction(myMenu);
-    creatNewFileAction->setText("新建文件");
-    myMenu->addAction(creatNewFileAction);
 
-    SMenu *creatNewFileMenu = new SMenu();
-    creatNewFileAction->setMenu(creatNewFileMenu);
+    SET_ANCTION(act13,桌面模式,editMenu,this,{
+        toDesktopMode();
+    })
 
-    SET_ANCTION(act13,文本文档,creatNewFileMenu,{
-        fileCreator::creatNewFile(FileType::txt);
-                                                   });
-    SET_ANCTION(act14,PPT演示文稿,creatNewFileMenu,{
-        fileCreator::creatNewFile(FileType::pptx);
-    });
-    SET_ANCTION(act15,Word文档,creatNewFileMenu,{
-        fileCreator::creatNewFile(FileType::docx);
-    });
-    SET_ANCTION(act16,空文件,creatNewFileMenu,{
-        fileCreator::creatNewFile(FileType::empty);
-    });
+    SET_ANCTION(act4,退出程序,editMenu,this,
+                {
+                    SExit();
+                })
 
-    QAction *systemSettingMenuAction = new QAction(myMenu);
-    systemSettingMenuAction->setText("系统设置");
-    myMenu->addAction(systemSettingMenuAction);
 
-    connect(systemSettingMenuAction,&QAction::triggered,this,[=](){
-        qDebug()<<"triggered";
-            shellrun("ms-settings:");
-    });
-
-    SMenu *systemSettingMenu = new SMenu();
-    systemSettingMenuAction->setMenu(systemSettingMenu);
-    SET_ANCTION(act00,主面板,systemSettingMenu,{
-        shellrun("ms-settings:");
-    });
-    SET_ANCTION(act17,显示设置,systemSettingMenu,{
-        shellrun("ms-settings:display");
-    });
-    SET_ANCTION(act18,个性化,systemSettingMenu,{
-        shellrun("ms-settings:personalization");
-    });
-    SET_ANCTION(act21,网络和Internet,systemSettingMenu,{
-        shellrun("ms-settings:network-status");
-    });
-    SET_ANCTION(act19,电源和睡眠,systemSettingMenu,{
-        shellrun("ms-settings:powersleep");
-    });
-    SET_ANCTION(act22,Windows更新,systemSettingMenu,{
-        shellrun("ms-settings:windowsupdate");
-    });
-    SET_ANCTION(act20,系统信息,systemSettingMenu,{
-        shellrun("ms-settings:about");
-    });
 }
+
+
+void MainWindow::setupMultiMenu()
+{
+    multiMenu = new SMenu(this);
+    multiMenu->ismain = true;
+    // 给当前窗口添加QAction对象
+    SET_ANCTION(act01,切换精简,multiMenu,this,
+    {switchSimpleModeG();})
+
+    SET_ANCTION(act02,切换始终显示,multiMenu,this,{
+        swtichAlwayShowG();
+
+    });
+
+    SET_ANCTION(act03,删除,multiMenu,this,{
+        removeG();
+    });
+
+}
+
+
 void MainWindow::setupUnits()
 {
     // setMouseTracking(true);
@@ -228,7 +283,7 @@ void MainWindow::setupUnits()
 
 void MainWindow::setupLayout(int x, int y)
 {
-    inside = new SBlockLayout(this, x, y, 5, 10, 10);
+    inside = new SBlockLayout(this, x, y);
     inside->isMain = true;
     QRect tem = QRect(0,0,pscs[screenInd]->availableSize().width(),pscs[screenInd]->availableSize().height());
     inside->setStandalongRect(tem);
@@ -244,19 +299,22 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     setFocusPolicy( Qt::StrongFocus );
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
-    // setWindowFlags(Qt::FramelessWindowHint);
+
+
     setAcceptDrops(true);
+    qDebug()<<ChangeWindowMessageFilterEx((HWND)winId(), WM_DROPFILES, MSGFLT_ALLOW, NULL);
+    qDebug()<<ChangeWindowMessageFilterEx((HWND)winId(), 0x0049, MSGFLT_ALLOW, NULL);
+    qDebug()<<ChangeWindowMessageFilterEx((HWND)winId(), WM_COPYDATA, MSGFLT_ALLOW, NULL);
+
+
     inplace(this);
     positionToScreen(this,screenInd);
     //shift:Windows主屏幕位于全局的位置;
-    if(QFile::exists(bgPicPath)){
-        setFixedSize(pscs[screenInd]->size());
-    }
 
     showerSize = size();
 
-    plsB = new LayerShower(this,screenInd);
-    plsB->layer = LayerShower::Bottom;
+    // plsB = new LayerShower(this,screenInd);
+    // plsB->layer = LayerShower::Bottom;
 
 
     pls = new LayerShower(this,screenInd);
@@ -267,7 +325,9 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
 
     setupUnits();
     setupLayout(10,10);
-    setupActions();
+    setupDesktopMenu();
+    setupEditMenu();
+    setupMultiMenu();
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updatePer01second())); // slotCountMessage是我们需要执行的响应函数
@@ -304,6 +364,7 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
             inside->setVisible(true);
             changeShower->setVisible(false);
         }
+        qDebug()<<changeShower->pos()<<changeShower->aim_size();
     });
 
 
@@ -314,11 +375,10 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     if(QFile::exists(bgPicPath)){
 
         setBackgoundPic(QImage(bgPicPath));
-        setTransparent(false);
     }
-    else{
-        setTransparent(true);
-    }
+
+    setTransparent(enable_background_transparent);
+
 }
 
 
@@ -330,7 +390,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::raiseLayers()
 {
-    plsB->raise();
+    // plsB->raise();
     raise();
     pls->raise();
 }
@@ -426,6 +486,19 @@ void MainWindow::Init()
     }
 }
 
+void MainWindow::refresh()
+{
+    if(enable_refresh_animation)
+    inside->setVisible(false,true);
+
+    endUpdate();
+    repaint();
+    scanForChange();
+
+    if(enable_refresh_animation)
+    inside->setVisible(true);
+}
+
 void MainWindow::capture()
 {
     update();
@@ -455,6 +528,10 @@ void MainWindow::setShoweredVisibal(bool val){
         inside->setVisible(false);
         changeShower->setVisible(true);
         changeShower->raise();
+        foreach (SUnit* content,*(inside->contents)) {
+            if(content->alwaysShow)
+                content->raise();
+        }
     }
 
 
@@ -468,8 +545,10 @@ void MainWindow::setBackgoundPic(QImage image)
         SNotice::notice("无法读取文件,设置壁纸失败","抱歉");
         return;
     }
-    setTransparent(false);
-    image.save(bgPicPath);
+    if(!onLoading){
+        setTransparent(false);
+        image.save(bgPicPath);
+    }
     bg = QPixmap::fromImage(image);
 
     double window_width, window_height;
@@ -496,12 +575,12 @@ void MainWindow::setBackgoundPic(QImage image)
 
     if(displaySize.width()>=window_width){
         actualSize.setWidth(window_width);
-        off_x = -(displaySize.width()-window_width)/2;
+        off_x = (displaySize.width()-window_width)/2;
     }
 
     if(displaySize.height()>=window_height){
         actualSize.setHeight(window_height);
-        off_y = -(displaySize.height()-window_height)/2;
+        off_y = (displaySize.height()-window_height)/2;
     }
 
     bg = bg.copy(off_x,off_y,actualSize.width(),actualSize.height());
@@ -518,6 +597,7 @@ void MainWindow::updata_animation()
     showerRadiusAnimation->setStartValue(showerRadius);
     showerRadiusAnimation->setEndValue(aim_showerRadius());
 
+    // qDebug()<<aim_showerSize();
     showerAnimations->start();
 
 }
@@ -592,31 +672,29 @@ void MainWindow::dropEvent(QDropEvent *e)
 {
     if(e->mimeData()->hasUrls())//处理期望数据类型
     {
-        bool move =false;
-        QMessageBox::StandardButton box;
-        box = QMessageBox::question(this, "你拖入了文件", "创建映射（是）/ 移动文件（否）?", QMessageBox::Yes|QMessageBox::No);
-        if(box==QMessageBox::No){
-            move  =true;
-        }
-
+        // if()
+        qDebug()<<e->dropAction();
         QList<QUrl> list = e->mimeData()->urls();//获取数据并保存到链表中
         for(int i = 0; i < list.count(); i++)
         {
             QString path = list[i].toLocalFile();
 
-            if(move){
-                QString newName =  (*UserDesktopPath)+"/"+QFileInfo(path).fileName();
-                bool removed = QFile::rename(path,newName);
-                    qDebug()<<"move"<<newName;
-                if(removed){
-                    qDebug()<<"moved";
-                }
-                addAIcon(newName);
+            QString newName =  (*UserDesktopPath)+"/"+okName(QFileInfo(path).fileName());
+            bool removed =false;
+            if(e->dropAction()==Qt::CopyAction){
+                removed = QFile::copy(path,newName);
+            }
+            else if(e->dropAction()==Qt::MoveAction){
+                removed = QFile::rename(path,newName);
+            }
+            qDebug()<<"move"<<newName;
+            if(removed){
+                qDebug()<<"moved";
+                addAIcon(newName,true,QCursor::pos());
             }
             else{
-                addAIcon(path);
+                SNotice::notice("添加失败","糟糕");
             }
-
         }
     }
     else
@@ -672,7 +750,13 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
         inside->printOccupied();
     }
     else
-        myMenu->exec(event->globalPos());
+    {
+        if(editMode)
+            editMenu->exec(event->globalPos());
+        else
+            desktopMenu->exec(event->globalPos());
+
+    }
 
 }
 
@@ -710,7 +794,6 @@ void MainWindow::enterEvent(QEvent *event)
 {
     activepmw = this;
     qDebug()<<objectName()<<"Enter";
-
 }
 
 void MainWindow::leaveEvent(QEvent *event)
@@ -720,11 +803,7 @@ void MainWindow::leaveEvent(QEvent *event)
 
 void MainWindow::showEvent(QShowEvent *event)
 {
-        raiseLayers();
-    QMainWindow::showEvent(event);
     raiseLayers();
-    // lower();
-    endUpdate();
 }
 
 void MainWindow::paintEvent(QPaintEvent *ev)
@@ -741,7 +820,7 @@ void MainWindow::paintEvent(QPaintEvent *ev)
     {
         QPainter painter(this);
         painter.drawPixmap(rect(), bg);
-        qDebug()<<"paintBG";
+        // qDebug()<<"paintBG";
     }
 
     Q_UNUSED(ev);
@@ -752,27 +831,42 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 }
 
-void MainWindow::mouseDoubleClickEvent(QMouseEvent *ev)
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    setShoweredVisibal(!showeredVisibal);
-    Q_UNUSED(ev);
+    if(event->button()==Qt::LeftButton){
+        setShoweredVisibal(!showeredVisibal);
+        event->accept();
+        return;
+    }
+
+    event->ignore();
 }
 
 void MainWindow::mousePressEvent(QMouseEvent* event){
     cleanCelect();
 
-    appendPoints(event->pos());
+    if(event->button()==Qt::LeftButton){
+        appendPoints(event->pos());
+    }
+    else if(event->button()==Qt::MiddleButton){
+        switchMode();
+    }
+
     // inside->printOccupied();
     pls->clearTooltip();
     pls->clearInputDialog();
+
+    //首次通知
     if(firstNotice&&init){
         firstNotice = false;
     }
+
 
 #ifdef QT_DEBUG
     // SToolTip::Tip("样例文本");
     // // SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
     // SNotice::notice(QStringList()<<"infoTestinfoTestinfoTestinfoTestinfoTest","TitleTest");
+    qDebug()<<inside->W_Block_Clean()<<inside->boradXPix()<<inside->spaceXPix();
 #endif
     pls->raise();
 
@@ -782,47 +876,20 @@ void MainWindow::mousePressEvent(QMouseEvent* event){
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    appendPoints(event->pos());
-    pls->update();
-
-    celectPointList.clear();
-    if(celectPointList.size()==2){
-        QRect aimRect = Point2Rect(celectPointList[0],celectPointList[1]);
-        foreach (SUnit* k , *(inside->contents)) {
-            if(aimRect.contains( k->rect().center())){
-                pCelectedUnits.append(k);
-                k->setCelect(true);
-            }
-        }
+    if(event->button()==Qt::LeftButton){
+        appendPoints(event->pos());
+        updateCelect();
+        celectPointList.clear();
     }
+
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-
-    appendPoints(event->pos());
-
-    if(celectPointList.size()==2){
-        QRect aimRect = Point2Rect(celectPointList[0],celectPointList[1]);
-        foreach (SUnit* k , *(inside->contents)) {
-            if(!pCelectedUnits.contains(k)){
-                if(aimRect.contains( k->geometry().center())){
-                    qDebug()<<"CONTAIN";
-                    pCelectedUnits.append(k);
-                    k->setCelect(true);
-                }
-            }
-            else{
-                if(!aimRect.contains( k->geometry().center())){
-                    qDebug()<<"RELEASE";
-                    k->setCelect(false);
-
-                }
-            }
-        }
+    if(event->buttons()==Qt::LeftButton){
+        appendPoints(event->pos());
+        updateCelect();
     }
-    pls->raise();
-    pls->update();
 }
 
 
@@ -850,13 +917,25 @@ void MainWindow::setTransparent(bool val)
         setFixedSize(pscs[screenInd]->availableSize());
     }
     else{
+        if(screenNum==1)
         setFixedSize(pscs[screenInd]->size());
+        else
+            setFixedSize(pscs[screenInd]->availableSize());
+
+        // setFixedSize(pscs[screenInd]->availableSize());
     }
     showerSize = size();
     if(changeShower){
         changeShower->updateDisplay();
         changeShower->update();
     }
+
+    if(screenInd==0){
+        qDebug()<<"Settd";
+        enable_background_transparent = val;
+    }
+    qDebug()<<"setted"<<val;
+
     update();
     // updateBG();
 }

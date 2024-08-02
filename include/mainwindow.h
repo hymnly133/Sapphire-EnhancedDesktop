@@ -52,7 +52,15 @@ public:
     bool onShift = false;
 
     //右键菜单
-    SMenu* myMenu;
+    //桌面模式的菜单
+    SMenu* desktopMenu;
+    //编辑模式的菜单
+    SMenu* editMenu;
+    //多组件框选的菜单
+    SMenu* multiMenu;
+    //新建文件的菜单
+    SMenu* creatNewFileMenu;
+
     //布局管理器
     SBlockLayout* inside = nullptr;
 
@@ -127,8 +135,13 @@ public:
     //初始化
     void Init();
 
+    //刷新
+    void refresh();
+
 private:
-    void setupActions();
+    void setupEditMenu();
+    void setupDesktopMenu();
+    void setupMultiMenu();
     void setupUnits();
     void setupLayout(int x,int y);
 

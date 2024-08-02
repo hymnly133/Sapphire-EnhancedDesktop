@@ -6,8 +6,14 @@
 #define numCelected pCelectedUnits.size()
 #define AUTO_RUN_KEY	"HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"
 #define AUTO_RUN_KEY_OLD	"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
-
+#define NO_POS QPoint(-1,-1)
+#define NO_IND QPoint(-1,-1)
 #define SAPPHIRE_REG_PATH "HKEY_CURRENT_USER\\Software\\Hymnly\\Sapphire"
+#define SET_ANCTION(NAME,TEXT,MENU,RECIEVER,FUCTION)\
+QAction *NAME = new QAction(#TEXT);\
+    MENU->addAction(NAME);\
+    connect(NAME, &QAction::triggered, RECIEVER, [=]()FUCTION);
+
 //标识初始化
 extern bool init;
 
@@ -43,4 +49,6 @@ extern QMap<int,QJsonObject> UnusedJsons;
 extern QMap<QString,SFile*> nowExits;
 
 extern QList<QString> ExcludeFiles;
+extern SMenu* unitsMenu;
+extern bool editMode;
 #endif // GLOBAL_H

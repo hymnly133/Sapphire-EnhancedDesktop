@@ -60,6 +60,8 @@ public:
     virtual void onProcessAnother(SUnit *another) override;
     virtual bool ProcessPath(QString path);
 
+    virtual void setupEditMenu() override;
+
     // QWidget interface
     void setFullShow(bool val);
 

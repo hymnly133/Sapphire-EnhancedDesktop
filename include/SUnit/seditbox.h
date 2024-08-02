@@ -17,7 +17,14 @@ public:
     QVBoxLayout* paint;
     QVBoxLayout* scale;
     QVBoxLayout* tem;
+
+
+
 signals:
+
+    // SUnit interface
+public:
+    void setPMW(MainWindow *pmw) override;
 };
 Q_DECLARE_METATYPE(SEditBox)
 #endif // SEDITBOX_H

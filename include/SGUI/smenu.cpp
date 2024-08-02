@@ -2,9 +2,8 @@
 #include "SQSS.h"
 #include "qevent.h"
 #include "qgraphicseffect.h"
-#include "qmath.h"
 #include "qpainter.h"
-#include "qpainterpath.h"
+#include"global.h"
 namespace
 {
 const int SHADOW_WIDTH = 5;
@@ -61,6 +60,11 @@ void SMenu::raiseAction(QAction *action)
     }
 }
 
+void SMenu::exec(QPoint pos, bool multi)
+{
+    QMenu::exec(pos);
+}
+
 void SMenu::paintEvent(QPaintEvent *event)
 {
 
@@ -86,7 +90,7 @@ void SMenu::resizeEvent(QResizeEvent *event)
 
 void SMenu::closeEvent(QCloseEvent *event)
 {
-
+    // emit aboutToHide();
     QMenu::closeEvent(event);
 }
 
@@ -95,10 +99,23 @@ void SMenu::showEvent(QShowEvent *event)
 
     qDebug()<<"ShowSize"<<size();
     qDebug()<<"ShowPos"<<pos();
+    emit aboutToShow();
+
+    if(ismain){
+        activepmw->pls->clearTooltip();
+        // if(title()!=""){
+
+        // SToolTip* tip = SToolTip::tip(title(),pos(),false,true);
+        //     connect(this,&QMenu::aboutToHide,tip,&SToolTip::end);
+        // }
+    }
+
     if(firstShow){
+        qDebug()<<"firstShow"<<size();
         aimSize = size();
         firstShow = false;
     }
+
     previousPos = pos();
     arect->setStartValue(QPoint(0,0),
                          QSize(aimSize.width()*0.5,1),
@@ -114,4 +131,5 @@ void SMenu::showEvent(QShowEvent *event)
     setVisible(true);
     show();
     QMenu::showEvent(event);
+
 }

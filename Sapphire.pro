@@ -9,7 +9,7 @@ win32 {
     # QMAKE_POST_LINK += mt -manifest $$PWD/manifest.xml -outputresource:$$OUT_PWD/release/$$TARGET".exe" $$escape_expand(\n\t)
     # }
 }
-VERSION = 1.2.8.5
+VERSION = 1.3.0.0
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8
@@ -26,7 +26,7 @@ msvc{
 
 mingw{
 message("using mingw")
-
+RC_FILE=Sapphire.rc
 # LIBS += -L$$PWD/lib/ -lelawidgettools
 
 }
@@ -78,6 +78,7 @@ SOURCES += \
     include/Func/screenfunc.cpp \
     include/Func/unitfunc.cpp \
     include/Func/userfunc.cpp \
+    include/SGUI/saction.cpp \
     include/SGUI/sinputdialog.cpp \
     include/SGUI/smenu.cpp \
     include/SGUI/snotice.cpp \
@@ -102,6 +103,7 @@ SOURCES += \
     include/SWidget/picturebox.cpp \
     include/SWidget/roundshower.cpp \
     include/SWidget/sbgshower.cpp \
+    include/Setting/sblocklayoutsettingwindow.cpp \
     include/Setting/style.cpp \
     include/mainwindow.cpp \
     main.cpp
@@ -123,6 +125,7 @@ HEADERS += \
     include/Func/screenfunc.h \
     include/Func/unitfunc.h \
     include/Func/userfunc.h \
+    include/SGUI/saction.h \
     include/SGUI/sinputdialog.h \
     include/SGUI/smenu.h \
     include/SGUI/snotice.h \
@@ -148,11 +151,13 @@ HEADERS += \
     include/SWidget/roundshower.h \
     include/SWidget/sbgshower.h \
     include/Setting/SQSS.h \
+    include/Setting/sblocklayoutsettingwindow.h \
     include/Setting/style.h \
     include/mainwindow.h
 
 
 FORMS += \
+    include/Setting/settingDialogForBlockLayout.ui \
     include/Setting/styleSetting.ui \
     include/mainwindow.ui
 
@@ -174,12 +179,14 @@ RESOURCES += \
 
 DISTFILES += \
     README.md \
+    Sapphire.rc \
     Sapphire.rep \
     SysIcons/imageres 023.png \
     SysIcons/imageres 050.png \
     SysIcons/imageres 051.png \
     SysIcons/imageres 105.png \
-    style.json
+    style.json \
+    uac.manifest
 
 
 

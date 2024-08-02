@@ -43,6 +43,7 @@ QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
 
 HWND shelldlldefview = NULL;
+HWND progrmman = NULL;
 
 void customMessageHandler(QtMsgType type,
                           const QMessageLogContext &context,
@@ -92,7 +93,7 @@ void customMessageHandler(QtMsgType type,
     txt.append(msg);
 
     mutex.lock();
-    QFile file("log.txt");
+    QFile file(QApplication::applicationDirPath()+"/log.txt");
     file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream text_stream(&file);
     text_stream << txt << "\r\n";
@@ -125,107 +126,23 @@ QString toLinuxPath(QString const& windowsPath)
 
 void inplace(QWidget* aim) {
     // 接入到图标层
-    qDebug()<<"Star Inplacing";
-    qDebug()<<"Using Inplacing Func1";
-    HWND background = NULL;
-    HWND worker = NULL;
-
-    qDebug()<<"Entering Loop";
-    // 循环查找WorkerW窗口
-    do {
-        worker = FindWindowExA(NULL, worker, "WorkerW", NULL);
-        if (worker != NULL) {
-            qDebug()<<"Find WokerW";
-            // 尝试找到SHELLDLL_DefView窗口
-            HWND shelldlldefview = FindWindowExA(worker, NULL, "SHELLDLL_DefView", NULL);
-            if (shelldlldefview != NULL) {
-                qDebug()<<"Find SHELLDLL_DefView";
-                // 检查SHELLDLL_DefView的父窗口是否为当前的WorkerW窗口
-                HWND parent = GetParent(shelldlldefview);
-                if (parent != NULL) {
-                    qDebug()<<"Find SHELLDLL_DefView's Parent";
-                    if (parent == worker) {
-                        qDebug()<<"Right!";
-
-                        // 找到了正确的WorkerW窗口
-                        background = shelldlldefview;
-                        break; // 结束循环
-                    }
-                }
-            }
-        }
-    } while (worker != NULL);
-
-    // 如果找到了正确的WorkerW窗口，设置父窗口
-    if (background == NULL)
-    {
-        qDebug() << "Unable to find proper WorkerW,trying to use Fuc 2";
-
-        HWND pPM = FindWindowA("Progman", "Program Manager");
-        if(pPM!=NULL){
-            qDebug()<<"Find Program Manager";
-            // 尝试找到SHELLDLL_DefView窗口
-            HWND shelldlldefview = FindWindowExA(pPM, NULL, "SHELLDLL_DefView", NULL);
-            if(shelldlldefview!=NULL){
-                qDebug()<<"Find SHELLDLL_DefView";
-                // 检查SHELLDLL_DefView的父窗口是否为当前的WorkerW窗口
-                HWND parent = GetParent(shelldlldefview);
-                if(parent!=NULL){
-                    qDebug()<<"Find SHELLDLL_DefView's Parent";
-                    if (parent == pPM) {
-                        qDebug()<<"Right!";
-                        // 找到了正确的WorkerW窗口
-                        background = shelldlldefview;// 结束循环
-                    }
-                }
-            }
-        }
-    }
-
-
-    if (background != NULL) {
-        SetParent((HWND)aim->winId(), background);
+    qDebug()<<"try to inplace";
+    if (shelldlldefview != NULL) {
+        qDebug()<<"Use Valid shell";
+        SetParent((HWND)aim->winId(), shelldlldefview);
         SetWindowPos((HWND)aim->winId(), HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         SetWindowPos((HWND)aim->winId(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         SetFocus((HWND)aim->winId());
-        shelldlldefview = background;
     }
     else{
-        qDebug() << "Unable to find proper Program manager,Inplacing failed";
+        qDebug() << "no Valid shell";
     }
 }
+
 void positionToScreen(QWidget* aim,int screenInd){
     aim->setFixedSize(pscs[screenInd]->availableSize());
     aim->move(pscs[screenInd]->geometry().topLeft()+Shift_Global);
     aim->move(2*aim->pos()-aim->geometry().topLeft());
-}
-void inplace2(QWidget* pmw2) {
-    // 接入到壁纸层
-    HWND background = NULL;
-    HWND hwnd = FindWindowA("Progman", "Program Manager");
-    HWND worker = NULL;
-
-    // 循环查找WorkerW窗口
-    do
-    {
-        worker = FindWindowExA(NULL,worker,"WorkerW",NULL);
-        if(worker!=NULL){
-            char buff[200] = {0};
-
-            int ret = GetClassName(worker,(WCHAR*)buff,sizeof(buff)*2);
-            if(ret == 0){
-                int err = GetLastError();
-                qDebug()<<"err:"<<err;
-            }
-            //QString className = QString::fromUtf16((char16_t*)buff);
-        }
-        if(GetParent(worker) == hwnd){
-            background = worker;
-        }
-    }while(worker !=NULL);
-    SetParent((HWND)pmw2->winId(),background);
-
-    // 如果找到了符合条件的 WorkerW 窗口，设置 Qt 窗口的父窗口
 }
 
 
@@ -465,9 +382,10 @@ QMap<int,QJsonObject> readJson(){
 
 
 
-QString shellrun(QString filename, QString para)
+QString shellrun(QString filename, QString para,bool admin)
 {
-    HINSTANCE hNewExe = ShellExecuteA(NULL, "open", filename.toLocal8Bit(), para.toLocal8Bit(), NULL, SW_SHOW);
+    auto operate = (admin)?"runas":"open";
+    HINSTANCE hNewExe = ShellExecuteA(NULL, operate, filename.toLocal8Bit(), para.toLocal8Bit(), NULL, SW_SHOW);
     long long code = (long long)hNewExe;
     if(code>32) return "Success!";
     QString sRet;
@@ -526,3 +444,87 @@ QRect Point2Rect(QPoint point0, QPoint point1)
 
 
 
+
+void initiateDesktop()
+{
+    qDebug()<<"Star Initiate";
+    qDebug()<<"Using Initiate Func1";
+    HWND aim_shell = NULL;
+
+    qDebug()<<"Entering Loop";
+
+    aim_shell = findProperShellInWorker();
+    if(aim_shell){
+        qDebug()<<"find proper shell,it works fine";
+        shelldlldefview = aim_shell;
+    }
+    else{
+        //如果没有，尝试启动双层结构
+        qDebug()<<"Unable to find proper shell,try to invoke wokerW";
+        progrmman = FindWindowA("Progman", "Program Manager");
+        if(progrmman!=NULL){
+            qDebug()<<"Find Program Manager";
+
+            //向Progman发送0x052c以形成WokerW
+            // Win7, 8, 8.1, Win 10 几乎全部版本，Win 11 21H2, 22H2, 23H2 全部已发布版本
+            DWORD_PTR result;
+            SendMessageTimeoutW(progrmman, 0x052C, 0, 0, SMTO_NORMAL, 0x03E8, &result);
+            qDebug()<<"Message Send";
+            // 再次循环查找WorkerW窗口
+            aim_shell = findProperShellInWorker();
+            if(aim_shell){
+                shelldlldefview = aim_shell;
+                qDebug()<<"Try good!";
+            }
+            else{
+                qDebug()<<"Failed again";
+            }
+        }
+    }
+}
+
+HWND findProperShellInWorker()
+{
+    // 循环查找WorkerW窗口
+    if(shelldlldefview){
+        return shelldlldefview;
+    }
+
+
+    HWND worker = NULL;
+    HWND aim_shell = NULL;
+    do {
+        worker = FindWindowExA(NULL, worker, "WorkerW", NULL);
+        if (worker != NULL) {
+            qDebug()<<"Find WokerW";
+            // 尝试找到SHELLDLL_DefView窗口
+            HWND shelldlldefview = FindWindowExA(worker, NULL, "SHELLDLL_DefView", NULL);
+            if (shelldlldefview != NULL) {
+                qDebug()<<"Find SHELLDLL_DefView";
+                // 检查SHELLDLL_DefView的父窗口是否为当前的WorkerW窗口
+                HWND parent = GetParent(shelldlldefview);
+                if (parent != NULL) {
+                    qDebug()<<"Find SHELLDLL_DefView's Parent";
+                    if (parent == worker) {
+                        qDebug()<<"Right!";
+
+                        // 找到了正确的WorkerW窗口
+                        aim_shell = shelldlldefview;
+                        break; // 结束循环
+                    }
+                }
+            }
+        }
+    } while (worker != NULL);
+
+    return aim_shell;
+}
+
+QColor mixColor(QColor source, QColor add, double ratio)
+{
+    return QColor(
+        source.red()*ratio + add.red()*(1.0-ratio),
+        source.green()*ratio + add.green()*(1.0-ratio),
+        source.blue()*ratio + add.blue()*(1.0-ratio)
+        );
+}

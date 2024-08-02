@@ -13,15 +13,9 @@ class SFile : public SMultiFunc
     Q_OBJECT;
 public:
     QString filePath;
-    QString fullName(){
-        return QFileInfo(filePath).fileName();
-    }
-    QString suffix(){
-        return QFileInfo(filePath).suffix();
-    }
-    QString baseName(){
-        return QFileInfo(filePath).baseName();
-    }
+    QString fullName();
+    QString suffix();
+    QString baseName();
     bool isDir = false;
     bool useFileIcon = true;
 
@@ -39,6 +33,8 @@ public:
 
     void double_click_action(QMouseEvent* event) override;
 
+    void open(bool Admin = false);
+
     QJsonObject to_json() override;
     void load_json(QJsonObject rootObject) override;
 
@@ -53,11 +49,30 @@ public:
     void renameFile(QString newNameWithSuffix);
     void renameWithDialog();
 
+    void setName(QString name) override;
+
+
 
     // SUnit interface
 public:
     void remove() override;
+
+    // SUnit interface
+public:
+    void setupDesktopMenu() override;
 };
+
+inline QString SFile::fullName(){
+    return QFileInfo(filePath).fileName();
+}
+
+inline QString SFile::suffix(){
+    return QFileInfo(filePath).suffix();
+}
+
+inline QString SFile::baseName(){
+    return QFileInfo(filePath).baseName();
+}
 
 inline SFile::SFile(const SFile &other):SFile(other.layout,other.sizeX,other.sizeY){}
 

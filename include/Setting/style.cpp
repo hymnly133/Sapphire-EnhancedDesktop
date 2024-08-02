@@ -60,6 +60,8 @@ bool use_pic_as_icon = 1;
 bool enable_auto_run = 0;
 bool enable_resize_to_rect = 0;
 
+bool enable_refresh_animation=0;
+bool enable_background_transparent = 0;
 QString user_font = "";
 
 
@@ -116,6 +118,8 @@ StyleHelper::StyleHelper()
 
     ADD(Preference,use_pic_as_icon,0,0);
     ADD(Preference,user_font,0,0);
+    ADD(Preference,enable_refresh_animation,0,0);
+    ADD(Preference,enable_background_transparent,0,0);
 
     psh = this;
 }
@@ -350,6 +354,6 @@ void StyleSettingWindow::on_rebootBox_clicked()
 
 void StyleSettingWindow::on_resizeBox_clicked()
 {
-    resizeForActiveMW();
+    resizeForWithDialog(activepmw->inside);
 }
 

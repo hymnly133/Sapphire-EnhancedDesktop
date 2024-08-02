@@ -8,7 +8,11 @@
 - **环境**：使用 Windows API 和 Qt 框架，mingw64 编译，只保证兼容 Windows 11。
 - 由原项目`Enhanced-desktop`接续开发，使用`Sapphire`作为新的软件名与原项目进行区别。
 
-- README 文件对应版本：`V1.2.8.4`
+- README 文件对应版本：`V1.3.0.0`
+
+# 使用手册
+
+https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 
 # 项目特点
 
@@ -27,9 +31,7 @@
 
 - 接入并覆盖原生 Windows 图标层
 - 获取系统主题色作为默认颜色
-- 系统级别事件钩子（默认未启用）
 - 扫描用户桌面和公共桌面
-- 追踪快捷方式
 - 转化文件信息为项目组件
 - 调用系统 URL
 - 网络 API 使用
@@ -38,31 +40,39 @@
 ## 全局
 
 - 部分自定义统一风格GUI
-- 整合系统图标功能
+  - 标签展示
+  - 全局通知
+  - 右键菜单
+  - 输入对话框
+- 整合我的电脑与回收站功能
   - 双击打开资源管理器
   - 拖动移入回收站
   - Shift双击打开回收站
   - 右键打开系统功能菜单
-  
-- 桌面热更新
-- 部分拖拽功能
-- 初版兼容多屏
-- 标签展示
-- 自选图标
+- 整合桌面功能
+  - 桌面热更新
+  - 基本所有拖拽交互
+  - 新建文件与文件夹
+  - 重命名
+  - Shift右键图标调用原生菜单
+- 整合图标功能
+  - 打开与管理员打开
+  - 属性
 - 初步兼容 WallpaperEngine（需在设置中设置`当其他程序成为焦点时`为`始终运行`）
-- 自选和显示图片背景（待完善）
-- 组件拖动
-- 组件定位
-- 组件创建
-- 双击隐藏（可设置始终显示）
-- 聚焦动画
-- 位移动画
-- 长聚焦动画
-- 从文件夹拖动
-- Shift右键可以调用原生菜单
-- Shift滚轮快速改变大小(全局和单个组件)
-- 首次启动可控布局大小
+- 用户交互
+  - 分离编辑模式与桌面模式及快速切换
+  - 自选图标与封面切换
+  - 自选和显示图片背景
+  - 组件拖动与定位
+  - 双击隐藏（可设置始终显示）
+  - Shift滚轮快速改变大小(全局和单个组件)
+
+- 动画
+  - 聚焦动画
+  - 位移动画
+  - 长聚焦动画
 - 用户可控：
+  - 网状布局所有参数的可视化调整
   - 开关文字阴影
   - 开关背景透视
   - 切换大图标填充模式
@@ -76,46 +86,6 @@
   - 多屏内容独立管理
   - 多屏间无缝拖动
 
-## Style.ini 详细配置（未更新）
-
-_斜体_ 表示已在可视化组件中给出
-
-### Color
-
-- sleep_alpha 未聚焦的颜色 Alpha
-- active_alpha 聚焦时的颜色 Alpha
-- sleep_alpha_deep 深色图标未聚焦的颜色 Alpha
-- active_alpha_deep 深色图标聚焦时的颜色 Alpha
-- sleep_color_ratio 未聚焦的色值比率（RBG）
-- active_color_ratio 聚焦时的色值比率（RBG）
-
-### Effect
-
-- light_alpha_start 光效的起点 Alpha
-- light_alpha_end 光效的终点 Alpha
-- icon_shadow_alpha 图标阴影特效 Alpha
-- icon_shadow_blur_radiu 图标阴影特效 Radius（扩散半径）
-- unit_shadow_alpha 所有组件阴影特效 Alpha
-- unit_shadow_blur_radius 所有组件阴影特效 Radius（扩散半径）
-
-### Render
-
-- _unit_radius_ 组件圆角
-- _ShowRect_ 绘制组件的矩形
-- ShowSide 绘制组件边框（用于 Debug）
-- _ShowLight_ 绘制组件光效
-- _enable_background_transparent_ 背景透视
-- enable_background_blur 背景模糊（未完工）
-- _enable_light_track_ 特效追踪
-- _enable_intime_repaint_ 即时重绘（用于 Debug）
-
-### Preference
-
-- _enable_image_fill_ 大图标填充
-- muilt_icon_default_type 设置 Steam 图标获取方式
-  - 0 小图标，1 竖图标，2 横图标（切换未完工）
-- scale_fix_ratio 聚焦时缩放比率
-
 
 # Todo
 
@@ -126,7 +96,7 @@ _斜体_ 表示已在可视化组件中给出
 - [ ] 备份
 - [ ] 设置面板
 - [ ] 资源管理器功能
-    - [ ] 完善拖拽交互
+    - [X] 完善拖拽交互
     - [X] 复制/粘贴
     - [X] 重命名
     - [ ] 撤回

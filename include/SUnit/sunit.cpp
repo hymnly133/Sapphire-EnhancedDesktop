@@ -19,16 +19,12 @@
 #include "QBitmap"
 #include "unitfunc.h"
 
-#define SET_ANCTION(NAME,TEXT,FUCTION)\
-QAction *NAME = new QAction(#TEXT);\
-    myMenu->addAction(NAME);\
-    connect(NAME, &QAction::triggered, this, [=]()FUCTION);
-
 #define SET_ANIMATION(ANIMATION,NAME,GROUP,TIME)\
 ANIMATION = new QPropertyAnimation(this,#NAME);\
     ANIMATION->setDuration(TIME);\
     ANIMATION->setEasingCurve(QEasingCurve::InSine);\
     GROUP->addAnimation(ANIMATION);
+
 
 void SUnit::edmove(QPoint dis){
     QPoint red = dis;
@@ -134,7 +130,6 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
 
     rs = new roundShower(this);
     rs->raise();
-    setupMenu();
 
     if(dis!= nullptr)
     dis->defaultPut(this,false);
@@ -180,47 +175,69 @@ void SUnit::removeFromLayout(){
 
 
 
-void SUnit::setupMenu()
+void SUnit::setupEditMenu()
 {
-    myMenu = new SMenu(this);
+    editMenu = new SMenu(this);
+    editMenu->ismain = true;
 
-    SET_ANCTION(act1,加宽,{
+    connect(editMenu,&QMenu::aboutToShow,this,[=](){
+        onContextMenuShowing = true;
+    });
+
+    connect(editMenu,&QMenu::aboutToHide,this,[=](){
+        onContextMenuShowing = false;
+    });
+
+    SET_ANCTION(act1,加宽,editMenu,this,{
         setBlockSize(sizeX+1,sizeY);
     });
 
-    SET_ANCTION(act2,加高,{
+    SET_ANCTION(act2,加高,editMenu,this,{
         setBlockSize(sizeX,sizeY+1);
     });
 
-    SET_ANCTION(act3,减宽,{
+    SET_ANCTION(act3,减宽,editMenu,this,{
         if(sizeX>=2)
             setBlockSize(sizeX-1,sizeY);
     });
 
-    SET_ANCTION(act4,减高,{
+    SET_ANCTION(act4,减高,editMenu,this,{
         if(sizeY>=2)
             setBlockSize(sizeX,sizeY-1);
     });
 
-    SET_ANCTION(act5,切换精简,{
-        switchSimpleModeG(this);
+    SET_ANCTION(act5,切换精简,editMenu,this,{
+        setSimpleMode(!simpleMode);
     });
 
-    SET_ANCTION(act6,切换始终显示,{
-        swtichAlwayShowG(this);
-    });
+    SET_ANCTION(act6,切换始终显示,editMenu,this,{
+        // swtichAlwayShowG(this);
 
-
-    SET_ANCTION(act7,删除,{
-        removeG(this);
+        setAlwaysShow(!alwaysShow);
     });
 
 
+    SET_ANCTION(act7,删除,editMenu,this,{
+        remove();
+    });
+}
+
+void SUnit::setupDesktopMenu()
+{
+    desktopMenu = new SMenu(this);
+    desktopMenu->ismain = true;
+    connect(desktopMenu,&QMenu::aboutToShow,this,[=](){
+        onContextMenuShowing = true;
+    });
+
+    connect(desktopMenu,&QMenu::aboutToHide,this,[=](){
+        onContextMenuShowing = false;
+    });
 }
 
 void SUnit::mousePressEvent(QMouseEvent *event)
 {
-    qDebug()<<"UnitPress"<<QCursor::pos();
+    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(pmw,event->pos());
     if(event->button() == Qt::LeftButton){
         grabMouse();
         single_click_action();
@@ -229,9 +246,18 @@ void SUnit::mousePressEvent(QMouseEvent *event)
         if(!pCelectedUnits.contains(this))
             cleanCelect(this);
         setCelect(true);
+        event->accept();
     }
-    event->accept();
-    qDebug()<<objectName()<<"press"<<event->pos()<<event->globalPos()<<mapTo(pmw,event->pos());
+    else if(event->button()==Qt::MiddleButton){
+        if(!editMode){
+            if(unset){
+                setupEditMenu();
+                setupDesktopMenu();
+                unset = false;
+            }
+            editMenu->exec(event->globalPos());
+        }
+    }
 }
 
 void SUnit::mouseReleaseEvent(QMouseEvent *event)
@@ -263,7 +289,7 @@ void SUnit::mouseMoveEvent(QMouseEvent *event)
         qDebug()<<tem;
         int dis =sqrt ((tem.x()-relativeP.x())*(tem.x()-relativeP.x())+(tem.y()-relativeP.y())*(tem.y()-relativeP.y()));
         if(dis>=2){
-            dragOutG(this);
+            dragOutG(this,event);
         }
     }
 }
@@ -356,7 +382,7 @@ bool SUnit::setBlockSize(int w,int h){
             sizeY = h;
             res = true;
         }
-        tem_layout->clearPut(this,true);
+        tem_layout->clearPut(this,res);
         return res;
     }
     else{
@@ -368,7 +394,12 @@ bool SUnit::setBlockSize(int w,int h){
 
 void SUnit::onContextMenu(QContextMenuEvent *event)
 {
-    myMenu->exec(event->globalPos());
+    if(unset){
+        setupEditMenu();
+        setupDesktopMenu();
+        unset = false;
+    }
+    requireContexMenu(event,this);
 }
 
 void SUnit::onShiftContextMenu(QContextMenuEvent *event)
@@ -390,7 +421,7 @@ void SUnit::setLongFocus(bool val)
 {
     qDebug()<<"Long Focus"<<val;
     onLongFocus = val;
-    if(!val){
+    if(!val&&!onContextMenuShowing){
         activepmw->pls->clearTooltip();
     }
     updateLongFocusAnimation();
@@ -480,6 +511,23 @@ void SUnit::setPMW(MainWindow *pmw)
     this->pmw = pmw;
 }
 
+void SUnit::onSwitch(MainWindow *aimpmw)
+{
+    auto globalPos = mapToGlobal(QPoint(0,0));
+    auto aimPos = aimpmw->mapFromGlobal(globalPos);
+    releaseMouse();
+    setParent(aimpmw);
+    setPMW(aimpmw);
+    move(aimPos);
+    setVisible(true);
+    setEnabled(true);
+    aimpmw->setFocus();
+    // qDebug()<<pmw->objectName()<<"Acitive:"<<pmw->isActiveWindow();
+    aimpmw->raise();
+    raise();
+    grabMouse();
+}
+
 QColor SUnit::displayColor_Alphaed()
 {
     QColor _displayColor = displayColor();
@@ -499,23 +547,25 @@ void SUnit::paintEvent(QPaintEvent *event)
 void SUnit::wheelEvent(QWheelEvent *event)
 {
     if(event->modifiers() ==Qt::ShiftModifier){
+        qDebug()<<"called"<<parentWidget();
         int tem = event->angleDelta().y();
         qDebug()<<event->angleDelta();
+        bool res = false;
         if(tem>0){
-            if(!setBlockSize(sizeX+1,sizeY+1)){
-                if(!setBlockSize(sizeX,sizeY+1)){
-                    setBlockSize(sizeX+1,sizeY);
-                }
-            }
+            res = onBigger();
         }
         else{
-            if(!setBlockSize(sizeX-1,sizeY-1)){
-                if(!setBlockSize(sizeX,sizeY-1)){
-                    setBlockSize(sizeX-1,sizeY);
-                }
-            }
+            res = onSmaller();
         }
-        event->accept();
+        if(res){
+            event->accept();
+            qDebug()<<"eventAccepted";
+        }
+        else{
+            qDebug()<<"eventIgnored";
+            qDebug()<<"nowParent"<<parentWidget();
+            event->ignore();
+        }
     }
 }
 
@@ -546,34 +596,7 @@ void SUnit::endUpdate(){
 }
 
 
-void SUnit::tryToSwitch(QMouseEvent *event)
-{
-    if(screenNum>1){
-        //多屏切换
-        qDebug()<<"try to scan for switch pmw";
-        foreach(auto pmw,pmws){
-            if(pmw->geometry().contains(cursor().pos()) && pmw!=this->pmw){
-                qDebug()<<"ScreenChange! "<<pmw->objectName()<<"Should Be The Aim";
 
-                auto globalPos = mapToGlobal(pos());
-                auto aimPos = pmw->mapFromGlobal(globalPos);
-                releaseMouse();
-                setParent(pmw);
-                setPMW(pmw);
-                move(aimPos);
-                setVisible(true);
-                setEnabled(true);
-                pmw->setFocus();
-                qDebug()<<pmw->objectName()<<"Acitive:"<<pmw->isActiveWindow();
-                pmw->raise();
-                raise();
-                setFocus();
-                grabMouse();
-
-            }
-        }
-    }
-}
 
 void SUnit::updateLongFocusAnimation()
 {
@@ -707,6 +730,27 @@ void SUnit::load_json(QJsonObject rootObject)
 
 void SUnit::onMainColorChange(QColor val){
 
+}
+
+bool SUnit::onBigger()
+{
+    if(!setBlockSize(sizeX+1,sizeY+1)){
+        if(!setBlockSize(sizeX,sizeY+1)){
+            return setBlockSize(sizeX+1,sizeY);
+        }
+    }
+
+    return true;
+}
+
+bool SUnit::onSmaller()
+{
+    if(!setBlockSize(sizeX-1,sizeY-1)){
+        if(!setBlockSize(sizeX,sizeY-1)){
+            return setBlockSize(sizeX-1,sizeY);
+        }
+    }
+    return true;
 }
 
 void SUnit::afterResize(QResizeEvent* event)

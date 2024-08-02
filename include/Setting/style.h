@@ -232,4 +232,7 @@ extern bool enable_auto_run;
 
 extern bool resize_to_rect;
 extern QString user_font;
+
+extern bool enable_refresh_animation;
+extern bool enable_background_transparent;
 #endif // STYLE_H

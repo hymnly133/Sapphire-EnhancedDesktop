@@ -4,8 +4,9 @@
 #include"QJsonObject"
 #include "qjsonarray.h"
 #include"mainwindow.h"
+#include "userfunc.h"
 
-SBlockContainer::SBlockContainer(SLayout *dis, int outsizex, int outsizey, int row, int cal, int space, int spaceX, int spaceY)
+SBlockContainer::SBlockContainer(SLayout *dis, int outsizex, int outsizey, int row, int col, double boradXR, double boradYR, double spaceXR, double spaceYR)
     :SContainer(dis,outsizex,outsizey)
 {
     if(pmw==nullptr)
@@ -13,16 +14,11 @@ SBlockContainer::SBlockContainer(SLayout *dis, int outsizex, int outsizey, int r
 
     requireLongFocusOutDeltaTime = true;
 
-    int temx,temy;
-    if(spaceX == 0)
-        temx = space;
-    else temx = spaceX;
+    row = qMax(row,2);
+    col = qMax(col,2);
 
-    if(spaceY ==0)
-        temy = space;
-    else temy = spaceY;
 
-    inside = new SBlockLayout(this,row,cal,space,temx,temy);
+    inside = new SBlockLayout(this,row,col,boradXR,boradYR,spaceXR,spaceYR);
 
     outSizeAnimation = new QPropertyAnimation(this,"outSizeFix");
     outSizeAnimation->setDuration(focus_animation_time);
@@ -34,21 +30,17 @@ SBlockContainer::SBlockContainer(SLayout *dis, int outsizex, int outsizey, int r
 
 
     longFocusAnimations->addAnimation(outSizeAnimation);
-    QAction *act1 = new QAction("切换长聚焦效果(测试版)");
-    myMenu->addAction(act1);
-    connect(act1, &QAction::triggered, this, [=](){
-        if(onLongFocus) preSetLongFocus(false);
-        enableLongFocusEffect = !enableLongFocusEffect;
-    });
+
 }
 
 SBlockContainer::SBlockContainer(const SBlockContainer &other)
     :SBlockContainer(other.layout,other.sizeX,other.sizeY
                       ,((SBlockLayout*)other.inside)->row
                       ,((SBlockLayout*)other.inside)->col
-                      ,((SBlockLayout*)other.inside)->space
-                      ,((SBlockLayout*)other.inside)->spaceX
-                      ,((SBlockLayout*)other.inside)->spaceY
+                      ,((SBlockLayout*)other.inside)->boradXR
+                      ,((SBlockLayout*)other.inside)->boradYR
+                      ,((SBlockLayout*)other.inside)->spaceXR
+                      ,((SBlockLayout*)other.inside)->spaceYR
                       )
 {}
 
@@ -105,6 +97,22 @@ void SBlockContainer::setLongFocus(bool val)
 {
     SUnit::setLongFocus(val);
     raise();
+}
+
+void SBlockContainer::setupEditMenu()
+{
+    SUnit::setupEditMenu();
+
+    QAction *act1 = new QAction("切换长聚焦效果(测试版)");
+    editMenu->addAction(act1);
+    connect(act1, &QAction::triggered, this, [=](){
+        if(onLongFocus) preSetLongFocus(false);
+        enableLongFocusEffect = !enableLongFocusEffect;
+    });
+
+    SET_ANCTION(act2,调整布局,editMenu,this,{
+        resizeForWithDialog((SBlockLayout*)inside);
+    });
 }
 
 

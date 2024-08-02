@@ -95,8 +95,10 @@
     int dotInd = defaultString.lastIndexOf(".");
     if(defaultString.lastIndexOf(".")!=-1){
         //如果是文件名形式的
-        qDebug()<<dotInd;
         sip->lineEdit->setSelection(0,dotInd);
+    }
+    else{
+        sip->lineEdit->selectAll();
     }
     // sip->lineEdit->setSelection(1,2);
     sip->show();

@@ -21,7 +21,9 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     settings->addLayout(overall);
 
     QCheckBox *checkBox1 = new QCheckBox("背景透视",this);             //创建QCheckBox对象
+
     checkBox1->setChecked(true);
+    checkBox1->setObjectName("TransparentCheckBox");
     overall->addWidget(checkBox1);
     connect(checkBox1, &QCheckBox::clicked, this, [this](bool checked) {
         pmw->setTransparent(checked);
@@ -163,4 +165,10 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
         pmw->onSelectBackground();
     });
         paint->addWidget(button);
+}
+
+void SEditBox::setPMW(MainWindow *pmw)
+{
+    SUnit::setPMW(pmw);
+    findChild<QCheckBox*>("TransparentCheckBox")->setChecked(pmw->transparent);
 }

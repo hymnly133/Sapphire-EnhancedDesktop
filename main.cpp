@@ -28,16 +28,17 @@ int main(int argc, char *argv[])
 
 #endif
 
+
+
     qDebug()<<"Sapphire Startup";
     QTextCodec *code = QTextCodec::codecForName("UTF-8");
     QTextCodec::setCodecForLocale(code);
 
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
-    // 除以96之后即可转换成dpi的数值,以2k屏幕为例,Windows默认dpi是125%,这里的值就是:1.25
 
     QApplication a(argc, argv);
-    // eApp->init();
+
 
 
 
@@ -108,10 +109,7 @@ int main(int argc, char *argv[])
         shareMem->detach();
         QProcess::startDetached(qApp->applicationFilePath(), QStringList());
         sh.writeStyleIni();
-
         return 0;
-
-
     }
 
 

@@ -43,7 +43,7 @@ void LayerMouseGetter::mouseDoubleClickEvent(QMouseEvent *event)
 {
     // qDebug()<<"mouseGetter"<<!activepmw->isVisible();
     //     activepmw->setVisible(!activepmw->isVisible());
-    SToolTip::Tip("MouseGetter");
+    SToolTip::tip("MouseGetter");
     qDebug()<<pmw->pls->geometry()<<pmw->pls->visibleRegion();
 }
 

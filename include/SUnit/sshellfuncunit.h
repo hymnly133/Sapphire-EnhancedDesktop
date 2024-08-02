@@ -10,9 +10,6 @@ class SShellFuncUnit : public SMultiFunc
 
 public:
     explicit SShellFuncUnit(SLayout* dis = nullptr);
-    int shellid;
-    QMenu* windowsMenu;
-
 signals:
 
     // SUnit interface
@@ -49,6 +46,10 @@ public:
     // SUnit interface
 public:
     void onShiftContextMenu(QContextMenuEvent *event) override;
+
+    // SUnit interface
+public:
+    void setupDesktopMenu() override;
 };
 
 Q_DECLARE_METATYPE(SShellFuncUnit)

@@ -15,11 +15,12 @@ public:
     QSize aimSize;
     QPoint previousPos;
     QPoint aimPos;
+    bool ismain = false;
     bool firstShow = true;
 
     void init();
     void raiseAction(QAction* action);
-
+    void exec(QPoint pos,bool multi = false);
     // QWidget interface
 protected:
     void paintEvent(QPaintEvent *event) override;

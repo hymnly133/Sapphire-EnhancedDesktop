@@ -11,10 +11,30 @@ class SLinearLayout : public SLayout
 public:
     explicit SLinearLayout(QWidget *parent = nullptr);
     int nowNum=0;
+    //用于维持内部顺序
     QList<SUnit*> list;
-    int insideHeight(){
-        // qDebug()<<pContainer->height();
-        return pContainer->height()*0.9;
+    //用于标识方向
+    enum Dire{
+        Horr = 0,
+        Vert = 1
+    };
+    Dire direction = Horr;
+
+    double longSide(){
+        if(direction==Horr)
+            return pContainer->width();
+        else
+            return pContainer->height();
+    }
+    double shortSide(){
+        if(direction==Horr)
+            return pContainer->height();
+        else
+            return pContainer->width();
+    }
+
+    double insideSize(){
+        return shortSide()*0.9;
     }
 
     double disToCursor(int posx){
@@ -23,8 +43,8 @@ public:
 
     double fixedDis(){
         if(contents->size())
-            return ((double)pContainer->width())/contents->size();
-        else return pContainer->width();
+            return longSide()/contents->size();
+        else return longSide();
     }
 
     void refresh();
@@ -46,35 +66,21 @@ public:
     QPoint defaultPutableInd(SUnit *aim) override;
     QPoint clearPutableInd(SUnit *aim) override;
 
-
-    // ED_Layout interface
-public:
     void updateAfterRemove(SUnit *, int, int) override;
     void updateBeforePut(SUnit *, int, int) override;
-
-
-
-    // ED_Layout interface
-public:
-    void load_json(QJsonObject rootObject) override;
-
-    // ED_Layout interface
-public:
     void updateAfterPut(SUnit *, int, int) override;
-
-    // ED_Layout interface
-public:
     void updateBeforePutAnimation(SUnit *, int, int) override;
 
+    void setDirection(Dire aimDirection);
 
 
-    // SLayout interface
-public:
+    void load_json(QJsonObject rootObject) override;
+    QJsonObject to_json() override;
+
+
     void say() override;
 
-    // SLayout interface
-public:
-    QJsonObject to_json() override;
+
 };
 
 #endif // SLINEARLAYOUT_H

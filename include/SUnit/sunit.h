@@ -1,5 +1,6 @@
 #ifndef SUNIT_H
 #define SUNIT_H
+#include "SysFunctions.h"
 #include "qgraphicseffect.h"
 #include "qmenu.h"
 #include "qparallelanimationgroup.h"
@@ -38,7 +39,10 @@ public:
     SLayout* layout = nullptr;
 
     //右键菜单
-    SMenu* myMenu;
+    SMenu* editMenu;
+    SMenu* desktopMenu;
+    //用于标记是否设置了菜单
+    bool unset =true;
 
     //指向当前的MainWindow
     MainWindow* pmw = nullptr;
@@ -73,6 +77,7 @@ public:
     bool simpleMode = false;
     bool onFocus = false;
     bool onCelect = false;
+    bool onContextMenuShowing = false;
     bool onLongFocus = false;
     bool preLongFocus = false;
     bool requireLongFocusOutDeltaTime = false;
@@ -94,13 +99,7 @@ public:
 
     //组件主颜色与主题颜色混合 不关注透明度
     QColor displayColor(){
-        QColor sysrgb =  winThemeColor();
-        QColor res = QColor(
-            mainColor.red()*nowMainColorRatio + sysrgb.red()*(1.0-nowMainColorRatio),
-            mainColor.green()*nowMainColorRatio + sysrgb.green()*(1.0-nowMainColorRatio),
-            mainColor.blue()*nowMainColorRatio + sysrgb.blue()*(1.0-nowMainColorRatio)
-        );
-        return res;
+        return mixColor(mainColor,winThemeColor(),nowMainColorRatio);
     }
 
     //加入alpha的dispalycolor
@@ -150,7 +149,8 @@ public:
     //从layout脱离
     void removeFromLayout();
 
-    virtual void setupMenu();
+    virtual void setupEditMenu();
+    virtual void setupDesktopMenu();
 
 
     // virtual void update_after_resize();
@@ -176,7 +176,6 @@ public:
     virtual void onShiftContextMenu(QContextMenuEvent* event);
 
     //作为处理器时处理其他SUnit的事件
-
     virtual void onProcessAnother(SUnit* another);
 
     //精简模式更改时触发一次
@@ -191,6 +190,10 @@ public:
     //mainColor更改时触发
     virtual void onMainColorChange(QColor val);
 
+    //增大减小的对应处理事件
+    virtual bool onBigger();
+    virtual bool onSmaller();
+
 
     //长聚焦动画更新时
     virtual void whenLongFocusAnimationChange();
@@ -200,9 +203,11 @@ public:
     //作为各种操作结束时（如加载/动画）的更新
     virtual void endUpdate();
 
+    //加载与保存
     virtual QJsonObject to_json();
     virtual void load_json(QJsonObject rootObject);
 
+    //原生事件处理函数
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -225,6 +230,7 @@ public:
     void changeSimpleMode();
 
 
+    //各种状态的Set函数
     void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
     virtual void setLongFocus(bool);
@@ -237,7 +243,7 @@ public:
 
 
     //切换屏幕
-    void tryToSwitch(QMouseEvent *event);
+    void onSwitch(MainWindow* aimpmw);
 
     //更新各种情况下的动画
 
