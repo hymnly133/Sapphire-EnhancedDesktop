@@ -345,7 +345,7 @@ void scanForChange()
 
     QStringList newfiles;
     foreach (QString newfile, newFiles) {
-        pmws[0]->addAIcon(newfile);
+        pmws[0]->addAIcon(newfile,true);
         pmws[0]->endUpdate();
     }
     //提示
