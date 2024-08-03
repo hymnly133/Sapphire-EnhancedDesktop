@@ -42,7 +42,7 @@
      </property>
      <property name="maximumSize">
       <size>
-       <width>300</width>
+       <width>2048</width>
        <height>16777215</height>
       </size>
      </property>
@@ -91,7 +91,7 @@ QListView::item:hover {
 }</string>
      </property>
      <property name="frameShape">
-      <enum>QFrame::Shape::NoFrame</enum>
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="lineWidth">
       <number>0</number>
@@ -100,7 +100,7 @@ QListView::item:hover {
       <number>0</number>
      </property>
      <property name="itemAlignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
+      <set>Qt::AlignCenter</set>
      </property>
      <property name="currentRow">
       <number>0</number>
@@ -135,7 +135,7 @@ QListView::item:hover {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="frameShape">
-      <enum>QFrame::Shape::WinPanel</enum>
+      <enum>QFrame::WinPanel</enum>
      </property>
      <property name="currentIndex">
       <number>-1</number>
