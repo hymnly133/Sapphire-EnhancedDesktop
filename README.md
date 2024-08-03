@@ -103,8 +103,10 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
     - [ ] 撤回
     - [X] 新建文件
     
+- [ ] 第三方软件注册的菜单支持
 - [ ] WallpaperEngine鼠标点击交互解决方案
 - [ ] 关机检测
+- [ ] 黑屏第二次修复
 
 - [X] 容器缩放
 - [X] 文件夹交互

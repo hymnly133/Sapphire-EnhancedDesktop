@@ -123,7 +123,8 @@ void SetUp()
 
 void checkForKey(QKeyEvent *event)
 {
-    if( event ->matches( QKeySequence::Copy ) )
+    //为了数据安全，在未找到完美的剪切方案前剪切由复制取代
+    if( event ->matches( QKeySequence::Copy)||event->matches(QKeySequence::Cut) )
     {
 
         QList<QUrl> copyfiles;
@@ -172,37 +173,36 @@ void checkForKey(QKeyEvent *event)
         event->accept();
         return;
     }
-    else if(event->matches(QKeySequence::Cut)){
-        QList<QUrl> copyfiles;
-        foreach (SUnit* unit, pCelectedUnits) {
-            if(unit->inherits("SFile")){
-                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
-                if(url.isValid()){
-                    copyfiles.push_back(url);
+    // else if(){
+    //     QList<QUrl> copyfiles;
+    //     foreach (SUnit* unit, pCelectedUnits) {
+    //         if(unit->inherits("SFile")){
+    //             QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
+    //             if(url.isValid()){
+    //                 copyfiles.push_back(url);
+    //             }
+    //         }
+    //     }
+    //     qDebug()<<"Cut"<<copyfiles;
 
-                }
-            }
-        }
-        qDebug()<<"Cut"<<copyfiles;
+    //     QMimeData *data=new QMimeData;
+    //     data->setUrls(copyfiles);
 
-        QMimeData *data=new QMimeData;
-        data->setUrls(copyfiles);
+    //     QClipboard *clip=QApplication::clipboard();
+    //     clip->setMimeData(data);
 
-        QClipboard *clip=QApplication::clipboard();
-        clip->setMimeData(data);
+    //     foreach (SUnit* unit, pCelectedUnits) {
+    //         if(unit->inherits("SFile")){
+    //             QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
+    //             if(url.isValid()){
+    //                 QFile::remove(((SFile*)unit)->filePath);
+    //             }
+    //         }
+    //     }
 
-        foreach (SUnit* unit, pCelectedUnits) {
-            if(unit->inherits("SFile")){
-                QUrl url=QUrl::fromLocalFile(((SFile*)unit)->filePath);    //待复制的文件
-                if(url.isValid()){
-                    QFile::remove(((SFile*)unit)->filePath);
-                }
-            }
-        }
-
-        event->accept();
-        return;
-    }
+    //     event->accept();
+    //     return;
+    // }
     else if( event->key()==Qt::Key_F2){
         if(pFocusedUnit!=nullptr){
             if(pFocusedUnit->inherits("SFile")){

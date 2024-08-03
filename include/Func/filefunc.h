@@ -12,8 +12,8 @@ enum FileType{
     pptx=2,
     empty=3
 };
-//用于提供用户调用的含GUI的方法
 
+//用于提供用户调用的含GUI的方法
 class fileCreator:public QObject{
     Q_OBJECT
 public:

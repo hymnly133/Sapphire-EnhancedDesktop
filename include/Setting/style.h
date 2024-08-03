@@ -12,40 +12,67 @@
 #include"QObject"
 #include"qmap"
 #include "qwindowdefs.h"
-#include"Windows.h"
 #include <minwindef.h>
 #include <winerror.h>
 #include "dwmapi.h"
 #include "stylesettotal.h"
 #include"ui_styleSetting.h"
 
+
+//把field作为List储存，name与fullname作为成员变量，有一点浪费，但问题不大
 template <class T>
-struct Val{
+struct Val:public QObject{
+
+public:
+    //值指针
     T* pval;
-    QString fullname;
-    T& val(){return *pval;};
-    Val<T>(QString fullname,T* pval):pval(pval),fullname(fullname){};
+    //值名（代码变量名）
+    QString name;
+    //全名（fields+name）
+    QString fullName;
+    //域s（从顶级开始）
+    QStringList fields;
+    //显示名，向用户显示
+    QString displayName;
+    T val(){return *pval;};
+
+    //用类似于QProperty的val与set方法，可使得在程序其他位置也可以调用set并触发信号
+
+
+    Val<T>(const QString& fullname,T* pval,const QString& displayName):pval(pval),fullName(fullname),displayName(displayName){
+        QStringList list = fullname.split('/');
+        name  = list.last();
+        fields = list.mid(0,list.length()-1);
+    };
+
+
     virtual void read(QSettings *styleIni){
-        if(styleIni->contains(fullname)){
+        if(styleIni->contains(fullName)){
             readVal(styleIni);
-            qDebug() <<"Read"<< fullname << ":" << val();
+            qDebug() <<"Read"<< fullName << ":" << val();
         }
         else{
-            qDebug() <<"No exist"<< fullname << ",use default" << val();
+            qDebug() <<"No exist"<< fullName << ",use default" << val();
         }
     }
+
+    //外部调用封装方法
     void write(QSettings *styleIni){
         writeVal(styleIni);
-        qDebug() <<"Wrote"<< fullname << ":" << val();
+        qDebug() <<"Wrote"<< fullName << ":" << val();
     }
+    virtual bool set(T newVal){
+        if(newVal == *pval) return false;
+        *pval = newVal;
+        return true;
+    };
+
+private:
+    //从ini读值的主方法
     virtual void readVal(QSettings *styleIni) =0;
+    //写入ini的主方法
     virtual void writeVal(QSettings *styleIni) =0;
-    QString field(){
-        return fullname.split("/")[0];
-    }
-    QString name(){
-        return fullname.split("/")[1];
-    }
+
 };
 
 
@@ -54,54 +81,127 @@ template<class T>
 struct LimitedVal:public Val<T>{
     T min;
     T max;
-    LimitedVal<T>(QString fullname,T *pval,T min,T max):Val<T>(fullname,pval){
+    LimitedVal<T>(const QString& fullname,T *pval,const QString& displayName,T min,T max):Val<T>(fullname,pval,displayName){
         this->min =min;
         this->max = max;
-          };
+    };
+
+    //重载以实行范围检查
+    bool set(T newVal){
+        return Val<T>::set(qBound(min,newVal,max));
+    }
 };
 
 struct boolVal:public Val<bool>
-{
+{    Q_OBJECT
     using Val<bool>::Val;
     virtual void readVal(QSettings *styleIni){
-        val() = styleIni->value(fullname).toBool();
+        set(styleIni->value(fullName).toBool());
     };
     virtual void writeVal(QSettings *styleIni){
-        styleIni->setValue(fullname, QString::number(val()));
+        styleIni->setValue(fullName, QString::number(val()));
     }
+
+public:
     QCheckBox* checkbox;
+
+    //set函数以触发相应类型的信号
+public slots:
+    virtual bool set(bool newVal){
+        if(Val::set(newVal)){
+            emit valueChanged(newVal);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+public: signals:
+    void valueChanged(bool val);
 };
 
 struct intVal:public LimitedVal<int>{
+    Q_OBJECT;
     using LimitedVal<int>::LimitedVal;
     virtual void readVal(QSettings *styleIni){
-        val() =qBound( min, styleIni->value(fullname).toInt(),max);
+        set(qBound( min, styleIni->value(fullName).toInt(),max));
     };
     virtual void writeVal(QSettings *styleIni){
-        styleIni->setValue(fullname, QString::number(val()));
+        styleIni->setValue(fullName, QString::number(val()));
     }
+
+
+public:
     QSlider* slider;
+
+public slots:
+    virtual bool set(int newVal){
+        if(LimitedVal::set(newVal)){
+            emit valueChanged(newVal);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+public: signals:
+    void valueChanged(int val);
+
 };
 
 struct doubleVal:public LimitedVal<double>{
+    Q_OBJECT;
     using LimitedVal<double>::LimitedVal;
     virtual void readVal(QSettings *styleIni){
-        val() =qBound( min, styleIni->value(fullname).toDouble(),max);
+        set(qBound( min, styleIni->value(fullName).toDouble(),max));
     };
     virtual void writeVal(QSettings *styleIni){
-        styleIni->setValue(fullname, QString::number(val()));
+        styleIni->setValue(fullName, QString::number(val()));
     }
+
+public:
+
     QSlider* slider;
+public slots:
+    virtual bool set(double newVal){
+        if(LimitedVal::set(newVal)){
+            emit valueChanged(newVal);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+public: signals:
+    void valueChanged(double val);
 };
 
 struct stringVal:public Val<QString>{
+    Q_OBJECT;
     using Val<QString>::Val;
     virtual void readVal(QSettings *styleIni){
-        val() = styleIni->value(fullname).toString();
+        set(styleIni->value(fullName).toString());
     };
     virtual void writeVal(QSettings *styleIni){
-        styleIni->setValue(fullname, val());
+        styleIni->setValue(fullName, val());
     }
+public:
+public slots:
+    virtual bool set(QString newVal){
+        if(Val::set(newVal)){
+            emit valueChanged(newVal);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+public: signals:
+    void valueChanged(QString val);
 };
 
 
@@ -110,24 +210,32 @@ QColor winThemeColor();
 class StyleHelper{
 public:
 
-    QList<intVal*> intStyles;
-    QList<doubleVal*> doubleStyles;
-    QList<boolVal*> boolStyles;
-    QList<stringVal*> stringStyles;
+    //换为QMap<name,pointer>
+    QMap<QString,intVal*> intStyles;
+    QMap<QString,doubleVal*> doubleStyles;
+    QMap<QString,boolVal*> boolStyles;
+    QMap<QString,stringVal*> stringStyles;
 
     StyleHelper();
 
-    void Add(QString,bool*,bool,bool);
-    void Add(QString name, int * pval,int min,int max);
-    void Add(QString, double*, double min, double max);
-    void Add(QString, QString*, QString min, QString max);
+    //增加DisplayName
+    void Add(QString,bool*,QString displayName,bool,bool);
+    void Add(QString name, int * pval,QString displayName,int min,int max);
+    void Add(QString, double*,QString displayName, double min, double max);
+    void Add(QString, QString*,QString displayName, QString min, QString max);
+
     void readStyleIni();
     void writeStyleIni();
-    void showSetting();
+
+
+    intVal* intVal(QString name);
+    doubleVal* doubleVal(QString name);
+    boolVal* boolVal(QString name);
+    stringVal* stringVal(QString name);
     QColor themeColor();
 
 
-};extern StyleHelper* psh;
+};
 
 
 
@@ -143,7 +251,7 @@ public:
     //QHBoxLayout* buttons;
     Ui::Form* ui;
     //将Val类型设置到面板
-    void setInLayout(QString field,QString name,QWidget* content,bool checkBox);
+    void setInLayout(QStringList fields,QString name,QWidget* content,bool checkBox);
 
 
     // QWidget interface

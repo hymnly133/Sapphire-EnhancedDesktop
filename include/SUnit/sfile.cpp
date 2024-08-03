@@ -28,7 +28,6 @@ SFile::SFile(SLayout *dis, int sizex, int sizey,QString filePath):SMultiFunc(dis
 {
     if(filePath!="")
     loadFromPath(filePath,true);
-
 }
 
 

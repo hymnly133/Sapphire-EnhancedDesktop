@@ -65,83 +65,90 @@ bool enable_background_transparent = 1;
 QString user_font = "";
 
 
-#define ADD(TYPE,NAME,MIN,MAX)\
-Add(#TYPE"/"#NAME,&NAME,MIN,MAX);
+#define ADD(TYPE,NAME,DISPALY,MIN,MAX)\
+Add(#TYPE"/"#NAME,&NAME,#DISPALY,MIN,MAX);
 
 StyleHelper::StyleHelper()
 {
 
-    ADD(Color,unfocused_alpha,0,255);
-    ADD(Color,focused_alpha,0,255);
 
-    ADD(Color,unfocused_alpha_deep,0,255);
-    ADD(Color,focused_alpha_deep,0,255);
+    ADD(Color/Focus,unfocused_alpha,未聚焦的外框颜色 Alpha,0,255);
+    ADD(Color/Focus,focused_alpha,聚焦时的外框颜色 Alpha,0,255);
 
-    ADD(Color,unfocused_color_ratio,0,1);
-    ADD(Color,focused_color_ratio,0,1);
+    ADD(Color/Focus,unfocused_alpha_deep,深色图标未聚焦的颜色 Alpha,0,255);
+    ADD(Color/Focus,focused_alpha_deep,深色图标聚焦时的颜色 Alpha,0,255);
 
-    ADD(Effect,light_alpha_start,0,255);
-    ADD(Effect,light_alpha_end,0,255);
+    ADD(Color/Focus,unfocused_color_ratio,未聚焦的色值混合比率,0,1);
+    ADD(Color/Focus,focused_color_ratio,聚焦时的色值混合比率,0,1);
 
-    ADD(Effect,icon_shadow_alpha,0,255);
-    ADD(Effect,icon_shadow_blur_radius,0,100);
+    ADD(Effect/Light,light_alpha_start,光效的起点 Alpha,0,255);
+    ADD(Effect/Light,light_alpha_end,光效的终点 Alpha ,0,255);
+    ADD(Effect/Light,enable_light_track,特效追踪,0,0);
 
-    ADD(Effect,unit_shadow_alpha,0,255);
-    ADD(Effect,unit_shadow_blur_radius,0,100);
+    ADD(Effect/Shadow,icon_shadow_alpha,图标阴影特效 Alpha,0,255);
+    ADD(Effect/Shadow,icon_shadow_blur_radius,图标阴影特效 Radius,0,100);
 
-    ADD(Effect,position_animation_time,0,200);
-    ADD(Effect,focus_animation_time,0,200);
-    ADD(Effect,enable_text_shadow,0,0);
+    ADD(Effect/Shadow,unit_shadow_alpha,所有组件阴影特效 Alpha,0,255);
+    ADD(Effect/Shadow,unit_shadow_blur_radius,所有组件阴影特效 Radius,0,100);
+    ADD(Effect/Shadow,enable_text_shadow,文字阴影,0,0);
 
 
-    ADD(Render,unit_radius,0,100);
+    ADD(Animation/Position,position_animation_time,放置动画时长,0,200);
+    ADD(Animation/Focus,focus_animation_time,聚焦动画时长,0,200);
+    ADD(Animation,enable_refresh_animation,刷新闪烁动画,0,0);
 
-    ADD(Render,ShowRect,0,0);
-    ADD(Render,ShowSide,0,0);
-    ADD(Render,ShowLight,0,0);
 
-    ADD(Render,enable_background_blur,0,0);
-    ADD(Render,enable_light_track,0,0);
-    ADD(Render,enable_intime_repaint,0,0);
+    ADD(Interact/LongFocus,long_focus_in_delta_time,长聚焦进入需时,30,1000);
+    ADD(Interact/LongFocus,long_focus_out_delta_time,长聚焦失焦需时,200,2000);
+    ADD(Interact/LongFocus,long_focus_container_fix_ratio,长聚焦时格子缩放比率,1.1,3.0);
 
-    ADD(Preference,enable_image_fill,0,0);
-    ADD(Preference,enable_highdef_icon,0,0);
+    ADD(Interact/Focus,scale_fix_ratio,聚焦时缩放比率,1,2);
 
-    ADD(Preference,default_steam_icon_type,0,2);
+    ADD(Appearance,unit_radius,组件圆角,0,100);
 
-    ADD(Preference,scale_fix_ratio,1,2);
+    ADD(Appearance,ShowRect,绘制组件的矩形,0,0);
+    ADD(Appearance,ShowSide,绘制组件边框,0,0);
+    ADD(Appearance,ShowLight,绘制组件光效,0,0);
 
-    ADD(Preference,long_focus_in_delta_time,30,1000);
-    ADD(Preference,long_focus_out_delta_time,200,2000);
-    ADD(Preference,long_focus_container_fix_ratio,1.1,3.0);
-    ADD(Preference,enable_tooltip_right_animation,0,0);
+    ADD(Appearance,enable_background_transparent,背景透视,0,0);
+    ADD(Appearance,enable_background_blur,背景模糊-未完工,0,0);
 
-    ADD(Preference,use_pic_as_icon,0,0);
-    ADD(Preference,user_font,0,0);
-    ADD(Preference,enable_refresh_animation,0,0);
-    ADD(Preference,enable_background_transparent,0,0);
+    ADD(Preference,enable_image_fill,大图标填充,0,0);
+    ADD(Preference,enable_highdef_icon,超清图标,0,0);
+    ADD(Preference,default_steam_icon_type,封面获取方式,0,2);
+    ADD(Preference,use_pic_as_icon,使用图片作为Icon,0,0);
+
+
+    ADD(System,enable_intime_repaint,即时重绘,0,0);
+    ADD(System,user_font,开机自启,0,0);
 
     psh = this;
 }
 
-void StyleHelper::Add(QString name, bool * pval,bool min,bool max)
+
+void StyleHelper::Add(QString fullName, bool * pval, QString displayName,bool min,bool max)
 {
-    boolStyles.push_back(new boolVal(name,pval));
+    struct boolVal* res = new struct boolVal(fullName,pval,displayName);
+    boolStyles.insert(res->name,res);
 }
 
-void StyleHelper::Add(QString name, QString * pval, QString min, QString max)
+void StyleHelper::Add(QString fullName, QString * pval, QString displayName,QString min, QString max)
 {
-    stringStyles.push_back(new stringVal(name,pval));
+    struct stringVal* res = new struct stringVal(fullName,pval,displayName);
+    stringStyles.insert(res->name,res);
 }
 
 
-void StyleHelper::Add(QString name, int * pval,int min,int max)
+void StyleHelper::Add(QString fullName, int * pval,QString displayName,int min,int max)
 {
-    intStyles.push_back(new intVal(name,pval,min,max));
+    struct intVal* res = new struct intVal(fullName,pval,displayName,min,max);
+    intStyles.insert(res->name,res);
 }
-void StyleHelper::Add(QString name, double * pval,double min,double max)
+
+void StyleHelper::Add(QString fullName, double * pval,QString displayName,double min,double max)
 {
-    doubleStyles.push_back(new doubleVal(name,pval,min,max));
+    struct doubleVal* res = new struct doubleVal(fullName,pval,displayName,min,max);
+    doubleStyles.insert(res->name,res);
 }
 
 
@@ -151,29 +158,17 @@ void StyleHelper::readStyleIni()
     QFileInfo fi(QApplication::applicationDirPath()+"/style.ini");
     if(fi.exists()){
         QSettings *styleIni = new QSettings(QApplication::applicationDirPath()+"/style.ini", QSettings::IniFormat);
-        QMutableListIterator<boolVal*> iterator0(boolStyles);
-        while (iterator0.hasNext()) {
-            iterator0.next();
-            iterator0.value()->read(styleIni);
+        foreach (auto val, boolStyles.values()) {
+            val->read(styleIni);
         }
-
-        QMutableListIterator<intVal*> iterator1(intStyles);
-        while (iterator1.hasNext()) {
-            iterator1.next();
-            iterator1.value()->read(styleIni);
+        foreach (auto val, intStyles.values()) {
+            val->read(styleIni);
         }
-
-        QMutableListIterator<doubleVal*> iterator2(doubleStyles);
-        while (iterator2.hasNext()) {
-            iterator2.next();
-            iterator2.value()->read(styleIni);
+        foreach (auto val, doubleStyles.values()) {
+            val->read(styleIni);
         }
-
-
-        QMutableListIterator<stringVal*> iterator3(stringStyles);
-        while (iterator3.hasNext()) {
-            iterator3.next();
-            iterator3.value()->read(styleIni);
+        foreach (auto val, stringStyles.values()) {
+            val->read(styleIni);
         }
 
         delete styleIni;
@@ -186,35 +181,42 @@ void StyleHelper::readStyleIni()
 void StyleHelper::writeStyleIni()
 {
     QSettings *styleIni = new QSettings(QApplication::applicationDirPath()+"/style.ini", QSettings::IniFormat);
-    QMutableListIterator<boolVal*> iterator0(boolStyles);
-    while (iterator0.hasNext()) {
-        iterator0.next();
-        iterator0.value()->write(styleIni);
+
+    foreach (auto val, boolStyles.values()) {
+        val->write(styleIni);
+    }
+    foreach (auto val, intStyles.values()) {
+        val->write(styleIni);
+    }
+    foreach (auto val, doubleStyles.values()) {
+        val->write(styleIni);
+    }
+    foreach (auto val, stringStyles.values()) {
+        val->write(styleIni);
     }
 
-    QMutableListIterator<intVal*> iterator1(intStyles);
-    while (iterator1.hasNext()) {
-        iterator1.next();
-        iterator1.value()->write(styleIni);
-    }
-
-    QMutableListIterator<doubleVal*> iterator2(doubleStyles);
-    while (iterator2.hasNext()) {
-        iterator2.next();
-        iterator2.value()->write(styleIni);
-    }
-
-    QMutableListIterator<stringVal*> iterator3(stringStyles);
-    while (iterator3.hasNext()) {
-        iterator3.next();
-        iterator3.value()->write(styleIni);
-    }
     delete styleIni;
 }
 
-void StyleHelper::showSetting()
+intVal* StyleHelper::intVal(QString name)
 {
-
+    if(intStyles.contains(name)) return intStyles[name];
+    return nullptr;
+}
+doubleVal* StyleHelper::doubleVal(QString name)
+{
+    if(doubleStyles.contains(name)) return doubleStyles[name];
+    return nullptr;
+}
+boolVal* StyleHelper::boolVal(QString name)
+{
+    if(boolStyles.contains(name)) return boolStyles[name];
+    return nullptr;
+}
+stringVal* StyleHelper::stringVal(QString name)
+{
+    if(stringStyles.contains(name)) return stringStyles[name];
+    return nullptr;
 }
 
 StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
@@ -239,9 +241,9 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
     initializeLayouts();
 
     // 添加控件
-    processBoolValues();
+    // processBoolValues();
     processIntValues();
-    processDoubleValues();
+    // processDoubleValues();
 
     connect(ui->listWidget, &QListWidget::itemClicked, this, &StyleSettingWindow::onListClicked);
     connect(m_totalWidget, &styleSetTotal::on_fontChangeBox_clicked, this, &StyleSettingWindow::on_fontChangeBox_clicked);
@@ -249,31 +251,32 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
     connect(m_totalWidget, &styleSetTotal::on_resizeBox_clicked, this, &StyleSettingWindow::on_resizeBox_clicked);
 }
 
-void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *content, bool checkBox)
+//通过参数将content设置到应有的地方
+void StyleSettingWindow::setInLayout(QStringList fields, QString name, QWidget *content, bool checkBox)
 {
-    if(checkBox&& !checklayouts.contains(field)){
-        auto k = new QVBoxLayout();
-        k->setObjectName(field+"Check");
-        checklayouts.insert(field,k);
-        layouts[field]->addLayout(k,1);
-    }
+    // if(checkBox&& !checklayouts.contains(field)){
+    //     auto k = new QVBoxLayout();
+    //     k->setObjectName(field+"Check");
+    //     checklayouts.insert(field,k);
+    //     layouts[fields]->addLayout(k,1);
+    // }
 
-    if(checkBox)
-    {
-        checklayouts[field]->addWidget(content);
-    }
-    else
-    {
-        if(!sliderlayouts.contains(name)){
-            auto k = new QVBoxLayout();
-            k->setAlignment(Qt::AlignCenter);
-            k->setObjectName(name+"layout");
-            sliderlayouts.insert(field,k);
-            layouts[field]->addLayout(k,1);
-        }
-        sliderlayouts[field]->addWidget(content);
-        sliderlayouts[field]->addWidget(new QLabel(name));
-    }
+    // if(checkBox)
+    // {
+    //     checklayouts[field]->addWidget(content);
+    // }
+    // else
+    // {
+    //     if(!sliderlayouts.contains(name)){
+    //         auto k = new QVBoxLayout();
+    //         k->setAlignment(Qt::AlignCenter);
+    //         k->setObjectName(name+"layout");
+    //         sliderlayouts.insert(field,k);
+    //         layouts[field]->addLayout(k,1);
+    //     }
+    //     sliderlayouts[field]->addWidget(content);
+    //     sliderlayouts[field]->addWidget(new QLabel(name));
+    // }
 }
 
 void StyleSettingWindow::initializeLayouts()
@@ -300,40 +303,43 @@ void StyleSettingWindow::onListClicked(QListWidgetItem *item)
 // 添加布尔值控件
 void StyleSettingWindow::processBoolValues()
 {
-    QMutableListIterator<boolVal*> iterator0(psh->boolStyles);
-    while (iterator0.hasNext()) {
-        iterator0.next();
-        iterator0.value()->checkbox = new QCheckBox(this);
-        iterator0.value()->checkbox->setText(iterator0.value()->name());
-        iterator0.value()->checkbox->setChecked(iterator0.value()->val());
-        connect(iterator0.value()->checkbox,&QCheckBox::stateChanged,this,[=](bool value){
-            iterator0.value()->val() = value;
-            foreach (auto pmw, pmws) {
-                pmw->update();
-            }
-        });
-        setInLayout(iterator0.value()->field(),iterator0.value()->name(),iterator0.value()->checkbox,1);
+    foreach (auto val, psh->boolStyles.values()) {
+
+        val->checkbox = new QCheckBox(this);
+        val->checkbox->setText(val->displayName);
+        val->checkbox->setChecked(val->val());
+
+        //连接控件的信号与变量的set函数
+        qDebug()<<connect(val->checkbox,&QCheckBox::stateChanged,val,&boolVal::set);
+
+        //待完善
+        setInLayout(val->fields,val->name,val->checkbox,1);
     }
 }
 
 // 添加整数值控件
 void StyleSettingWindow::processIntValues()
 {
-    QMutableListIterator<intVal*> iterator1(psh->intStyles);
-    while (iterator1.hasNext()) {
-        iterator1.next();
-        iterator1.value()->slider = new QSlider(this);
-        iterator1.value()->slider->setRange(0,1000);
-        int var =(double)(iterator1.value()->val()-iterator1.value()->min)/(iterator1.value()->max-iterator1.value()->min)*1000;
-        iterator1.value()->slider->setValue(var);
-        // iterator1.value()->slider->setText(iterator1.value()->name());
-        connect(iterator1.value()->slider,&QSlider::valueChanged,this,[=](int value){
-            iterator1.value()->val() = (double)value/1000*(iterator1.value()->max-iterator1.value()->min)+iterator1.value()->min;
-            foreach (auto pmw, pmws) {
-                pmw->update();
-            }
+    foreach (auto val, psh->intStyles.values()) {
+
+
+        val->slider = new QSlider(this);
+        val->slider->setRange(0,1000);
+        int var =(double)(val->val()-val->min)/(val->max-val->min)*1000;
+        val->slider->setValue(var);
+        // val->slider->setText(val->name());
+
+        //连接控件的信号与变量的set函数
+        connect(val->slider,&QSlider::valueChanged,val,[=](int changedVal){
+            val->set((double)1.0*changedVal/1000*(val->max-val->min)+val->min);
+            qDebug()<<"changedVal"<<changedVal;
         });
-        setInLayout(iterator1.value()->field(),iterator1.value()->name(),iterator1.value()->slider,0);
+        //模拟外部连接
+        connect(psh->intVal(val->name),&intVal::valueChanged,this,[=](int newVal){
+            qDebug()<<val->name<<"SignalReceived"<<newVal;
+        });
+        //待完善
+        setInLayout(val->fields,val->name,val->slider,0);
 
     }
 }
@@ -341,20 +347,21 @@ void StyleSettingWindow::processIntValues()
 // 添加浮点数值控件
 void StyleSettingWindow::processDoubleValues()
 {
-    QMutableListIterator<doubleVal*> iterator2(psh->doubleStyles);
-    while (iterator2.hasNext()) {
-        iterator2.next();
-        iterator2.value()->slider = new QSlider(this);
-        iterator2.value()->slider->setRange(0,1000);
-        int var = (double)(iterator2.value()->val()-iterator2.value()->min)/(iterator2.value()->max-iterator2.value()->min)*1000;
-        iterator2.value()->slider->setValue(var);
-        connect(iterator2.value()->slider,&QSlider::valueChanged,this,[=](int value){
-            iterator2.value()->val() = (double)1.0*value/1000*(iterator2.value()->max-iterator2.value()->min)+iterator2.value()->min;
-            foreach (auto pmw, pmws) {
-                pmw->update();
-            }
+    foreach (auto val, psh->intStyles.values()) {
+        val->slider = new QSlider(this);
+
+        //将值域映射到0：1000
+        val->slider->setRange(0,1000);
+        int var = (double)(val->val()-val->min)/(val->max-val->min)*1000;
+        val->slider->setValue(var);
+
+        //连接控件的信号与变量的set函数
+        connect(val->slider,&QSlider::valueChanged,val,[=](int value){
+            val->set((double)1.0*value/1000*(val->max-val->min)+val->min);
         });
-        setInLayout(iterator2.value()->field(),iterator2.value()->name(),iterator2.value()->slider,0);
+
+        //待完善
+        setInLayout(val->fields,val->name,val->slider,0);
     }
 }
 
