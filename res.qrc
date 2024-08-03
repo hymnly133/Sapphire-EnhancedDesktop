@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/images">
         <file alias="background">testBackgroud.jpg</file>
+        <file>image/down_arrow.png</file>
     </qresource>
     <qresource prefix="/qt/etc"/>
     <qresource prefix="/icon/sysicon">

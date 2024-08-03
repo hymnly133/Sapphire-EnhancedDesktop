@@ -8,17 +8,15 @@
 #include "qwinfunctions.h"
 #include "sfile.h"
 #include "sinputdialog.h"
-#include "windows.h"
 #include "shellapi.h"
 #include "commoncontrols.h"
 #include "Commctrl.h"
 #include <Shlobj.h>
-#include"tchar.h"
 #include"snotice.h"
-#include <unistd.h>
+#include <QFile>
 MyFileInfo::MyFileInfo(QString path, int size)
 {
-    type = TYPE::SINGLE;
+    type = TYPE::SINGLE ;
     name = path2Name(path);
     icons = path2Icon(path,size);
     if(icons.size()>1){
@@ -421,11 +419,11 @@ bool fileExist(const QString &path){
         fclose(file);
         return true;
     }
-    if (access(toWindowsPath(path).toStdString().c_str(), F_OK) == 0)
-    {
-        printf("1.txt exists.\n");
-        return true;
-    }
+    // if (access(toWindowsPath(path).toStdString().c_str(), F_OK) == 0)
+    // {
+    //     printf("1.txt exists.\n");
+    //     return true;
+    // }
     return false;
 
 }

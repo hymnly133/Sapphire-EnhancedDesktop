@@ -5,10 +5,10 @@
 #include "qfileinfo.h"
 #include "qsettings.h"
 #include"QInputDialog"
-#include"SNotice.h"
-#include"ui_styleSetting.h""
+#include"ui_styleSetting.h"
 #include "userfunc.h"
 #include "QProcess"
+
 int unfocused_alpha = 130;
 int focused_alpha = 220;
 
@@ -221,12 +221,85 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
 {
 
     ui->setupUi(this);
-    mainLayout = ui->layouts;
-    layouts["Color"] = ui->colorLayout;
-    layouts["Effect"] = ui->effectLayout;
-    layouts["Render"] = ui->renderLayout;
-    layouts["Prefernce"] = ui->preferenceLayout;
-    setLayout(ui->layouts);
+
+    // 常用设置设计
+    m_totalWidget = new styleSetTotal;
+    ui->stackedWidget->addWidget(m_totalWidget);
+
+    m_widgets["Color"] = new QWidget;
+    m_widgets["Effect"] = new QWidget;
+    m_widgets["Render"] = new QWidget;
+    m_widgets["Preference"] = new QWidget;
+    for(auto& widget : m_widgets)
+    {
+        ui->stackedWidget->addWidget(widget);
+    }
+
+    // 初始化布局
+    initializeLayouts();
+
+    // 添加控件
+    processBoolValues();
+    processIntValues();
+    processDoubleValues();
+
+    connect(ui->listWidget, &QListWidget::itemClicked, this, &StyleSettingWindow::onListClicked);
+    connect(m_totalWidget, &styleSetTotal::on_fontChangeBox_clicked, this, &StyleSettingWindow::on_fontChangeBox_clicked);
+    connect(m_totalWidget, &styleSetTotal::on_rebootBox_clicked, this, &StyleSettingWindow::on_rebootBox_clicked);
+    connect(m_totalWidget, &styleSetTotal::on_resizeBox_clicked, this, &StyleSettingWindow::on_resizeBox_clicked);
+}
+
+void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *content, bool checkBox)
+{
+    if(checkBox&& !checklayouts.contains(field)){
+        auto k = new QVBoxLayout();
+        k->setObjectName(field+"Check");
+        checklayouts.insert(field,k);
+        layouts[field]->addLayout(k,1);
+    }
+
+    if(checkBox)
+    {
+        checklayouts[field]->addWidget(content);
+    }
+    else
+    {
+        if(!sliderlayouts.contains(name)){
+            auto k = new QVBoxLayout();
+            k->setAlignment(Qt::AlignCenter);
+            k->setObjectName(name+"layout");
+            sliderlayouts.insert(field,k);
+            layouts[field]->addLayout(k,1);
+        }
+        sliderlayouts[field]->addWidget(content);
+        sliderlayouts[field]->addWidget(new QLabel(name));
+    }
+}
+
+void StyleSettingWindow::initializeLayouts()
+{
+    for (auto it = m_widgets.begin(); it != m_widgets.end(); ++it) {
+        const QString& name = it.key();
+        QWidget* widget = it.value();
+
+        auto layout = new QHBoxLayout(widget);
+        layouts[name] = layout;
+        widget->setLayout(layout);
+    }
+}
+
+
+// 关于设置页面list被点击时的变动信号槽
+void StyleSettingWindow::onListClicked(QListWidgetItem *item)
+{
+    // 当前点击的项的行号
+    int index = ui->listWidget->row(item);
+    ui->stackedWidget->setCurrentIndex(index);
+}
+
+// 添加布尔值控件
+void StyleSettingWindow::processBoolValues()
+{
     QMutableListIterator<boolVal*> iterator0(psh->boolStyles);
     while (iterator0.hasNext()) {
         iterator0.next();
@@ -241,7 +314,11 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
         });
         setInLayout(iterator0.value()->field(),iterator0.value()->name(),iterator0.value()->checkbox,1);
     }
+}
 
+// 添加整数值控件
+void StyleSettingWindow::processIntValues()
+{
     QMutableListIterator<intVal*> iterator1(psh->intStyles);
     while (iterator1.hasNext()) {
         iterator1.next();
@@ -259,7 +336,11 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
         setInLayout(iterator1.value()->field(),iterator1.value()->name(),iterator1.value()->slider,0);
 
     }
+}
 
+// 添加浮点数值控件
+void StyleSettingWindow::processDoubleValues()
+{
     QMutableListIterator<doubleVal*> iterator2(psh->doubleStyles);
     while (iterator2.hasNext()) {
         iterator2.next();
@@ -277,40 +358,10 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
     }
 }
 
-void StyleSettingWindow::setInLayout(QString field, QString name, QWidget *content, bool checkBox)
-{
-
-    if(!layouts.contains(field)){
-        auto k = new QHBoxLayout();
-        k->setObjectName(field);
-        layouts.insert(field,k);
-        mainLayout->addLayout(k,1);
-    }
-
-    if(checkBox&& !checklayouts.contains(field)){
-        auto k = new QVBoxLayout();
-        k->setObjectName(field+"Check");
-        checklayouts.insert(field,k);
-        layouts[field]->addLayout(k,1);
-    }
-
-    if(checkBox)
-        checklayouts[field]->addWidget(content);
-    else{
-        if(!sliderlayouts.contains(name)){
-            auto k = new QVBoxLayout();
-            k->setAlignment(Qt::AlignCenter);
-            k->setObjectName(name+"layout");
-            sliderlayouts.insert(field,k);
-            layouts[field]->addLayout(k,1);
-        }
-        sliderlayouts[field]->addWidget(content);
-        sliderlayouts[field]->addWidget(new QLabel(name));
-    }
-}
 
 void StyleSettingWindow::closeEvent(QCloseEvent *event)
 {
+    Q_UNUSED(event);
     foreach(auto pmw,pmws){
         pmw->endUpdate();
     }
@@ -337,7 +388,7 @@ QColor winThemeColor()
 
 void StyleSettingWindow::on_fontChangeBox_clicked()
 {
-    QString fontname = ui->fontComboBox->currentFont().family();
+    QString fontname = this->m_totalWidget->getFontName();
     QFont currentFont = qApp->font();
     currentFont.setFamily(fontname);
     qApp->setFont(currentFont);
