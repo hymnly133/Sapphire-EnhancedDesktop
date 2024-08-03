@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>styleSetTotal</class>
+ <widget class="QWidget" name="styleSetTotal">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>960</width>
+    <height>523</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+QPushButton:hover {
+    background-color: #ecf5ff;
+    color: #409eff;
+}
+
+QPushButton:pressed, QPushButton:checked {
+    border: 1px solid #3a8ee6;
+    color: #409eff;
+}
+
+#button3 {
+    border-radius: 20px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTextEdit" name="textEdit"/>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="layouts" stretch="0">
+     <item>
+      <layout class="QHBoxLayout" name="buttons">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QFontComboBox" name="fontComboBox">
+         <property name="styleSheet">
+          <string notr="true">/*QCombobox主体*/
+QComboBox {
+    border: 2px solid rgb(150, 230, 255);
+	background-color: rgb(237, 250, 255);
+    border-radius: 10px;
+    padding: 1px 2px 1px 1px;
+	text-align:bottom;
+    min-width: 9em;
+
+	padding-left: 10px;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 50px;
+	border: 0px;
+}
+
+QComboBox::down-arrow {
+	border-image: url(:/images/image/down_arrow.png);
+	width: 20px;
+	height: 20px;
+}
+
+
+QComboBox QAbstractItemView {
+    border: 2px solid #f3f3f3;/*边框宽度、线形、颜色*/
+	background-color: rgba(237, 242, 255, 1);/*背景颜色*/
+    border-radius: 15px;/*圆角*/
+    padding: 1px 2px 1px 2px;  /*针对于组合框中的文本内容*/
+    min-width: 9em;   /*# 组合框的最小宽度*/
+}
+
+/* 下拉后，整个下拉窗体每项的样式 */
+QComboBox QAbstractItemView::item {
+	border-radius: 15px;/*圆角*/
+    height: 30px;   /* 项的高度（设置pComboBox-&gt;setView(new QListView());后，该项才起作用） */
+	background-color: rgb(237, 242, 255);
+
+}
+
+/*以下部分不知为何不生效，有待调试*/
+/* 下拉后，整个下拉窗体越过每项的样式 */
+QComboBox QAbstractItemView::item:hover {
+    color: #FFFFF0;
+       /* 整个下拉窗体越过每项的背景色 */
+	background-color: rgb(98, 0, 255);
+}
+
+/* 下拉后，整个下拉窗体被选择的每项的样式 */
+QComboBox QAbstractItemView::item:selected {
+    color: #FFFFF0;
+	background-color: rgb(0, 85, 200);
+}
+</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="fontChangeBox">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+QPushButton:hover {
+    background-color: #ecf5ff;
+    color: #409eff;
+}
+</string>
+         </property>
+         <property name="text">
+          <string>更换字体</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="resizeBox">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+QPushButton:hover {
+    background-color: #ecf5ff;
+    color: #409eff;
+}
+</string>
+         </property>
+         <property name="text">
+          <string>重布局</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="rebootBox">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+QPushButton:hover {
+    background-color: #ecf5ff;
+    color: #409eff;
+}
+</string>
+         </property>
+         <property name="text">
+          <string>重启程序</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

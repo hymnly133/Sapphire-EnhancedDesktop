@@ -100,6 +100,7 @@ SOURCES += \
     include/SWidget/sbgshower.cpp \
     include/Setting/sblocklayoutsettingwindow.cpp \
     include/Setting/style.cpp \
+    include/Setting/stylesettotal.cpp \
     include/mainwindow.cpp \
     main.cpp
 
@@ -148,6 +149,7 @@ HEADERS += \
     include/Setting/SQSS.h \
     include/Setting/sblocklayoutsettingwindow.h \
     include/Setting/style.h \
+    include/Setting/stylesettotal.h \
     include/mainwindow.h \
     version.h
 
@@ -155,6 +157,7 @@ HEADERS += \
 FORMS += \
     include/Setting/settingDialogForBlockLayout.ui \
     include/Setting/styleSetting.ui \
+    include/Setting/stylesettotal.ui \
     include/mainwindow.ui
 
 TRANSLATIONS += \

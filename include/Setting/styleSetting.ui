@@ -6,91 +6,143 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>599</width>
-    <height>405</height>
+    <width>800</width>
+    <height>400</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>200</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>800</width>
+    <height>400</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>601</width>
-     <height>411</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="layouts" stretch="0,1,1,1,1">
-    <item>
-     <layout class="QHBoxLayout" name="buttons">
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QFontComboBox" name="fontComboBox"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="fontChangeBox">
-        <property name="text">
-         <string>更换字体</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="resizeBox">
-        <property name="text">
-         <string>重布局</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="rebootBox">
-        <property name="text">
-         <string>重启程序</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="colorLayout"/>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="effectLayout"/>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="renderLayout"/>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="preferenceLayout"/>
-    </item>
-   </layout>
-  </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QListWidget" name="listWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>300</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>300</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QListView {
+    outline: none;
+    show-decoration-selected: 1;
+	border: none;      
+    padding: 0;        
+    margin: 0; 
+}
+
+QListView::item {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #85FFCE, stop: 0.5 #83F3C6, stop: 1 #A6F5D5);
+}
+
+QListView::item:alternate {
+    background: 	OliveDrab4; 
+}
+
+
+#listWidget::item {
+    padding: 10px;
+}
+
+QListView::item:selected {
+    border: 1px solid #6a6ea9;
+}
+
+QListView::item:selected:!active {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #1BE9F7, stop: 1 #C3F5F9);
+
+}
+
+QListView::item:selected:active {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #1BE9F7, stop: 1 #C3F5F9);
+ 
+}
+
+QListView::item:hover {
+   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #CB5CF3, stop: 1 #DC98F5);
+}</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="itemAlignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+     <property name="currentRow">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>总体设计</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>颜色</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>特效</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Render</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Preference</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <property name="frameShape">
+      <enum>QFrame::Shape::WinPanel</enum>
+     </property>
+     <property name="currentIndex">
+      <number>-1</number>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

@@ -16,6 +16,7 @@
 #include <minwindef.h>
 #include <winerror.h>
 #include "dwmapi.h"
+#include "stylesettotal.h"
 #include"ui_styleSetting.h"
 
 template <class T>
@@ -134,11 +135,12 @@ class StyleSettingWindow:public QDialog{
     Q_OBJECT
 public:
     StyleSettingWindow();
-    QMap<QString,QHBoxLayout*> layouts;
-    QMap<QString,QVBoxLayout*> checklayouts;
-    QMap<QString,QVBoxLayout*> sliderlayouts;
-    QVBoxLayout* mainLayout;
-    QHBoxLayout* buttons;
+
+    QMap<QString, QHBoxLayout*> layouts;
+    QMap<QString, QVBoxLayout*> checklayouts;
+    QMap<QString, QVBoxLayout*> sliderlayouts;
+
+    //QHBoxLayout* buttons;
     Ui::Form* ui;
     //将Val类型设置到面板
     void setInLayout(QString field,QString name,QWidget* content,bool checkBox);
@@ -151,6 +153,23 @@ private slots:
     void on_fontChangeBox_clicked();
     void on_rebootBox_clicked();
     void on_resizeBox_clicked();
+
+    void onListClicked(QListWidgetItem *item);
+private:
+    // 初始化布局
+    void initializeLayouts();
+
+    // 添加布尔值控件
+    void processBoolValues();
+    // 添加整数值控件
+    void processIntValues();
+    // 添加浮点数值控件
+    void processDoubleValues();
+
+private:
+    QMap<QString, QWidget*> m_widgets;
+    QVBoxLayout* m_mainLayout;
+    styleSetTotal* m_totalWidget;
 };
 
 // 未/已聚焦时的色值alpha
