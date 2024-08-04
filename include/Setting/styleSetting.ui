@@ -91,7 +91,7 @@ QListView::item:hover {
 }</string>
      </property>
      <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
      <property name="lineWidth">
       <number>0</number>
@@ -100,34 +100,14 @@ QListView::item:hover {
       <number>0</number>
      </property>
      <property name="itemAlignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
      <property name="currentRow">
-      <number>0</number>
+      <number>-1</number>
      </property>
      <item>
       <property name="text">
        <string>总体设计</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>颜色</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>特效</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Render</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Preference</string>
       </property>
      </item>
     </widget>
@@ -135,7 +115,7 @@ QListView::item:hover {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="frameShape">
-      <enum>QFrame::WinPanel</enum>
+      <enum>QFrame::Shape::WinPanel</enum>
      </property>
      <property name="currentIndex">
       <number>-1</number>

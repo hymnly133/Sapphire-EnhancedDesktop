@@ -12,7 +12,7 @@
 #include"QObject"
 #include"qmap"
 #include "qwindowdefs.h"
-#include <minwindef.h>
+#include <windows.h>
 #include <winerror.h>
 #include "dwmapi.h"
 #include "stylesettotal.h"
@@ -248,13 +248,9 @@ public:
     QMap<QString, QVBoxLayout*> checklayouts;
     QMap<QString, QVBoxLayout*> sliderlayouts;
 
-    //QHBoxLayout* buttons;
     Ui::Form* ui;
     //将Val类型设置到面板
     void setInLayout(QStringList fields,QString name,QWidget* content,bool checkBox);
-
-
-    // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
@@ -264,6 +260,13 @@ private slots:
 
     void onListClicked(QListWidgetItem *item);
 private:
+    // 加载对应的Wedget
+    void IniStacked();
+    // 初始化各个主空间，Color/xxx等
+    void iniAllWidget(const QStringList& fields);
+    //《关于》页面的制作
+    void IniAboutPage();
+
     // 初始化布局
     void initializeLayouts();
 
@@ -276,7 +279,6 @@ private:
 
 private:
     QMap<QString, QWidget*> m_widgets;
-    QVBoxLayout* m_mainLayout;
     styleSetTotal* m_totalWidget;
 };
 

@@ -8,6 +8,7 @@
 #include"ui_styleSetting.h"
 #include "userfunc.h"
 #include "QProcess"
+#include <QScrollArea>
 
 int unfocused_alpha = 130;
 int focused_alpha = 220;
@@ -224,27 +225,23 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
 
     ui->setupUi(this);
 
-    // 常用设置设计
+    // 常用设置设计, 恢复选项，加载设置，
     m_totalWidget = new styleSetTotal;
     ui->stackedWidget->addWidget(m_totalWidget);
 
-    m_widgets["Color"] = new QWidget;
-    m_widgets["Effect"] = new QWidget;
-    m_widgets["Render"] = new QWidget;
-    m_widgets["Preference"] = new QWidget;
-    for(auto& widget : m_widgets)
-    {
-        ui->stackedWidget->addWidget(widget);
-    }
+    // 对各个字段添加到list和StackWidget中
+    IniStacked();
 
     // 初始化布局
     initializeLayouts();
 
     // 添加控件
-    // processBoolValues();
+    processBoolValues();
     processIntValues();
-    // processDoubleValues();
+    processDoubleValues();
 
+    // 最后一页添加《关于》页面
+    IniAboutPage();
     connect(ui->listWidget, &QListWidget::itemClicked, this, &StyleSettingWindow::onListClicked);
     connect(m_totalWidget, &styleSetTotal::on_fontChangeBox_clicked, this, &StyleSettingWindow::on_fontChangeBox_clicked);
     connect(m_totalWidget, &styleSetTotal::on_rebootBox_clicked, this, &StyleSettingWindow::on_rebootBox_clicked);
@@ -252,32 +249,92 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
 }
 
 //通过参数将content设置到应有的地方
-void StyleSettingWindow::setInLayout(QStringList fields, QString name, QWidget *content, bool checkBox)
+void StyleSettingWindow::setInLayout(QStringList fields, QString name, QWidget* content, bool isCheck)
 {
-    // if(checkBox&& !checklayouts.contains(field)){
-    //     auto k = new QVBoxLayout();
-    //     k->setObjectName(field+"Check");
-    //     checklayouts.insert(field,k);
-    //     layouts[fields]->addLayout(k,1);
-    // }
+    QString fieldKey = fields[0];
+    if (isCheck && !checklayouts.contains(fieldKey)) {
+        auto k = new QVBoxLayout();
+        k->setObjectName(fieldKey + name + "Check");
+        checklayouts.insert(fieldKey, k);
+        k->addWidget(content);
+        layouts[fieldKey]->addLayout(k, 1);
+    }
 
-    // if(checkBox)
-    // {
-    //     checklayouts[field]->addWidget(content);
-    // }
-    // else
-    // {
-    //     if(!sliderlayouts.contains(name)){
-    //         auto k = new QVBoxLayout();
-    //         k->setAlignment(Qt::AlignCenter);
-    //         k->setObjectName(name+"layout");
-    //         sliderlayouts.insert(field,k);
-    //         layouts[field]->addLayout(k,1);
-    //     }
-    //     sliderlayouts[field]->addWidget(content);
-    //     sliderlayouts[field]->addWidget(new QLabel(name));
-    // }
+    if (isCheck) {
+        checklayouts[fieldKey]->addWidget(content);
+    } else {
+        if (!sliderlayouts.contains(fieldKey)) {
+            auto k = new QVBoxLayout();
+            k->setAlignment(Qt::AlignCenter);
+            k->setObjectName(fieldKey + "layout");
+            sliderlayouts.insert(fieldKey, k);
+            layouts[fieldKey]->addLayout(k, 1);
+        }
+        sliderlayouts[fieldKey]->addWidget(content);
+        sliderlayouts[fieldKey]->addWidget(new QLabel(name));
+    }
 }
+
+
+// 加载对应的Wedget
+void StyleSettingWindow::IniStacked()
+{
+    for(auto& c : psh->boolStyles) {
+        iniAllWidget(c->fields);
+    }
+    for(auto& c : psh->intStyles) {
+        iniAllWidget(c->fields);
+    }
+    for(auto& c : psh->doubleStyles) {
+        iniAllWidget(c->fields);
+    }
+    for(auto& c : psh->stringStyles) {
+        iniAllWidget(c->fields);
+    }
+
+    // 让list中字段排序
+    QStringList sortedFields;
+    for (auto it = m_widgets.begin(); it != m_widgets.end(); ++it) {
+        sortedFields.append(it.key());
+    }
+    // 对字段名列表进行排序
+    std::sort(sortedFields.begin(), sortedFields.end());
+
+    // 遍历排序后的字段名列表，将对应的控件添加到 QStackedWidget 中
+    for (const auto& field : sortedFields) {
+        qDebug() << field;
+        QWidget* widget = m_widgets[field];
+        ui->listWidget->addItem(field);
+        ui->stackedWidget->addWidget(widget);
+    }
+}
+
+// 初始化各个主空间，Color/xxx
+void StyleSettingWindow::iniAllWidget(const QStringList& fields)
+{
+    int listSize = fields.size();
+
+    if(listSize == 0){ qDebug()<<"error"; return;}
+
+    //主级空间
+    if(!m_widgets.contains(fields[0]))
+    {
+        m_widgets[fields[0]] =  new QWidget;
+    }
+
+    //仅有一层，直接返回
+    if(listSize == 1){ return; }
+
+
+    //todo: 添加到对应的list下
+    //QMap<QString, QWidget*> m_fistWidget
+    //二级页面
+    if(!m_widgets.contains(fields[0]+"/"+fields[1]))
+    {
+        m_widgets[fields[0]+"/"+fields[1]] = new QWidget;
+    }
+}
+
 
 void StyleSettingWindow::initializeLayouts()
 {
@@ -285,9 +342,22 @@ void StyleSettingWindow::initializeLayouts()
         const QString& name = it.key();
         QWidget* widget = it.value();
 
-        auto layout = new QHBoxLayout(widget);
-        layouts[name] = layout;
-        widget->setLayout(layout);
+        // 创建一个QWidget作为QScrollArea的内容部件
+        QWidget *contentWidget = new QWidget;
+        QHBoxLayout *contentLayout = new QHBoxLayout(contentWidget);
+        layouts[name] = contentLayout;
+
+        QScrollArea *scrollArea = new QScrollArea;
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setWidget(contentWidget);
+
+        // 创建一个垂直布局管理器
+        QVBoxLayout *mainLayout = new QVBoxLayout(widget);
+        mainLayout->addWidget(scrollArea);  // 将QScrollArea添加到布局中
+
+        // 设置QWidget的布局
+        widget->setLayout(mainLayout);
+
     }
 }
 
@@ -365,6 +435,47 @@ void StyleSettingWindow::processDoubleValues()
     }
 }
 
+void StyleSettingWindow::IniAboutPage()
+{
+
+
+
+    // 添加 "关于" 项到 QListWidget
+    ui->listWidget->addItem("关于");
+
+    auto aboutWidget = new QWidget();
+    auto layout = new QVBoxLayout(aboutWidget);
+    ui->stackedWidget->addWidget(aboutWidget);
+
+    // 标题
+    auto titleLabel = new QLabel("软件名称 - 关于");
+    titleLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(titleLabel);
+
+    //todo: 修改图片
+    QPixmap pixmap(":/images/background");
+    auto logoLabel = new QLabel;
+    logoLabel->setPixmap(pixmap.scaledToWidth(64, Qt::SmoothTransformation));
+    layout->addWidget(logoLabel, 0, Qt::AlignHCenter);
+
+    // 版本号
+    auto versionLabel = new QLabel("版本: 1.0.0");
+    layout->addWidget(versionLabel);
+
+    // 作者
+    auto authorLabel = new QLabel("作者: xxx\n其他参与者:xxx,xxx,xxx");
+    layout->addWidget(authorLabel);
+
+    // 添加许可证信息
+    auto licenseLabel = new QLabel("本软件遵循 GNU General Public License v3.0 许可证.");
+    licenseLabel->setWordWrap(true);
+    layout->addWidget(licenseLabel);
+
+    // 许可证链接
+    auto licenseLinkLabel = new QLabel("<a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">查看许可证</a>");
+    licenseLinkLabel->setOpenExternalLinks(true);
+    layout->addWidget(licenseLinkLabel);
+}
 
 void StyleSettingWindow::closeEvent(QCloseEvent *event)
 {
