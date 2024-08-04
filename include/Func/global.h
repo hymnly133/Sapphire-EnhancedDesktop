@@ -2,6 +2,7 @@
 #define GLOBAL_H
 
 #include "mainwindow.h"
+#include "qapplication.h"
 
 #define numCelected pCelectedUnits.size()
 #define AUTO_RUN_KEY	"HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"

@@ -10,7 +10,6 @@
 #include "seditbox.h"
 #include "filefunc.h"
 #include "qgraphicseffect.h"
-#include "qmessagebox.h"
 #include "qmimedata.h"
 #include "qpainter.h"
 #include "repaintcounterunit.h"
@@ -33,8 +32,6 @@
 #include <Shlobj.h>
 #include <shlwapi.h>
 #include <windows.h>
-#include"saction.h"
-#include"stooltip.h"
 
 
 void MainWindow::setupDesktopMenu()
@@ -44,11 +41,18 @@ void MainWindow::setupDesktopMenu()
     desktopMenu = new SMenu(this);
     desktopMenu->ismain = true;
     // 给当前窗口添加QAction对象
-    SET_ANCTION(act01,刷新,desktopMenu,this,
-                {refresh();})
+    // SET_ANCTION(act01,刷新,desktopMenu,this,
+    //             {refresh();})
+
+    QAction* act01 = new QAction(tr("刷新"));
+    desktopMenu->addAction(act01);
+    connect(act01, &QAction::triggered, this, [=](){
+        refresh();
+    });
 
     SET_ANCTION(act1,改变可见,desktopMenu,this,
     { setShoweredVisibal(!showeredVisibal); })
+    act1->setText(tr("改变可见"));
 
 
 
@@ -56,7 +60,7 @@ void MainWindow::setupDesktopMenu()
     SET_ANCTION(act3,映射文件,desktopMenu,this,
     {
         QFileDialog* fd = new QFileDialog();
-        QStringList filePaths =QFileDialog::getOpenFileNames(this, QStringLiteral("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
+        QStringList filePaths =QFileDialog::getOpenFileNames(this, tr("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
         foreach (const QString& filePath, filePaths) {
             addAIcon(filePath);
         }
@@ -64,7 +68,7 @@ void MainWindow::setupDesktopMenu()
 
 
     QAction *creatNewFileAction = new QAction(desktopMenu);
-    creatNewFileAction->setText("新建");
+    creatNewFileAction->setText(tr("新建"));
     desktopMenu->addAction(creatNewFileAction);
 
     creatNewFileMenu = new SMenu();

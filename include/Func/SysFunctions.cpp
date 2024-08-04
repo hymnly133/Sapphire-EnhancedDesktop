@@ -528,3 +528,22 @@ QColor mixColor(QColor source, QColor add, double ratio)
         source.blue()*ratio + add.blue()*(1.0-ratio)
         );
 }
+
+QColor winThemeColor()
+{
+
+    DWORD crColorization;
+    BOOL fOpaqueBlend;
+    QColor res;
+    HRESULT result = DwmGetColorizationColor(&crColorization, &fOpaqueBlend);
+    if (result == S_OK)
+    {
+        BYTE r, g, b;
+        r = (crColorization >> 16) % 256;
+        g = (crColorization >> 8) % 256;
+        b = crColorization % 256;
+        res = QColor(r, g, b);
+    }
+    return res;
+
+}

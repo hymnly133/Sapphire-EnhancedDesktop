@@ -46,7 +46,7 @@ QPushButton:pressed, QPushButton:checked {
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -161,30 +161,9 @@ QPushButton:hover {
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="rebootBox">
-         <property name="styleSheet">
-          <string notr="true">QPushButton {
-    background-color: #ffffff;
-    border: 1px solid #dcdfe6;
-    padding: 10px;
-    border-radius: 20px;
-}
-
-QPushButton:hover {
-    background-color: #ecf5ff;
-    color: #409eff;
-}
-</string>
-         </property>
-         <property name="text">
-          <string>重启程序</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>

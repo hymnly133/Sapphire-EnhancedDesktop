@@ -237,6 +237,6 @@ void updateCelect(SUnit *sender)
             }
         }
     }
-    activepmw->pls->raise();
+    // activepmw->pls->raise();
     activepmw->pls->update();
 }

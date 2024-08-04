@@ -14,6 +14,7 @@
 #include<qopenglwidget.h>
 #include<qopenglfunctions.h>
 #include"slayout.h"
+#include "stylehelper.h"
 
 class MainWindow;
 

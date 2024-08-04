@@ -3,6 +3,7 @@
 
 #include <string>
 #include"QString"
+#include "SysFunctions.h"
 #include "qcolor.h"
 #include "style.h"
 using namespace std;

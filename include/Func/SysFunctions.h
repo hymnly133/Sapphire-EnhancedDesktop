@@ -51,4 +51,7 @@ QRect Point2Rect(QPoint point0,QPoint point1);
 
 //souce*ratio+add*(1-ratio)
 QColor mixColor(QColor source,QColor add,double ratio);
+QColor winThemeColor();
+
+
 #endif // SYSFUNCTIONS_H

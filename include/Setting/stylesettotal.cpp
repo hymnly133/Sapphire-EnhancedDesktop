@@ -8,8 +8,12 @@ styleSetTotal::styleSetTotal(QWidget *parent)
     ui->setupUi(this);
 
     connect(ui->fontChangeBox, &QPushButton::clicked, this, &styleSetTotal::on_fontChangeBox_clicked);
-    connect(ui->rebootBox, &QPushButton::clicked, this, &styleSetTotal::on_rebootBox_clicked);
-    connect(ui->resizeBox, &QPushButton::clicked, this, &styleSetTotal::on_resizeBox_clicked);
+    // connect(ui->rebootBox, &QPushButton::clicked, this, &styleSetTotal::on_rebootBox_clicked);
+    connect(ui->resizeBox, &QPushButton::clicked, this, [=](bool val){
+        if(val){
+            emit on_resizeBox_clicked();
+        }
+    });
 }
 
 styleSetTotal::~styleSetTotal()

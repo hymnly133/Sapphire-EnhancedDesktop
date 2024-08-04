@@ -85,6 +85,7 @@ SOURCES += \
     include/SLayout/slayout.cpp \
     include/SLayout/slinearlayout.cpp \
     include/SObject/sanimationrect.cpp \
+    include/SObject/sfieldswidget.cpp \
     include/SObject/slineranimation.cpp \
     include/SUnit/repaintcounterunit.cpp \
     include/SUnit/sblockcontainer.cpp \
@@ -100,6 +101,7 @@ SOURCES += \
     include/SWidget/sbgshower.cpp \
     include/Setting/sblocklayoutsettingwindow.cpp \
     include/Setting/style.cpp \
+    include/Setting/stylehelper.cpp \
     include/Setting/stylesettotal.cpp \
     include/mainwindow.cpp \
     main.cpp
@@ -133,6 +135,7 @@ HEADERS += \
     include/SLayout/slayout.h \
     include/SLayout/slinearlayout.h \
     include/SObject/sanimationrect.h \
+    include/SObject/sfieldswidget.h \
     include/SObject/slineranimation.h \
     include/SUnit/repaintcounterunit.h \
     include/SUnit/sblockcontainer.h \
@@ -149,6 +152,7 @@ HEADERS += \
     include/Setting/SQSS.h \
     include/Setting/sblocklayoutsettingwindow.h \
     include/Setting/style.h \
+    include/Setting/stylehelper.h \
     include/Setting/stylesettotal.h \
     include/mainwindow.h \
     version.h
@@ -158,12 +162,18 @@ FORMS += \
     include/Setting/settingDialogForBlockLayout.ui \
     include/Setting/styleSetting.ui \
     include/Setting/stylesettotal.ui \
-    include/mainwindow.ui
+    include/fieldWidget.ui \
+    include/mainwindow.ui \
+    include/scollTest.ui \
+    include/widgeTest.ui
 
 TRANSLATIONS += \
-    Sapphire_zh_CN.ts \
+translation/Sapphire_en_US.ts \
+translation/Sapphire_zh_CN.ts
+
 CONFIG += lrelease \
 CONFIG += embed_translations \
+
 
 
 # Default rules for deployment.

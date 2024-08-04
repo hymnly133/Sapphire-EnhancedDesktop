@@ -18,7 +18,7 @@ public:
 
 signals:
     void on_fontChangeBox_clicked();
-    void on_rebootBox_clicked();
+    // void on_rebootBox_clicked();
     void on_resizeBox_clicked();
 
 private:
