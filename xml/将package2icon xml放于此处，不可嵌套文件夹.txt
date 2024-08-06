@@ -1,0 +1,1 @@
+将package2icon xml放于此处，不可嵌套文件夹

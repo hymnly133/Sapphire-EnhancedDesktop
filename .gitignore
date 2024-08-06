@@ -77,6 +77,6 @@ CMakeLists.txt.user*
 *.dll
 *.exe
 
-icon/*
-xml/*
+icon/*/*.png
+xml/*.xml
 
