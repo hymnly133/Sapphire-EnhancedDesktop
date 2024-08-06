@@ -239,13 +239,6 @@ void MainWindow::setupEditMenu()
                 {
                     SExit();
                 })
-
-    SET_ANCTION(act555,获取图标,editMenu,this,
-    {
-        pir->applyForAllSFile();
-    })
-
-
 }
 
 
