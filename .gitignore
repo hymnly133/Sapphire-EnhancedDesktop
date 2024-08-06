@@ -78,5 +78,8 @@ CMakeLists.txt.user*
 *.exe
 
 icon/*/*.png
-xml/*.xml
+!icon/示例文件夹
+!icon/示例文件夹/*
 
+xml/*.xml
+!xml/示例.xml

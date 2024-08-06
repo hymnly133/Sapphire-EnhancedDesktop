@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<resources>
+    <!--Sample0-->
+    <item component="ComponentInfo{com.sample0.package/com.sample0.package.activity}" drawable="sample0Drawable" />
+    <!--Sample1-->
+    <item component="ComponentInfo{com.sample1.package/com.sample1.package.activity}" drawable="sample1Drawable" />
+</resources>
