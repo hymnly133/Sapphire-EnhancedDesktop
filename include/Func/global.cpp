@@ -1,5 +1,6 @@
 #include "global.h"
-
+#include"QMap"
+#include<QJsonObject>
 bool firstNotice = true;
 bool init = false;
 bool isQuit = false;
@@ -20,5 +21,6 @@ bool onLoading = true;
 QMap<QString,SFile*> nowExits;
 QMap<int,QJsonObject> UnusedJsons;
 QList<QString> ExcludeFiles;
+IconReader* pir;
 
 bool editMode = false;

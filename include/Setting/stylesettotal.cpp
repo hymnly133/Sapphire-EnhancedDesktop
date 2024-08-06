@@ -1,4 +1,6 @@
 #include "stylesettotal.h"
+#include "global.h"
+#include "iconfunc.h"
 #include "ui_stylesettotal.h"
 
 styleSetTotal::styleSetTotal(QWidget *parent)
@@ -28,4 +30,16 @@ QString styleSetTotal::getFontName()
 
 
 
+
+
+void styleSetTotal::on_ButtonLoadCustomIcons_pressed()
+{
+    pir->applyForAllSFile();
+}
+
+
+void styleSetTotal::on_ButtonRecoverDefaultIcons_pressed()
+{
+    pir->recoverForDefault();
+}
 

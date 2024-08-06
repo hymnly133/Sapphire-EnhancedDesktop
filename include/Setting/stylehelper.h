@@ -2,6 +2,7 @@
 #define STYLEHELPER_H
 
 //把field作为List储存，name与fullname作为成员变量，有一点浪费，但问题不大
+#include "global.h"
 #include "qdebug.h"
 #include "qdialog.h"
 #include "qobject.h"
@@ -10,6 +11,7 @@
 #include "sfieldswidget.h"
 #include "stylesettotal.h"
 #include "ui_styleSetting.h"
+#include"mainwindow.h"
 
 template <class T>
 struct Val:public QObject{
@@ -30,13 +32,17 @@ public:
     T val(){return *pval;};
 
     //是否占用小空间(布局使用)
-    bool small = false;
+    bool issmall = false;
 
     virtual bool set(T newVal){
         if(newVal == *pval) return false;
         *pval = newVal;
+        if(!onLoading&&activepmw!=nullptr){
+            activepmw->endUpdate();
+            activepmw->update();
+        }
         return true;
-    };
+    }
 
     Val<T>(const QStringList& fields,QString name,T* pval,const QString& displayName):pval(pval),fields(fields),name(name),displayName(displayName){
         fullName = fields.join("/")+name;
@@ -68,6 +74,8 @@ public:
             return fields<another.fields;
         }
     }
+
+
 private:
     //从ini读值的主方法
     virtual void readVal(QSettings *styleIni) =0;
@@ -159,7 +167,9 @@ struct doubleVal:public LimitedVal<double>{
 
 public slots:
     virtual bool set(double newVal){
+        if(abs(val()-newVal)<=0.01) return false;
         if(LimitedVal::set(newVal)){
+            qDebug()<<name<<newVal<<val();
             emit valueChanged(newVal);
             return true;
         }
@@ -197,8 +207,33 @@ public: signals:
     void valueChanged(QString val);
 };
 
+struct colorVal:public Val<QColor>{
+    Q_OBJECT;
+    using Val<QColor>::Val;
+    virtual void readVal(QSettings *styleIni){
+        set(QColor(styleIni->value(name).toString().toUInt(NULL,16)));
+    };
+    virtual void writeVal(QSettings *styleIni){
+        styleIni->setValue(name, QString::number(qRgb(val().red(),val().green(),val().blue()),16));
+    }
+public:
+public slots:
+    virtual bool set(QColor newVal){
+        if(Val::set(newVal)){
+            emit valueChanged(newVal);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 
-class StyleHelper:QObject{
+public: signals:
+    void valueChanged(QColor val);
+};
+
+
+class StyleHelper:public QObject{
     Q_OBJECT
 public:
 
@@ -207,6 +242,7 @@ public:
     QMap<QString,doubleVal*> doubleStyles;
     QMap<QString,boolVal*> boolStyles;
     QMap<QString,stringVal*> stringStyles;
+    QMap<QString,colorVal*> colorStyles;
 
     StyleHelper();
 
@@ -215,6 +251,7 @@ public:
     void Add(QStringList,QString, int * pval,QString displayName,int min,int max);
     void Add(QStringList,QString, double*,QString displayName, double min, double max);
     void Add(QStringList,QString, QString*,QString displayName, QString min, QString max);
+    void Add(QStringList,QString, QColor*,QString displayName, QString min, QString max);
 
     void readStyleIni();
     void writeStyleIni();
@@ -224,7 +261,11 @@ public:
     doubleVal* doubleVal(QString name);
     boolVal* boolVal(QString name);
     stringVal* stringVal(QString name);
+    colorVal* colorVal(QString name);
     QColor themeColor();
+
+public: signals:
+    void colorChanged();
 };
 
 
@@ -237,7 +278,7 @@ public:
 
     Ui::Form* ui;
     //将整个content按照fields类型设置到面板
-    void setInLayout(QStringList fields, QWidget* content, bool checkBox);
+    void setInLayout(QStringList fields, QWidget* content, bool issmall);
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
@@ -265,6 +306,8 @@ private:
     void processIntValues();
     // 添加浮点数值控件
     void processDoubleValues();
+    // 添加颜色控件
+    void processColorValues();
 
     //连接treeView与stackedWidget
     void setTreeView(const QStringList &fields);
@@ -273,7 +316,9 @@ private:
     void addAItem(const QStringList &fields);
 
     //添加内容的主方法
-    void addContent(const QStringList &fields,QWidget* widget,bool small = false);
+    void addContent(const QStringList &fields, QWidget* widget, bool issmall = false);
+
+
 
 private:
     //field与fieldWidget

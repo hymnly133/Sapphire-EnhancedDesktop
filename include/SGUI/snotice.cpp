@@ -82,7 +82,7 @@ void SNotice::setStayTime(int time)
 }
 
 void SNotice::comeout()
-{
+{   if(onLoading) return;
     if(nowOKPosY(this)>=activepmw->height()*0.4){
         endOne();
     }
@@ -187,7 +187,7 @@ void SNotice::updateAllNoticeAnimation()
 
 void SNotice::paintEvent(QPaintEvent *event)
 {
-    QColor tem = winThemeColor();
+    QColor tem = themeColor();
 
     QPainter painter(this);
     tem.setAlpha(arect->nowAlpha);
@@ -196,7 +196,7 @@ void SNotice::paintEvent(QPaintEvent *event)
     painter.drawRect(rect());
 
 
-    tem = QColor("black");
+    tem = text_color;
     tem.setAlpha(arect->nowAlpha);
     painter.setPen(tem);
 

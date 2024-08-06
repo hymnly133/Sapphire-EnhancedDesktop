@@ -1,5 +1,6 @@
 #include "SysFunctions.h"
 #include "global.h"
+#include "iconfunc.h"
 #include "qtextcodec.h"
 #include "sfile.h"
 #include "sblockcontainer.h"
@@ -19,6 +20,7 @@
 #include "sshellfuncunit.h"
 #include"QProcess"
 #include "userfunc.h"
+#include"stylehelper.h"
 
 int main(int argc, char *argv[])
 {
@@ -40,7 +42,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
 
-
+    pir = new IconReader;
+    pir->scanForDefault();
 
 
     static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块

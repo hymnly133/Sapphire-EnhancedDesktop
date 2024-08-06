@@ -17,7 +17,6 @@ public:
     QString suffix();
     QString baseName();
     bool isDir = false;
-    bool useFileIcon = true;
 
 
     explicit SFile(SLayout* dis = nullptr, int sizex =1, int sizey=1, QString filePath = "");
@@ -50,6 +49,9 @@ public:
     void renameWithDialog();
 
     void setName(QString name) override;
+
+    void recoverForDefault();
+
 
 
 

@@ -1,5 +1,6 @@
 #include "smultifunc.h"
 #include"QProcess"
+#include "SQSS.h"
 #include "filefunc.h"
 #include "mainwindow.h"
 #include "qboxlayout.h"
@@ -15,10 +16,12 @@
 #include"QGraphicsDropShadowEffect"
 #include"QFileDialog"
 #include "sfile.h"
+#include "slabel.h"
 #include"stooltip.h"
 #include"global.h"
+#include "stylehelper.h"
 #include "unitfunc.h"
-
+#include"snotice.h"
 
 
 
@@ -36,14 +39,12 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
     vl->addSpacing(0);
 
     gv = new PictureBox(this);
-    lb = new QLabel(this);
+    lb = new SLabel(this);
     // lb->adjustSize();
 
     // 显示图标
     // double defaultRatio = (double)default_size/image.size().width();
     pix=QPixmap(1,1);
-
-    (( QGraphicsDropShadowEffect*)graphicsEffect())->setColor(QColor(255,0,0,255));
 
     gv->setBackground(QBrush (QColor(0,0,0,0)));
     gv->setVisible(true);
@@ -73,6 +74,9 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
     pix_shadow->setColor(tem);
     pix_shadow->setBlurRadius(icon_shadow_blur_radius);   // 模糊半径
     pix_shadow->setOffset(0,0);      // 偏移量
+    connectTo(icon_shadow_blur_radius,int,int,{
+    pix_shadow->setBlurRadius(value);
+    })
     gv->setGraphicsEffect(pix_shadow);
 
     text_shadow = new QGraphicsDropShadowEffect;
@@ -155,8 +159,14 @@ void SMultiFunc::load_json(QJsonObject rootObject)
 {
     SUnit::load_json(rootObject);
     pixPath = rootObject.value("pixPath").toString();
-    if(pixPath!="")
-        SMultiFunc::setPix(path2Icon(pixPath)[0]);
+    if(pixPath!=""){
+        if(QFile::exists(pixPath))
+            SMultiFunc::setPix(path2Icon(pixPath)[0]);
+        else{
+            SNotice::notice(pixPath,tr("预加载图片丢失！"));
+            pixPath = "";
+        }
+    }
 
     if(rootObject.contains("name")) setName(rootObject.value("name").toString());
     setFullShow(rootObject.value("fullShow").toBool());
@@ -186,7 +196,6 @@ void SMultiFunc::endUpdate()
     SUnit::endUpdate();
     gv->requireRefresh = true;
     gv->updateDispaly();
-    // onScaleChange(scale*scaleFix);
 }
 
 void SMultiFunc::setLongFocus(bool val)
@@ -300,16 +309,15 @@ void SMultiFunc::dropEvent(QDropEvent *event)
 void SMultiFunc::setFullShow(bool val)
 {
     fullShow = val;
-    if(val){
+    if(fullShow||simpleMode){
+        lb->setVisible(false);
+
         vl->setContentsMargins(0, 0, 0, 0);
     }
     else{
+        lb->setVisible(true);
         vl->setContentsMargins(0, 3, 0, 0);
     }
-    if(fullShow||simpleMode)
-        lb->setVisible(false);
-    else
-        lb->setVisible(true);
 
 
     gv->maxFill = val;
@@ -335,13 +343,22 @@ void SMultiFunc::onCelectedProcessor(bool val)
 
 }
 
+void SMultiFunc::updateColor()
+{
+    setMainColor(pixmapMainColor(pix));
+}
+
 void SMultiFunc::onSimpleModeChange(bool val){
 
     updateDefaultScale();
-    if(fullShow||simpleMode)
+    if(fullShow||simpleMode){
         lb->setVisible(false);
-    else
+        vl->setContentsMargins(0,0,0,0);
+    }
+    else{
+        vl->setContentsMargins(0,3,0,0);
         lb->setVisible(true);
+    }
 }
 
 void SMultiFunc::onScaleChange(double val){
@@ -363,7 +380,7 @@ void SMultiFunc::setPix(QPixmap pixmap)
 {
     pix = pixmap;
 
-    setMainColor(pixmapMainColor(pixmap));
+    updateColor();
 
     onScaleChange(scale*scaleFix);
     gv->follow(&pix);

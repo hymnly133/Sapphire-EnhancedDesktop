@@ -4,6 +4,7 @@
 #include "qevent.h"
 #include "qpainter.h"
 #include"stooltip.h"
+#include "stylehelper.h"
 #define SET_ANCTION(NAME,TEXT,MENU,FUCTION)\
 QAction *NAME = new QAction(#TEXT);\
     MENU->addAction(NAME);\

@@ -79,6 +79,8 @@ extern int default_steam_icon_type;
 extern int long_focus_in_delta_time;
 //长聚焦失焦需时
 extern int long_focus_out_delta_time;
+//长聚焦动画进行时长
+extern int long_focus_animation_time;
 
 //长聚焦时Container缩放比率（计划作为类成员
 extern double long_focus_container_fix_ratio;
@@ -99,9 +101,24 @@ extern bool use_pic_as_icon;;
 //启用开机自启
 extern bool enable_auto_run;
 
+//启用变为1X1
 extern bool resize_to_rect;
+//用户字体
 extern QString user_font;
 
+//刷新动画
 extern bool enable_refresh_animation;
+
+// 启用背景透视
 extern bool enable_background_transparent;
+
+extern QColor theme_color;
+extern QColor background_color;
+extern QColor highlight_color;
+extern QColor text_color;
+extern bool use_syscolor_as_themecolor;
+
+// 供外部调用的方法
+QColor themeColor();
+
 #endif // STYLE_H

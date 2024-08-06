@@ -21,8 +21,8 @@ SBlockContainer::SBlockContainer(SLayout *dis, int outsizex, int outsizey, int r
     inside = new SBlockLayout(this,row,col,boradXR,boradYR,spaceXR,spaceYR);
 
     outSizeAnimation = new QPropertyAnimation(this,"outSizeFix");
-    outSizeAnimation->setDuration(focus_animation_time);
-    outSizeAnimation->setEasingCurve(QEasingCurve::InOutCubic);
+    outSizeAnimation->setDuration(long_focus_animation_time);
+    outSizeAnimation->setEasingCurve(QEasingCurve::InOutQuad);
 
     connect(this,&::SBlockContainer::outSizeFix_changed,this,[=](double val){
         whenLongFocusAnimationChange();
@@ -71,6 +71,7 @@ void SBlockContainer::updateLongFocusAnimation()
 {
     longFocusAnimations->stop();
     outSizeAnimation->setStartValue(outSizeFix);
+    outSizeAnimation->setDuration(long_focus_animation_time);
     outSizeAnimation->setEndValue(aim_outSizeFix());
     longFocusAnimations->start();
 }

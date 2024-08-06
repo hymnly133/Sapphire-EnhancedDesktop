@@ -18,11 +18,12 @@
 #include <cmath>
 #include "QBitmap"
 #include "unitfunc.h"
+#include"stylehelper.h"
 
 #define SET_ANIMATION(ANIMATION,NAME,GROUP,TIME)\
 ANIMATION = new QPropertyAnimation(this,#NAME);\
     ANIMATION->setDuration(TIME);\
-    ANIMATION->setEasingCurve(QEasingCurve::InSine);\
+    ANIMATION->setEasingCurve(QEasingCurve::InOutQuad);\
     GROUP->addAnimation(ANIMATION);
 
 
@@ -56,15 +57,29 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
 
     shadow_main_color = new QGraphicsDropShadowEffect;
     shadow_main_color->setBlurRadius(unit_shadow_blur_radius);   //模糊半径
+
     shadow_main_color->setOffset(0);      //偏移量
     shadow_main_color->setEnabled(true);
-
+    connect(psh->intVal("unit_shadow_blur_radius"),&intVal::valueChanged,this,[=](int value){
+        shadow_main_color->setBlurRadius(value);
+        shadow_main_color->update();
+    });
+    connect(psh->intVal("unit_shadow_alpha"),&intVal::valueChanged,this,[=](int value){
+        auto tem = mainColor;
+        tem.setAlpha(value);
+        shadow_main_color->setColor(tem);
+        shadow_main_color->update();
+    });
     setGraphicsEffect(shadow_main_color);
-
-    setMainColor(winThemeColor());
+    updateColor();
+    connect(psh,&StyleHelper::colorChanged,this,&SUnit::updateColor);
 
     // colorAlpha = aim_colorAlpha();
     // nowPadRatio = aim_padRatio();
+    // linear = new SLinerAnimation(this);
+    // connect(linear,&SLinerAnimation::progressChanged,this,[=](double progress){
+    //     whenFocusAnimationChange();
+    // });
 
     focusAnimations = new QParallelAnimationGroup(this);
     positionAnimations = new QParallelAnimationGroup(this);
@@ -171,6 +186,7 @@ void SUnit::mouse_release_action(){
 void SUnit::removeFromLayout(){
     if(layout!=nullptr)
     layout->RemoveAUnit(this);
+    updateFocusAnimation();
 }
 
 
@@ -460,6 +476,8 @@ void SUnit::changeSimpleMode(){
 void SUnit::setMainColor(QColor val)
 {
     val.setAlpha(255);
+    if(mainColor==val) return;
+
     mainColor = val;
 
 
@@ -590,9 +608,11 @@ void SUnit::endUpdate(){
     if(layout!=nullptr){
         updateInLayout(false);
     }
+    updateColor();
     rs->updateDisplay();
     rs->raise();
     update();
+
 }
 
 
@@ -609,30 +629,39 @@ void SUnit::updateFocusAnimation()
 
     // qDebug()<<"colorAlpha Update: now:"<<colorAlpha<<"aim"<<aim_colorAlpha();
     alphaAnimation->setStartValue(colorAlpha);
+    alphaAnimation->setDuration(focus_animation_time);
     alphaAnimation->setEndValue(aim_colorAlpha());
 
     // qDebug()<<"nowPadRatio Update: now:"<<nowPadRatio<<"aim"<<aim_padRatio();
     padRatioAnimation->setStartValue(nowPadRatio);
+    padRatioAnimation->setDuration(focus_animation_time);
     padRatioAnimation->setEndValue(aim_padRatio());
 
     // qDebug()<<"nowMainColorRatio Update: now:"<<nowMainColorRatio<<"aim"<<aim_mainColorRatio();
     mainColorRatioAnimation->setStartValue(nowMainColorRatio);
+    mainColorRatioAnimation->setDuration(focus_animation_time);
     mainColorRatioAnimation->setEndValue(aim_mainColorRatio());
 
     // qDebug()<<"scaleFix Update: now:"<<scaleFix<<"aim"<<aim_scaleFix();
     scaleFixAnimation->setStartValue(scaleFix);
+    scaleFixAnimation->setDuration(focus_animation_time);
     scaleFixAnimation->setEndValue(aim_scaleFix());
 
     focusAnimations->start();
+    // linear->stop();
+    // linear->setTime(focus_animation_time);
+    // linear->start();
 }
 
 void SUnit::updatePositionAnimation()
 {
     positionAnimations->stop();
     posAnimation->setStartValue(edpos());
+    posAnimation->setDuration(position_animation_time);
     posAnimation->setEndValue(aim_pos);
 
     sizeAnimation->setStartValue(size());
+    sizeAnimation->setDuration(position_animation_time);
     sizeAnimation->setEndValue(aim_size);
     positionAnimations->start();
 }
@@ -658,12 +687,14 @@ void SUnit::preSetInLayout(bool animated)
     raise();
     if(animated){
         moveto(MyPos(),MySize());
+        updateFocusAnimation();
         connect(positionAnimations,&QParallelAnimationGroup::finished,this,&::SUnit::setInLayoutAniSlot,Qt::UniqueConnection);
         connect(positionAnimations,&QParallelAnimationGroup::currentLoopChanged,this,[=](){
             disconnect(positionAnimations,SIGNAL(finished()), 0, 0);
         });
     }
     else{
+        endUpdate();
         edmove(MyPos());
         setFixedSize(MySize());
         setInLayout(animated);
@@ -681,6 +712,11 @@ void SUnit::longFocusTimeoutSlot()
     longFocusTimer->stop();
     setLongFocus(preLongFocus);
 
+}
+
+void SUnit::updateColor()
+{
+    setMainColor(themeColor());
 }
 
 
@@ -806,5 +842,4 @@ void SUnit::setCelect(bool newOnCelected, bool disableAnimation )
     endUpdate();
     else
     updateFocusAnimation();
-
 }

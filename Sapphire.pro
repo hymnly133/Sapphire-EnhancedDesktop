@@ -1,7 +1,7 @@
-QT += core gui widgets winextras network concurrent quick qml
+QT += core gui widgets winextras network concurrent quick qml xml
 
-
-
+include($$PWD/QXlsx/QXlsx.pri)
+INCLUDEPATH += $$PWD/QXlsx
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8
@@ -70,11 +70,14 @@ SOURCES += \
     include/Func/filefunc.cpp \
     include/Func/global.cpp \
     include/Func/guifunc.cpp \
+    include/Func/iconfunc.cpp \
     include/Func/screenfunc.cpp \
     include/Func/unitfunc.cpp \
     include/Func/userfunc.cpp \
     include/SGUI/saction.cpp \
+    include/SGUI/scheckbox.cpp \
     include/SGUI/sinputdialog.cpp \
+    include/SGUI/slabel.cpp \
     include/SGUI/smenu.cpp \
     include/SGUI/snotice.cpp \
     include/SGUI/stooltip.cpp \
@@ -99,6 +102,8 @@ SOURCES += \
     include/SWidget/picturebox.cpp \
     include/SWidget/roundshower.cpp \
     include/SWidget/sbgshower.cpp \
+    include/SWidget/scolorview.cpp \
+    include/Setting/SQSS.cpp \
     include/Setting/sblocklayoutsettingwindow.cpp \
     include/Setting/style.cpp \
     include/Setting/stylehelper.cpp \
@@ -120,11 +125,14 @@ HEADERS += \
     include/Func/filefunc.h \
     include/Func/global.h \
     include/Func/guifunc.h \
+    include/Func/iconfunc.h \
     include/Func/screenfunc.h \
     include/Func/unitfunc.h \
     include/Func/userfunc.h \
     include/SGUI/saction.h \
+    include/SGUI/scheckbox.h \
     include/SGUI/sinputdialog.h \
+    include/SGUI/slabel.h \
     include/SGUI/smenu.h \
     include/SGUI/snotice.h \
     include/SGUI/stooltip.h \
@@ -149,6 +157,7 @@ HEADERS += \
     include/SWidget/picturebox.h \
     include/SWidget/roundshower.h \
     include/SWidget/sbgshower.h \
+    include/SWidget/scolorview.h \
     include/Setting/SQSS.h \
     include/Setting/sblocklayoutsettingwindow.h \
     include/Setting/style.h \
@@ -162,6 +171,7 @@ FORMS += \
     include/Setting/settingDialogForBlockLayout.ui \
     include/Setting/styleSetting.ui \
     include/Setting/stylesettotal.ui \
+    include/colorvalwidgettest.ui \
     include/fieldWidget.ui \
     include/mainwindow.ui \
     include/scollTest.ui \

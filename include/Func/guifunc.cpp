@@ -4,6 +4,7 @@
 #include "qpainterpath.h"
 #include "screenfunc.h"
 #include "sunit.h"
+#include"mainwindow.h"
 
 void paintRect(QWidget* aim,QColor color){
     bool another = true;

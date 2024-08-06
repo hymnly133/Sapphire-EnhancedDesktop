@@ -3,6 +3,7 @@
 #include "qfileinfo.h"
 #include "qscrollarea.h"
 #include "qspinbox.h"
+#include "scolorview.h"
 #include "style.h"
 #include "userfunc.h"
 
@@ -13,6 +14,11 @@ Add(QStringList()<<FIELDS,#NAME,&NAME,DISPALY,MIN,MAX);
 StyleHelper::StyleHelper()
 {
 
+    ADD(tr("颜色"),theme_color,tr("主题色") ,0,0);
+    ADD(tr("颜色"),use_syscolor_as_themecolor,tr("使用系统主题色") ,0,0);
+    ADD(tr("颜色"),background_color,tr("背景色") ,0,0);
+    ADD(tr("颜色"),text_color,tr("文字色") ,0,0);
+    ADD(tr("颜色"),highlight_color,tr("高亮色") ,0,0);
 
     ADD(tr("颜色")<<tr("聚焦"),unfocused_alpha,tr("未聚焦的外框颜色 Alpha") ,0,255);
     ADD(tr("颜色")<<tr("聚焦"),focused_alpha,tr("聚焦时的外框颜色 Alpha"),0,255);
@@ -28,15 +34,16 @@ StyleHelper::StyleHelper()
     ADD(tr("特效")<<tr("光效"),enable_light_track,tr("特效追踪"),0,0);
 
     ADD(tr("特效")<<tr("阴影"),icon_shadow_alpha,tr("图标阴影特效 Alpha"),0,255);
-    ADD(tr("特效")<<tr("阴影"),icon_shadow_blur_radius,tr("图标阴影特效 Radius"),0,100);
+    ADD(tr("特效")<<tr("阴影"),icon_shadow_blur_radius,tr("图标阴影特效 Radius"),1,100);
 
     ADD(tr("特效")<<tr("阴影"),unit_shadow_alpha,tr("所有组件阴影特效 Alpha"),0,255);
-    ADD(tr("特效")<<tr("阴影"),unit_shadow_blur_radius,tr("所有组件阴影特效 Radius"),0,100);
+    ADD(tr("特效")<<tr("阴影"),unit_shadow_blur_radius,tr("所有组件阴影特效 Radius"),1,100);
     ADD(tr("特效")<<tr("阴影"),enable_text_shadow,tr("文字阴影"),0,0);
 
 
-    ADD(tr("动画")<<tr("放置"),position_animation_time,tr("放置动画时长"),0,200);
-    ADD(tr("动画")<<tr("聚焦"),focus_animation_time,tr("聚焦动画时长"),0,200);
+    ADD(tr("动画")<<tr("放置"),position_animation_time,tr("放置动画时长"),0,400);
+    ADD(tr("动画")<<tr("聚焦"),focus_animation_time,tr("聚焦动画时长"),0,400);
+    ADD(tr("动画")<<tr("长聚焦"),long_focus_animation_time,tr("长聚焦动画时长"),0,1000);
     ADD(tr("动画"),enable_refresh_animation,tr("刷新闪烁动画"),0,0);
 
 
@@ -64,6 +71,10 @@ StyleHelper::StyleHelper()
     ADD(tr("系统"),enable_intime_repaint,tr("即时重绘"),0,0);
     ADD(tr("偏好"),user_font,tr("用户字体"),0,0);
 
+    connect(boolVal("use_syscolor_as_themecolor"),&boolVal::valueChanged,this,[=](){
+        emit colorChanged();
+    });
+
     psh = this;
 }
 
@@ -78,6 +89,15 @@ void StyleHelper::Add(QStringList fields,QString name, QString * pval, QString d
 {
     struct stringVal* res = new struct stringVal(fields,name,pval,displayName);
     stringStyles.insert(res->name,res);
+}
+
+void StyleHelper::Add(QStringList fields, QString name, QColor *pval, QString displayName, QString min, QString max)
+{
+    struct colorVal* res = new struct colorVal(fields,name,pval,displayName);
+    colorStyles.insert(res->name,res);
+    connect(res,&colorVal::valueChanged,this,[=](){
+        emit colorChanged();
+    });
 }
 
 
@@ -112,6 +132,9 @@ void StyleHelper::readStyleIni()
         foreach (auto val, stringStyles.values()) {
             val->read(styleIni);
         }
+        foreach (auto val, colorStyles.values()) {
+            val->read(styleIni);
+        }
 
         delete styleIni;
     }
@@ -136,6 +159,9 @@ void StyleHelper::writeStyleIni()
     foreach (auto val, stringStyles.values()) {
         val->write(styleIni);
     }
+    foreach (auto val, colorStyles.values()) {
+        val->write(styleIni);
+    }
 
     delete styleIni;
 }
@@ -158,6 +184,12 @@ boolVal* StyleHelper::boolVal(QString name)
 stringVal* StyleHelper::stringVal(QString name)
 {
     if(stringStyles.contains(name)) return stringStyles[name];
+    return nullptr;
+}
+
+colorVal *StyleHelper::colorVal(QString name)
+{
+    if(colorStyles.contains(name)) return colorStyles[name];
     return nullptr;
 }
 
@@ -187,7 +219,7 @@ StyleSettingWindow::StyleSettingWindow():QDialog(nullptr),ui(new Ui::Form)
 }
 
 //通过参数将content设置到应有的地方
-void StyleSettingWindow::setInLayout(QStringList fields, QWidget* content, bool small)
+void StyleSettingWindow::setInLayout(QStringList fields, QWidget* content, bool issmall)
 {
     QString leaveField = fields.last();
     QStringList parentField = fields.mid(0,fields.length()-1);
@@ -196,7 +228,7 @@ void StyleSettingWindow::setInLayout(QStringList fields, QWidget* content, bool 
         field2widget.insert(leaveField,new SFieldsWidget(this));
     }
 
-    field2widget[leaveField]->add(parentField,content,small);
+    field2widget[leaveField]->add(parentField,content,issmall);
 }
 
 
@@ -355,6 +387,42 @@ void StyleSettingWindow::processDoubleValues()
     }
 }
 
+void StyleSettingWindow::processColorValues()
+{
+    foreach (auto val, psh->colorStyles.values()) {
+        QWidget* valWidget = new QWidget(this);
+        QVBoxLayout* insideLayout = new QVBoxLayout(valWidget);
+        insideLayout->addStretch();
+
+
+        valWidget->setLayout(insideLayout);
+        SColorView* colorView = new SColorView(valWidget,*val->pval);
+        insideLayout->addWidget(colorView);
+        insideLayout->setAlignment(Qt::AlignCenter);
+
+
+        //信息显示
+        QLabel* displayNameLable = new QLabel(this);
+        displayNameLable->setText(val->displayName);
+        displayNameLable->setAlignment(Qt::AlignCenter);
+
+        insideLayout->addWidget(displayNameLable);
+
+        insideLayout->addStretch();
+
+        val->valWidget = valWidget;
+
+
+        //将控件连接到Val上
+        connect(colorView,&SColorView::colorChanged,val,&colorVal::set);
+
+        //将Val连接到控件上
+        connect(val,&colorVal::valueChanged,colorView,[=](QColor newColor){
+            colorView->now = newColor;
+        });
+    }
+}
+
 void StyleSettingWindow::setTreeView(const QStringList &fields)
 {
     qDebug() << fields;
@@ -396,11 +464,11 @@ void StyleSettingWindow::addAItem(const QStringList &fields)
     item2fields.insert(item1,fields);
 }
 
-void StyleSettingWindow::addContent(const QStringList &fields, QWidget *widget, bool small)
+void StyleSettingWindow::addContent(const QStringList &fields, QWidget *widget, bool issmall)
 {
     addAItem(fields);
     iniFieldWidget(fields);
-    fields2widget[fields]->add(fields.mid(0,fields.length()-1),widget,small);
+    fields2widget[fields]->add(fields.mid(0,fields.length()-1),widget,issmall);
     setTreeView(fields);
 }
 
@@ -414,7 +482,7 @@ void StyleSettingWindow::IniAboutPage()
     // ui->stackedWidget->addWidget(aboutWidget);
 
     // 标题
-    auto titleLabel = new QLabel("软件名称 - 关于");
+    auto titleLabel = new QLabel("Sapphire - 关于");
     titleLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(titleLabel);
 
@@ -425,11 +493,18 @@ void StyleSettingWindow::IniAboutPage()
     layout->addWidget(logoLabel, 0, Qt::AlignHCenter);
 
     // 版本号
-    auto versionLabel = new QLabel("版本: 1.0.0");
+    auto versionLabel = new QLabel("版本:"+QApplication::applicationVersion());
     layout->addWidget(versionLabel);
 
     // 作者
-    auto authorLabel = new QLabel("作者: xxx\n其他参与者:xxx,xxx,xxx");
+    auto authorLabel = new QLabel(QString(R"(
+作者: 诗音种的土豆/Hymnly 1336325450@qq.com
+其他制作者：微风中的快乐2329484200
+Icon贡献：
+制作帮助：
+
+使用：QXlsx
+    )"));
     layout->addWidget(authorLabel);
 
     // 添加许可证信息
@@ -452,6 +527,7 @@ void StyleSettingWindow::processVals()
     processBoolValues();
     processIntValues();
     processDoubleValues();
+    processColorValues();
 
     QList<QStringList> sortedFields;
     // 让list中字段排序
@@ -471,6 +547,10 @@ void StyleSettingWindow::processVals()
         if(!sortedFields.contains(val->fields))
         sortedFields.append(val->fields);
     }
+    foreach (auto val, psh->colorStyles.values()) {
+        if(!sortedFields.contains(val->fields))
+            sortedFields.append(val->fields);
+    }
 
 
 
@@ -481,15 +561,19 @@ void StyleSettingWindow::processVals()
     for (const auto& fields : sortedFields) {
         foreach (auto val, psh->intStyles.values()) {
             if(val->fields==fields)
-                addContent(fields,val->valWidget,val->small);
+                addContent(fields,val->valWidget,val->issmall);
         }
         foreach (auto val, psh->doubleStyles.values()) {
             if(val->fields==fields)
-                addContent(fields,val->valWidget,val->small);
+                addContent(fields,val->valWidget,val->issmall);
         }
         foreach (auto val, psh->boolStyles.values()) {
             if(val->fields==fields)
-                addContent(fields,val->valWidget,val->small);
+                addContent(fields,val->valWidget,val->issmall);
+        }
+        foreach (auto val, psh->colorStyles.values()) {
+            if(val->fields==fields)
+                addContent(fields,val->valWidget,val->issmall);
         }
     }
 }
@@ -500,6 +584,7 @@ void StyleSettingWindow::closeEvent(QCloseEvent *event)
     foreach(auto pmw,pmws){
         pmw->endUpdate();
     }
+    psh->writeStyleIni();
 }
 
 
@@ -533,3 +618,6 @@ void StyleSettingWindow::on_treeWidget_currentItemChanged(QTreeWidgetItem *curre
         ind2widget[item2ind[current]]->raise(item2fields[current].mid(0,item2fields[current].length()-1));
     }
 }
+
+
+

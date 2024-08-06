@@ -60,15 +60,27 @@ QJsonObject SFile::to_json()
 {
     QJsonObject rootObject = SMultiFunc::to_json();
     rootObject.insert("path",filePath);
-    rootObject.insert("useFileIcon",useFileIcon);
     return rootObject;
 }
 
 void SFile::load_json(QJsonObject rootObject)
 {
-    SMultiFunc::load_json(rootObject);
+    SUnit::load_json(rootObject);
+    if(rootObject.contains("name")) setName(rootObject.value("name").toString());
+    setFullShow(rootObject.value("fullShow").toBool());
     filePath =(rootObject.value("path").toString());
-    useFileIcon =rootObject.value("useFileIcon").toBool();
+
+
+    pixPath = rootObject.value("pixPath").toString();
+    if(pixPath!=""){
+        if(QFile::exists(pixPath))
+            SMultiFunc::setPix(path2Icon(pixPath)[0]);
+        else{
+            SNotice::notice(pixPath,tr("预加载图片丢失！"));
+            pixPath = "";
+            //图片丢失处理
+        }
+    }
     loadFromPath(filePath,false);
 }
 
@@ -113,9 +125,6 @@ void SFile::loadAimIcon(MyFileInfo info)
 void SFile::setPix(QString pixPath, bool save)
 {
     SMultiFunc::setPix(pixPath,save);
-
-    if(save)
-        useFileIcon = false;
 }
 
 void SFile::renameFile(QString newNameWithSuffix)
@@ -152,6 +161,12 @@ void SFile::setName(QString name)
 {
     SMultiFunc::setName(name);
     setObjectName(this->name);
+}
+
+void SFile::recoverForDefault()
+{
+    pixPath = "";
+    setPix(filePath,false);
 }
 
 
@@ -227,7 +242,7 @@ void SFile::loadFromMyFI(MyFileInfo info,bool init){
 
 
 
-    if(useFileIcon)
+    if(pixPath=="")
     loadAimIcon(info);
 
     if(info.okForAim()&&init)
@@ -250,7 +265,6 @@ void SFile::loadFromMyFI(MyFileInfo info,bool init){
     gv->limitInisde = true;
     lb->setText(elidedLineText(lb, 3, name));
     if(init){
-        useFileIcon = true;
         pixPath = "";
     }
 

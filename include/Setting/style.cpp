@@ -18,7 +18,7 @@ int focused_alpha = 220;
 int unfocused_alpha_deep = 140;
 int focused_alpha_deep = 200;
 
-double unfocused_color_ratio = 0.8;
+double unfocused_color_ratio = 0.35;
 double focused_color_ratio = 0.95;
 
 int light_alpha_start = 120;
@@ -31,11 +31,11 @@ bool ShowLight = true;
 int icon_shadow_alpha = 180;
 int icon_shadow_blur_radius = 40;
 
-int unit_shadow_alpha = 120;
+int unit_shadow_alpha = 100;
 int unit_shadow_blur_radius = 8;
 
 int unit_radius = 15;
-int position_animation_time = 100;
+int position_animation_time = 200;
 int focus_animation_time = 100;
 
 bool enable_background_blur = false;
@@ -51,6 +51,9 @@ int default_steam_icon_type =1;
 
 int long_focus_in_delta_time = 500;
 int long_focus_out_delta_time = 1000;
+
+
+int long_focus_animation_time = 500;
 double long_focus_container_fix_ratio = 1.71;
 
 double scale_fix_ratio = 1.3;
@@ -65,6 +68,20 @@ bool enable_resize_to_rect = 0;
 
 bool enable_refresh_animation=0;
 bool enable_background_transparent = 1;
-QString user_font = "";
+QString user_font = "Microsoft YaHei";
 
 
+QColor background_color = QColor(QString("ffe0dcf0").toUInt(NULL,16));
+QColor theme_color = QColor(QString("ffaec3f5").toUInt(NULL,16));
+QColor highlight_color = QColor(QString("ff7e84ff").toUInt(NULL,16));
+QColor text_color = QColor(QString("ff26242f").toUInt(NULL,16));
+bool use_syscolor_as_themecolor = false;
+
+
+QColor themeColor()
+{
+    if(use_syscolor_as_themecolor)
+        return winThemeColor();
+    else
+        return theme_color;
+}

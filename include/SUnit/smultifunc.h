@@ -62,6 +62,9 @@ public:
 
     virtual void setupEditMenu() override;
 
+
+
+
     // QWidget interface
     void setFullShow(bool val);
 
@@ -80,6 +83,10 @@ public:signals:
     void nowDefaultScale_changed(double val);
 
 signals:
+
+    // SUnit interface
+public slots:
+    void updateColor() override;
 };
 
 

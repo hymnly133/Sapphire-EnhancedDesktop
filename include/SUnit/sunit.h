@@ -2,10 +2,10 @@
 #define SUNIT_H
 #include "SysFunctions.h"
 #include "qgraphicseffect.h"
-#include "qmenu.h"
 #include "qparallelanimationgroup.h"
 #include "qpropertyanimation.h"
 #include "roundshower.h"
+#include "slineranimation.h"
 #include "smenu.h"
 #include "style.h"
 #include <QWidget>
@@ -14,7 +14,6 @@
 #include<qopenglwidget.h>
 #include<qopenglfunctions.h>
 #include"slayout.h"
-#include "stylehelper.h"
 
 class MainWindow;
 
@@ -100,12 +99,13 @@ public:
 
     //组件主颜色与主题颜色混合 不关注透明度
     QColor displayColor(){
-        return mixColor(mainColor,winThemeColor(),nowMainColorRatio);
+        return mixColor(mainColor,themeColor(),nowMainColorRatio);
     }
 
     //加入alpha的dispalycolor
     QColor displayColor_Alphaed();
 
+    SLinerAnimation* linear;
     //动画
     QParallelAnimationGroup * focusAnimations;
     QPropertyAnimation* alphaAnimation;
@@ -232,7 +232,7 @@ public:
 
 
     //各种状态的Set函数
-    void setMainColor(QColor color);
+    virtual void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
     virtual void setLongFocus(bool);
     virtual void setCelect(bool,bool animaion = false);
@@ -275,6 +275,7 @@ public slots:
     //用于接受计时器
     void setInLayoutAniSlot();
     void longFocusTimeoutSlot();
+    virtual void updateColor();
 
 
 

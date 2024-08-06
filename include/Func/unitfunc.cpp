@@ -2,7 +2,8 @@
 #include "global.h"
 #include "qmimedata.h"
 #include "scontainer.h"
-#include"QDrag"
+#include"mainwindow.h"
+#include"qdrag.h"
 #include"sfile.h"
 void dragOutG(SUnit *sender, QMouseEvent *event)
 {
@@ -52,7 +53,6 @@ void releaseCelect(SUnit *sender)
         res.first->putUnit(k,res.second,true);
         k->moving = false;
         k->premove = false;
-        k->updateFocusAnimation();
         if(processor!=nullptr){
             processor->onProcessAnother(k);
         }

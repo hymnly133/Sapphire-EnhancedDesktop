@@ -1,8 +1,19 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include "mainwindow.h"
 #include "qapplication.h"
+#define PROJECT_PATH QString("D:/Github/Sapphire-EnhancedDesktop")
+#define EXE_PATH QCoreApplication::applicationDirPath()
+
+#ifdef QT_DEBUG
+#define xmlDirPath PROJECT_PATH+"/xml"
+#define xlsxDirPath  PROJECT_PATH+"/xlsx"
+#define iconDirPath  PROJECT_PATH+"/icon"
+#else
+#define xmlDirPath EXE_PATH+"/xml"
+#define xlsxDirPath EXE_PATH+"/xlsx"
+#define iconDirPath EXE_PATH+"/icon"
+#endif
 
 #define numCelected pCelectedUnits.size()
 #define AUTO_RUN_KEY	"HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"
@@ -15,6 +26,15 @@ QAction *NAME = new QAction(#TEXT);\
     MENU->addAction(NAME);\
     connect(NAME, &QAction::triggered, RECIEVER, [=]()FUCTION);
 
+#define connectTo(NAME,TYPE,VALTYPE,FUNC)\
+connect(psh->TYPE##Val(#NAME),&TYPE##Val::valueChanged,this,[=](VALTYPE value)FUNC);
+
+class MainWindow;
+class SUnit;
+class SFile;
+class SMenu;
+class StyleHelper;
+class IconReader;
 //标识初始化
 extern bool init;
 
@@ -52,4 +72,5 @@ extern QMap<QString,SFile*> nowExits;
 extern QList<QString> ExcludeFiles;
 extern SMenu* unitsMenu;
 extern bool editMode;
+extern IconReader* pir;
 #endif // GLOBAL_H

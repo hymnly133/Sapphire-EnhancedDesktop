@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "global.h"
+#include "iconfunc.h"
 #include "sbgshower.h"
 #include "snotice.h"
 #include "sshellfuncunit.h"
@@ -32,6 +33,7 @@
 #include <Shlobj.h>
 #include <shlwapi.h>
 #include <windows.h>
+#include"stylehelper.h"
 
 
 void MainWindow::setupDesktopMenu()
@@ -237,6 +239,11 @@ void MainWindow::setupEditMenu()
                 {
                     SExit();
                 })
+
+    SET_ANCTION(act555,获取图标,editMenu,this,
+    {
+        pir->applyForAllSFile();
+    })
 
 
 }
@@ -910,6 +917,7 @@ void MainWindow::onSelectBackground()
 
 void MainWindow::setTransparent(bool val)
 {
+    if(transparent == val)return;
     transparent = val;
     if (enable_background_blur)
     {
@@ -938,7 +946,6 @@ void MainWindow::setTransparent(bool val)
         qDebug()<<"Settd";
         enable_background_transparent = val;
     }
-    qDebug()<<"setted"<<val;
 
     update();
     // updateBG();

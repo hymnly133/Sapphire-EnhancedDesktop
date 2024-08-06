@@ -4,11 +4,8 @@
 #include "qgraphicseffect.h"
 #include "qpainter.h"
 #include"global.h"
-namespace
-{
-const int SHADOW_WIDTH = 5;
-const QString QSS = "QMenu{background-color:transparent;margin:7px;border-radius:20px;}";
-}
+#include"mainwindow.h"
+#include "stylehelper.h"
 
 SMenu::SMenu(QWidget *parent):QMenu(parent)
 {
@@ -44,6 +41,9 @@ void SMenu::init()
     // setWindowFlags(Qt::Popup | Qt::FramelessWindowHint |Qt::NoDropShadowWindowHint);
     setContentsMargins(0,0,0,0);
     setStyleSheet(QSS_SMenu());
+    connect(psh,&StyleHelper::colorChanged,this,[=](){
+        setStyleSheet(QSS_SMenu());
+    });
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowFlags(windowFlags()  | Qt::FramelessWindowHint| Qt::NoDropShadowWindowHint );
 }
@@ -69,7 +69,7 @@ void SMenu::paintEvent(QPaintEvent *event)
 {
 
     // qDebug()<<parentWidget()->metaObject()->className();
-    QColor tem = winThemeColor();
+    QColor tem = themeColor();
     // qDebug()<<mapToGlobal(QPoint(0,0));
     QPainter painter(this);
     tem.setAlpha(arect->nowAlpha);

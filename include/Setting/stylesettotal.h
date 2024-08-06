@@ -21,6 +21,11 @@ signals:
     // void on_rebootBox_clicked();
     void on_resizeBox_clicked();
 
+private slots:
+    void on_ButtonLoadCustomIcons_pressed();
+
+    void on_ButtonRecoverDefaultIcons_pressed();
+
 private:
     Ui::styleSetTotal *ui;
 };

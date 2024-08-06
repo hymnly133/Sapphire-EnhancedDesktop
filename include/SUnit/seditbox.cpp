@@ -1,10 +1,12 @@
 #include "seditbox.h"
+#include "SQSS.h"
 #include "SysFunctions.h"
 #include "global.h"
 #include "mainwindow.h"
 #include "qmessagebox.h"
 #include"qcheckbox.h"
 #include"QSlider"
+#include "scheckbox.h"
 #include "screenfunc.h"
 #include "userfunc.h"
 
@@ -20,8 +22,8 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     overall = new QVBoxLayout();
     settings->addLayout(overall);
 
-    QCheckBox *checkBox1 = new QCheckBox("背景透视",this);             //创建QCheckBox对象
-
+    QCheckBox *checkBox1 = new SCheckBox(this);            //创建QCheckBox对象
+    checkBox1->setText(tr("背景透视"));
     checkBox1->setChecked(true);
     checkBox1->setObjectName("TransparentCheckBox");
     overall->addWidget(checkBox1);
@@ -31,7 +33,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     });
 
 #ifdef QT_DEBUG
-        QCheckBox *checkBox2 = new QCheckBox("背景模糊",this);
+        QCheckBox *checkBox2 = new SCheckBox("背景模糊",this);
         checkBox2->setChecked(enable_background_blur);
         overall->addWidget(checkBox2);
         connect(checkBox2, &QCheckBox::clicked, this, [this](bool checked) {
@@ -40,7 +42,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
         });
 #endif
 
-    QCheckBox *checkBox3 = new QCheckBox("特效追踪",this);
+    QCheckBox *checkBox3 = new SCheckBox("特效追踪",this);
     checkBox3->setChecked(enable_light_track);
     overall->addWidget(checkBox3);
     connect(checkBox3, &QCheckBox::clicked, this, [this](bool checked) {
@@ -48,7 +50,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
         pmw->update();
     });
 
-    QCheckBox *checkBoxTextShadow = new QCheckBox("文字阴影",this);
+    QCheckBox *checkBoxTextShadow = new SCheckBox("文字阴影",this);
     checkBoxTextShadow->setChecked(enable_text_shadow);
     overall->addWidget(checkBoxTextShadow);
     connect(checkBoxTextShadow, &QCheckBox::clicked, this, [](bool checked) {
@@ -64,7 +66,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
 
     });
 
-    QCheckBox *checkBoxIcon = new QCheckBox("超清图标(需重启）",this);
+    QCheckBox *checkBoxIcon = new SCheckBox("超清图标(需重启）",this);
     checkBoxIcon->setChecked(enable_highdef_icon);
     overall->addWidget(checkBoxIcon);
     connect(checkBoxIcon, &QCheckBox::clicked, this, [](bool checked) {
@@ -87,7 +89,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
 
 #ifdef QT_DEBUG
 
-    QCheckBox *checkBox4 = new QCheckBox("绘制边框",this);
+    QCheckBox *checkBox4 = new SCheckBox("绘制边框",this);
     checkBox4->setChecked(ShowSide);
     paint->addWidget(checkBox4);
     connect(checkBox4, &QCheckBox::clicked, this, [this](bool checked) {
@@ -97,7 +99,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
 
 #endif
 
-    QCheckBox *checkBox5 = new QCheckBox("绘制矩形",this);
+    QCheckBox *checkBox5 = new SCheckBox("绘制矩形",this);
     checkBox5->setChecked(ShowRect);
     paint->addWidget(checkBox5);
     connect(checkBox5, &QCheckBox::clicked, this, [this](bool checked) {
@@ -105,7 +107,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
         pmw->update();
     });
 
-    QCheckBox *checkBox6 = new QCheckBox("绘制光效",this);
+    QCheckBox *checkBox6 = new SCheckBox("绘制光效",this);
     checkBox6->setChecked(ShowLight);
     paint->addWidget(checkBox6);
     connect(checkBox6, &QCheckBox::clicked, this, [this](bool checked) {
@@ -114,7 +116,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     });
 
 
-    QCheckBox *checkBox7 = new QCheckBox("大图标填充",this);
+    QCheckBox *checkBox7 = new SCheckBox("大图标填充",this);
     checkBox7->setChecked(enable_image_fill);
     connect(checkBox7, &QCheckBox::clicked, this, [this](bool checked) {
         enable_image_fill = checked;
@@ -124,7 +126,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
 
 
 #ifdef QT_DEBUG
-    QCheckBox *checkBox8 = new QCheckBox("即时重绘",this);
+    QCheckBox *checkBox8 = new SCheckBox("即时重绘",this);
     checkBox8->setChecked(enable_intime_repaint);
     connect(checkBox8, &QCheckBox::clicked, this, [this](bool checked) {
         enable_intime_repaint = checked;
@@ -133,7 +135,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     paint->addWidget(checkBox8);
 #endif
 
-    QCheckBox *checkAutoRun = new QCheckBox("开机自启",this);
+    QCheckBox *checkAutoRun = new SCheckBox("开机自启",this);
     checkAutoRun->setChecked(enable_auto_run);
     overall->addWidget(checkAutoRun);
     connect(checkAutoRun, &QCheckBox::clicked, this, [](bool checked) {
@@ -160,6 +162,7 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
     settings->addWidget(radius_Slider);
 
     QPushButton *button = new QPushButton("选择背景", this);
+
     connect(button, &QPushButton::clicked, this, [this]() {
         // 点击按钮后的处理逻辑
         pmw->onSelectBackground();

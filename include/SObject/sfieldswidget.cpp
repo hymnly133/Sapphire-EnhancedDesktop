@@ -9,7 +9,7 @@ SFieldsWidget::SFieldsWidget(QWidget *parent):QWidget(parent)
 
 }
 
-void SFieldsWidget::add(QStringList parentfields, QWidget *content, bool small)
+void SFieldsWidget::add(QStringList parentfields, QWidget *content, bool issmall)
 {
     if(!fieldWidgets.contains(parentfields)){
         QWidget* fieldWidget = new QWidget(this);
@@ -41,7 +41,7 @@ void SFieldsWidget::add(QStringList parentfields, QWidget *content, bool small)
     }
 
     content->setParent(fieldWidgets[parentfields]);
-    if(small){
+    if(issmall){
         smallLayouts[parentfields]->addWidget(content);
         ((QHBoxLayout*)fieldWidgets[parentfields]->layout())->setStretchFactor(smallLayouts[parentfields], 1);
     }

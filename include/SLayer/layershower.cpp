@@ -57,7 +57,7 @@ void LayerShower::paintEvent(QPaintEvent *event)
     // tem.setAlpha(100);
     // paintRect(this,tem);
     // qDebug()<<"ShowerRepaint";
-    auto tem = winThemeColor();
+    auto tem = themeColor();
     tem.setAlpha(100);
 
 
@@ -67,7 +67,7 @@ void LayerShower::paintEvent(QPaintEvent *event)
         if(activepmw == pmw){
             if(!pCelectedUnits.empty()){
                 qDebug()<<"celected";
-                auto tem = winThemeColor();
+                auto tem = themeColor();
                 tem.setAlpha(255);
                 qDebug()<<"paint";
                 QRegion celectedRegion;

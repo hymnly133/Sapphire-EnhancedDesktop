@@ -31,10 +31,18 @@
      <item>
       <widget class="QTreeWidget" name="treeWidget">
        <property name="styleSheet">
-        <string notr="true">QTreeWidget::item{
-height:25px;
-                }</string>
+        <string notr="true">
+ 
+QTreeView::item {
+     padding: 10px solid;
+}
+</string>
        </property>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item>

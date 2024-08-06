@@ -24,7 +24,7 @@ public:
 
 
     QMap<QStringList,QLabel*> labels;
-    void add(QStringList parentfields, QWidget* contentLayout, bool small);
+    void add(QStringList parentfields, QWidget* contentLayout, bool issmall);
     void raise(QStringList aimfield);
 
 };

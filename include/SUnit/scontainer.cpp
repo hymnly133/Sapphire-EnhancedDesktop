@@ -1,8 +1,10 @@
 #include "scontainer.h"
-
+#include "global.h"
+#include"mainwindow.h"
 SContainer::SContainer(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
 {
     type = Container;
+    setMainColor(background_color);
 }
 void SContainer::setSimpleMode(bool val){
     SUnit::setSimpleMode(val);
@@ -55,6 +57,24 @@ void SContainer::setPMW(MainWindow *pmw)
     inside->pmw = pmw;
     foreach (auto content, *(inside->contents)) {
         content->setPMW(pmw);
+    }
+}
+
+void SContainer::updateColor()
+{
+    setMainColor(background_color);
+}
+
+void SContainer::remove()
+{
+    QList<SUnit*> con;
+    foreach (auto content, *(inside->contents)) {
+        content->removeFromLayout();
+        con.push_back(content);
+    }
+    SUnit::remove();
+    foreach (auto content, con) {
+        activepmw->inside->clearPut(content,true);
     }
 }
 

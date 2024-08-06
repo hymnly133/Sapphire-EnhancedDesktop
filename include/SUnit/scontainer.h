@@ -26,6 +26,9 @@ public:
     void setScale(double val)override;
     void endUpdate()override;
 
+
+
+
     virtual void Say();
     // ED_Unit interface
 public:
@@ -37,6 +40,14 @@ signals:
 public:
     void setPMW(MainWindow *pmw) override;
 
+
+    // SUnit interface
+public slots:
+    void updateColor() override;
+
+    // SUnit interface
+public:
+    void remove() override;
 };
 
 

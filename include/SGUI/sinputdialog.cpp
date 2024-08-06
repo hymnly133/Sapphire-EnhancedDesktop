@@ -36,7 +36,7 @@
     });
     connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){
         move(previousPos+pos);
-        QColor tem = winThemeColor();
+        QColor tem = themeColor();
         tem.setAlpha(arect->nowAlpha);
         rs->raise();
 
@@ -134,7 +134,7 @@
 
  void SInputDialog::paintEvent(QPaintEvent *event)
  {
-     QColor tem = winThemeColor();
+     QColor tem = themeColor();
      // qDebug()<<mapToGlobal(QPoint(0,0));
      QPainter painter(this);
      tem.setAlpha(arect->nowAlpha);

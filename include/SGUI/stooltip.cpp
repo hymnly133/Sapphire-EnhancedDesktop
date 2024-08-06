@@ -129,7 +129,7 @@ SToolTip* SToolTip::tip(QString info, QPoint pos, bool shift,bool up)
 
 void SToolTip::paintEvent(QPaintEvent *event)
 {
-    QColor tem = winThemeColor();
+    QColor tem = themeColor();
     // qDebug()<<mapToGlobal(QPoint(0,0));
     QPainter painter(this);
     tem.setAlpha(arect->nowAlpha);
@@ -138,7 +138,7 @@ void SToolTip::paintEvent(QPaintEvent *event)
     painter.drawRect(rect());
 
 
-    tem = QColor("black");
+    tem = text_color;
     tem.setAlpha(arect->nowAlpha);
     painter.setPen(tem);
     painter.setFont(*font);
