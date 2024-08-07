@@ -14,6 +14,7 @@
 #include <Shlobj.h>
 #include"snotice.h"
 #include <QFile>
+#define SHELLICONPATH "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons"
 MyFileInfo::MyFileInfo(QString path, int size)
 {
     type = TYPE::SINGLE ;
@@ -38,8 +39,13 @@ QString path2Name(QString path){
     return QFileInfo(path).baseName();
 }
 
-QPixmap getWinIcon(QString path){
-
+QPixmap getWinIcon(QString path,bool small){
+    if(path[0]=="\""){
+        path.replace("\"","");
+    }
+    else if(path[0]=="\'"){
+        path.replace("\'","");
+    }
     QPixmap res ;
     LPCTSTR szFile = (LPCTSTR)path.utf16();
     SHFILEINFO sfi;
@@ -51,6 +57,7 @@ QPixmap getWinIcon(QString path){
     // 获取大号图像列表
     IImageList *piml;
     int aim = (enable_highdef_icon)?4:2;
+    if(small) aim=2;
     if (FAILED(SHGetImageList(aim, IID_PPV_ARGS(&piml)))){
 
         qDebug()<<"failed2";
@@ -551,4 +558,46 @@ bool copyDir(const QString& fromDir, const QString& toDir, bool coverFileIfExist
     }
     return true;
 
+}
+
+QIcon getShellIcon(QString path, int ind)
+{
+    path = path.simplified();
+    if(path[0]=="\""){
+        path.replace("\"","");
+    }
+    else if(path[0]=="\'"){
+        path.replace("\'","");
+    }
+    QIcon icon;
+    if(path.isNull()) return icon;
+
+    if(path.toLower() == "shell32.dll")
+    {
+        path = "shell32.dll";//系统强制文件重定向
+        QSettings set(SHELLICONPATH,QSettings::NativeFormat);
+        if(set.value(QString::number(ind)).isValid()){
+            QStringList rePath = set.value(QString::number(ind)).toString().split(',');
+            icon =  getShellIcon(rePath[0],rePath[1].toInt());
+        }
+        if(!icon.isNull()) return icon;
+    }
+
+    HICON* hIconL[10];
+    HICON* hIconS[10];
+
+    //iconIndex为负数就是指定资源标识符, 为正数就是该图标在资源文件中的顺序序号, 为-1时不能使用ExtractIconEx提取图标
+
+    QScopedArrayPointer<HICON> icons(new HICON[10]);
+    int res = ExtractIconEx((wchar_t *)path.utf16(), ind, icons.data(), NULL, 1);
+
+    if(res){
+        icon = QtWin::fromHICON(icons[0]);
+        DestroyIcon(icons[0]);
+    }
+    // else if(hIconS){
+        // icon = QtWin::fromHICON(*hIconS);
+        // DestroyIcon(*hIconS);
+    // }
+    return icon;
 }

@@ -151,3 +151,9 @@ void repaintAround(QWidget* aim){
     auto rrect = QRect(tem.x()-100,tem.y()-100,tem.width()+200,tem.height()+200);
     pmws[screenInd(aim)]->repaint(rrect);
 }
+
+QColor applyAlpha(QColor source, int alpha)
+{
+    source.setAlpha(alpha);
+    return source;
+}

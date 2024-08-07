@@ -75,8 +75,11 @@ struct MyFileInfo
 };
 
 
+//从文件获得Icon
+QPixmap getWinIcon(QString path,bool small = false);
 
-
+//从Shell索引获得Icon
+QIcon getShellIcon(QString path,int ind);
 
 //转化为MyFileInfo
 MyFileInfo path2MyFI(QString path,int size=512);

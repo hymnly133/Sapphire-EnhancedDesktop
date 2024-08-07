@@ -193,36 +193,43 @@ void SFile::remove()
 void SFile::setupDesktopMenu()
 {
     SUnit::setupDesktopMenu();
+    desktopMenu->path = filePath;
 
-    SET_ANCTION(actOpen,打开,desktopMenu,this,{
+    SET_ANCTION(actOpen,tr("打开"),desktopMenu,this,{
         open();
     });
 
     if(!isDir){
-        SET_ANCTION(actOpenAdmin,以管理员身份打开,desktopMenu,this,{
+        SET_ANCTION(actOpenAdmin,tr("以管理员身份打开"),desktopMenu,this,{
             open(true);
         });
     }
 
 
-    SET_ANCTION(actRename,重命名,desktopMenu,this,{
+    SET_ANCTION(actRename,tr("重命名"),desktopMenu,this,{
         renameWithDialog();
     });
 
 #ifdef QT_DEBUG
 
-    SET_ANCTION(actSoftDelet,软删除,desktopMenu,this,{
+    SET_ANCTION(actSoftDelet,tr("软删除"),desktopMenu,this,{
         SMultiFunc::remove();
     });
 #endif
 
-    SET_ANCTION(actDelete,删除,desktopMenu,this,{
+    SET_ANCTION(actDelete,tr("删除"),desktopMenu,this,{
         remove();
     });
 
-    SET_ANCTION(actOpenFileProperty,属性,desktopMenu,this,{
+    SET_ANCTION(actOpenFileProperty,tr("属性"),desktopMenu,this,{
         OpenFileProperty(this->filePath);
     })
+    if(isDir){
+        desktopMenu->addDirCommands();
+    }
+    else{
+        desktopMenu->addFileCommands(targetSuffix());
+    }
 }
 
 

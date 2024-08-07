@@ -1,3 +1,4 @@
+#include <shlwapi.h>
 #include<windows.h>
 #include "global.h"
 #include"mainwindow.h"
@@ -546,4 +547,41 @@ QColor winThemeColor()
     }
     return res;
 
+}
+
+QString extractString(QString res)
+{
+    QString code = QLocale::system().uiLanguages()[0];
+    WCHAR wsBuffer[1024] = { 0 };
+    memset(wsBuffer, 0, 1024 * sizeof(WCHAR));
+    SHLoadIndirectString(res.toStdWString().c_str(), wsBuffer, 1024,NULL);
+    return QString::fromStdWString(wsBuffer);
+}
+
+void shellContextMenuRun(QString command, QString path)
+{
+    command.replace("%V",path);
+    command.replace("%v",path);
+    command.replace("%1",path);
+    command.replace('\'','\"');
+    command.replace('/','\\');
+    qDebug()<<"Run"<<command;
+    if(command.contains(".exe")){
+        QString exe = command.mid(0,command.indexOf(".exe")+4).simplified();
+        if(exe[0]=="\""){
+            exe.remove("\"");
+            exe.remove("\"");
+        }
+
+
+        QString para = command.mid(command.indexOf(".exe")+5,command.length()-(command.indexOf(".exe")+5)+1).simplified();
+        qDebug()<<exe<<para;
+        qDebug()<<shellrun(exe,para);
+        return;
+    }
+    // system(command.toStdString().c_str());
+    // QProcess process;
+    // QProcess::startDetached(command);
+    qDebug()<<shellrun(command);
+    // process.start("cmd",QStringList()<<command);
 }

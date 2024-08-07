@@ -22,5 +22,4 @@ QMap<QString,SFile*> nowExits;
 QMap<int,QJsonObject> UnusedJsons;
 QList<QString> ExcludeFiles;
 IconReader* pir;
-
 bool editMode = false;

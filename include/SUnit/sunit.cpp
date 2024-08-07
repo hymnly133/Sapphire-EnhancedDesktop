@@ -65,9 +65,7 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
         shadow_main_color->update();
     });
     connect(psh->intVal("unit_shadow_alpha"),&intVal::valueChanged,this,[=](int value){
-        auto tem = mainColor;
-        tem.setAlpha(value);
-        shadow_main_color->setColor(tem);
+        shadow_main_color->setColor(applyAlpha( displayColor(),unit_shadow_alpha));
         shadow_main_color->update();
     });
     setGraphicsEffect(shadow_main_color);
@@ -204,36 +202,36 @@ void SUnit::setupEditMenu()
         onContextMenuShowing = false;
     });
 
-    SET_ANCTION(act1,加宽,editMenu,this,{
+    SET_ANCTION(act1,tr("加宽"),editMenu,this,{
         setBlockSize(sizeX+1,sizeY);
     });
 
-    SET_ANCTION(act2,加高,editMenu,this,{
+    SET_ANCTION(act2,tr("加高"),editMenu,this,{
         setBlockSize(sizeX,sizeY+1);
     });
 
-    SET_ANCTION(act3,减宽,editMenu,this,{
+    SET_ANCTION(act3,tr("减宽"),editMenu,this,{
         if(sizeX>=2)
             setBlockSize(sizeX-1,sizeY);
     });
 
-    SET_ANCTION(act4,减高,editMenu,this,{
+    SET_ANCTION(act4,tr("减高"),editMenu,this,{
         if(sizeY>=2)
             setBlockSize(sizeX,sizeY-1);
     });
 
-    SET_ANCTION(act5,切换精简,editMenu,this,{
+    SET_ANCTION(act5,tr("切换精简"),editMenu,this,{
         setSimpleMode(!simpleMode);
     });
 
-    SET_ANCTION(act6,切换始终显示,editMenu,this,{
+    SET_ANCTION(act6,tr("切换始终显示"),editMenu,this,{
         // swtichAlwayShowG(this);
 
         setAlwaysShow(!alwaysShow);
     });
 
 
-    SET_ANCTION(act7,删除,editMenu,this,{
+    SET_ANCTION(act7,tr("删除"),editMenu,this,{
         remove();
     });
 }
@@ -605,6 +603,8 @@ void SUnit::endUpdate(){
     nowPadRatio = aim_padRatio();
     scaleFix = aim_scaleFix();
     nowMainColorRatio = aim_mainColorRatio();
+    shadow_main_color->setColor(applyAlpha( displayColor(),unit_shadow_alpha));
+    shadow_main_color->update();
     if(layout!=nullptr){
         updateInLayout(false);
     }
@@ -729,7 +729,6 @@ void SUnit::setInLayout(bool animated)
     setVisible(true);
     layout->updateAfterPut(this,indX,indY);
     update();
-
 }
 
 QJsonObject SUnit::to_json(){
@@ -802,6 +801,8 @@ void SUnit::whenLongFocusAnimationChange()
 void SUnit::whenFocusAnimationChange()
 {
     onScaleChange(scale*scaleFix);
+    shadow_main_color->setColor(applyAlpha( displayColor(),unit_shadow_alpha));
+    shadow_main_color->update();
     if(layout && layout->pContainer->inherits("SDock")){
         layout->pContainer->update();
     }

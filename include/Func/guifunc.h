@@ -16,5 +16,6 @@ QPixmap resizeToRect(QPixmap source);
 //在组件附近重绘
 void repaintAround(QWidget* aim);
 
+QColor applyAlpha(QColor source,int alpha);
 
 #endif // GUIFUNC_H

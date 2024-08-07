@@ -22,7 +22,7 @@
 #define NO_IND QPoint(-1,-1)
 #define SAPPHIRE_REG_PATH "HKEY_CURRENT_USER\\Software\\Hymnly\\Sapphire"
 #define SET_ANCTION(NAME,TEXT,MENU,RECIEVER,FUCTION)\
-QAction *NAME = new QAction(#TEXT);\
+QAction *NAME = new QAction(TEXT);\
     MENU->addAction(NAME);\
     connect(NAME, &QAction::triggered, RECIEVER, [=]()FUCTION);
 
@@ -73,4 +73,5 @@ extern QList<QString> ExcludeFiles;
 extern SMenu* unitsMenu;
 extern bool editMode;
 extern IconReader* pir;
+
 #endif // GLOBAL_H

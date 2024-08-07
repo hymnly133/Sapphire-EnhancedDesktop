@@ -53,5 +53,8 @@ QRect Point2Rect(QPoint point0,QPoint point1);
 QColor mixColor(QColor source,QColor add,double ratio);
 QColor winThemeColor();
 
+QString extractString(QString res);
+
+void shellContextMenuRun(QString command,QString path);
 
 #endif // SYSFUNCTIONS_H

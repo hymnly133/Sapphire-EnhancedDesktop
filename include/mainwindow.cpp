@@ -41,6 +41,7 @@ void MainWindow::setupDesktopMenu()
     // 只要将某个QAction添加给对应的窗口, 这个action就是这个窗口右键菜单中的一个菜单项了
     // 在窗口中点击鼠标右键, 就可以显示这个菜单
     desktopMenu = new SMenu(this);
+    desktopMenu->path = *UserDesktopPath;
     desktopMenu->ismain = true;
     // 给当前窗口添加QAction对象
     // SET_ANCTION(act01,刷新,desktopMenu,this,
@@ -52,14 +53,14 @@ void MainWindow::setupDesktopMenu()
         refresh();
     });
 
-    SET_ANCTION(act1,改变可见,desktopMenu,this,
+    SET_ANCTION(act1,tr("改变可见"),desktopMenu,this,
     { setShoweredVisibal(!showeredVisibal); })
     act1->setText(tr("改变可见"));
 
 
 
 
-    SET_ANCTION(act3,映射文件,desktopMenu,this,
+    SET_ANCTION(act3,tr("映射文件"),desktopMenu,this,
     {
         QFileDialog* fd = new QFileDialog();
         QStringList filePaths =QFileDialog::getOpenFileNames(this, tr("选择文件"),"D:/",nullptr,nullptr,QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
@@ -76,26 +77,26 @@ void MainWindow::setupDesktopMenu()
     creatNewFileMenu = new SMenu();
     creatNewFileAction->setMenu(creatNewFileMenu);
 
-    SET_ANCTION(actNewDir,文件夹,creatNewFileMenu,this,{
+    SET_ANCTION(actNewDir,tr("文件夹"),creatNewFileMenu,this,{
         fileCreator::creatNewDir();
     });
 
-    SET_ANCTION(act13,文本文档,creatNewFileMenu,this,{
+    SET_ANCTION(act13,tr("文本文档"),creatNewFileMenu,this,{
         fileCreator::creatNewFile(FileType::txt);
                                                    });
-    SET_ANCTION(act14,PPT演示文稿,creatNewFileMenu,this,{
+    SET_ANCTION(act14,tr("PPT演示文稿"),creatNewFileMenu,this,{
         fileCreator::creatNewFile(FileType::pptx);
     });
-    SET_ANCTION(act15,Word文档,creatNewFileMenu,this,{
+    SET_ANCTION(act15,tr("Word文档"),creatNewFileMenu,this,{
         fileCreator::creatNewFile(FileType::docx);
     });
-    SET_ANCTION(act16,空文件,creatNewFileMenu,this,{
+    SET_ANCTION(act16,tr("空文件"),creatNewFileMenu,this,{
         fileCreator::creatNewFile(FileType::empty);
     });
 
 
     QAction *systemSettingMenuAction = new QAction(desktopMenu);
-    systemSettingMenuAction->setText("系统设置");
+    systemSettingMenuAction->setText(tr("系统设置"));
     desktopMenu->addAction(systemSettingMenuAction);
 
     connect(systemSettingMenuAction,&QAction::triggered,this,[=](){
@@ -105,36 +106,39 @@ void MainWindow::setupDesktopMenu()
 
     SMenu *systemSettingMenu = new SMenu();
     systemSettingMenuAction->setMenu(systemSettingMenu);
-    SET_ANCTION(act00,主面板,systemSettingMenu,this,{
+    SET_ANCTION(act00,tr("主面板"),systemSettingMenu,this,{
         shellrun("ms-settings:");
     });
-    SET_ANCTION(act17,显示设置,systemSettingMenu,this,{
+    SET_ANCTION(act17,tr("显示设置"),systemSettingMenu,this,{
         shellrun("ms-settings:display");
     });
-    SET_ANCTION(act18,个性化,systemSettingMenu,this,{
+    SET_ANCTION(act18,tr("个性化"),systemSettingMenu,this,{
         shellrun("ms-settings:personalization");
     });
-    SET_ANCTION(act21,网络和Internet,systemSettingMenu,this,{
+    SET_ANCTION(act21,tr("网络和Internet"),systemSettingMenu,this,{
         shellrun("ms-settings:network-status");
     });
-    SET_ANCTION(act19,电源和睡眠,systemSettingMenu,this,{
+    SET_ANCTION(act19,tr("电源和睡眠"),systemSettingMenu,this,{
         shellrun("ms-settings:powersleep");
     });
-    SET_ANCTION(act22,Windows更新,systemSettingMenu,this,{
+    SET_ANCTION(act22,tr("Windows更新"),systemSettingMenu,this,{
         shellrun("ms-settings:windowsupdate");
     });
-    SET_ANCTION(act20,系统信息,systemSettingMenu,this,{
+    SET_ANCTION(act20,tr("系统信息"),systemSettingMenu,this,{
         shellrun("ms-settings:about");
     });
 
+    // desktopMenu->addDirCommands();
+    desktopMenu->addDirBGCommands();
 
-    SET_ANCTION(actToEditMode,编辑模式,desktopMenu,this,
+
+    SET_ANCTION(actToEditMode,tr("编辑模式"),desktopMenu,this,
     {
             toEditMode();
     })
 
 
-    SET_ANCTION(act4,退出程序,desktopMenu,this,
+    SET_ANCTION(act4,tr("退出程序"),desktopMenu,this,
     {
         SExit();
     })
@@ -147,7 +151,7 @@ void MainWindow::setupEditMenu()
     editMenu->ismain = true;
 
 
-    SET_ANCTION(act2,切换精简,editMenu,this,
+    SET_ANCTION(act2,tr("切换精简"),editMenu,this,
         {
             for(SUnit* content:*(inside->contents)){
                 content->changeSimpleMode();
@@ -163,42 +167,42 @@ void MainWindow::setupEditMenu()
 
 #ifdef QT_DEBUG
 
-    SET_ANCTION(act5,获取背景,editMenu,this,{
+    SET_ANCTION(act5,tr("获取背景"),editMenu,this,{
         capture();
     })
 
-    SET_ANCTION(actupdate,EndUpdate,editMenu,this,{
+    SET_ANCTION(actupdate,tr("EndUpdate"),editMenu,this,{
         endUpdate();
     })
 
 #endif
 
 
-    SET_ANCTION(act6,小型格子,creatNewUnitMenu,this,{
+    SET_ANCTION(act6,tr("小型格子"),creatNewUnitMenu,this,{
         auto bc = new SBlockContainer(inside,2,2,2,2);
     })
 
 
 
-    SET_ANCTION(act7,中型格子,creatNewUnitMenu,this,{
+    SET_ANCTION(act7,tr("中型格子"),creatNewUnitMenu,this,{
         auto bc = new SBlockContainer(inside,3,3,3,3);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act8,大型格子,creatNewUnitMenu,this,{
+    SET_ANCTION(act8,tr("大型格子"),creatNewUnitMenu,this,{
         auto bc = new SBlockContainer(inside,4,4,4,4);
         // InitAUnit(bc);
     })
 
 
-    SET_ANCTION(act9,Dock栏,creatNewUnitMenu,this,{
+    SET_ANCTION(act9,tr("Dock栏"),creatNewUnitMenu,this,{
         auto dock = new SDock(inside);
         // InitAUnit(dock);
     })
 
 
-    SET_ANCTION(act10,设置箱,creatNewUnitMenu,this,{
+    SET_ANCTION(act10,tr("设置箱"),creatNewUnitMenu,this,{
         auto dock = new SEditBox(inside);
         // InitAUnit(dock);
     })
@@ -206,12 +210,12 @@ void MainWindow::setupEditMenu()
 
 #ifdef QT_DEBUG
 
-    SET_ANCTION(act11,重绘盒,creatNewUnitMenu,this,{
+    SET_ANCTION(act11,tr("重绘盒"),creatNewUnitMenu,this,{
         auto dock = new RepaintCounterUnit(inside);
         // InitAUnit(dock);
     })
 
-    SET_ANCTION(act151,lowerAndUpdate,editMenu,this,{
+    SET_ANCTION(act151,tr("lowerAndUpdate"),editMenu,this,{
         qDebug()<<changeShower->geometry();
         changeShower->lower();
         changeShower->setVisible(!changeShower->isVisible());
@@ -221,21 +225,21 @@ void MainWindow::setupEditMenu()
     })
 #endif
 
-    SET_ANCTION(act12,系统盒子,creatNewUnitMenu,this,{
+    SET_ANCTION(act12,tr("系统盒子"),creatNewUnitMenu,this,{
         auto dock = new SShellFuncUnit(inside);
         // InitAUnit(dock);
     })
 
-    SET_ANCTION(act14,调整布局,editMenu,this,{
+    SET_ANCTION(act14,tr("调整布局"),editMenu,this,{
         resizeForWithDialog(inside);
     })
 
 
-    SET_ANCTION(act13,桌面模式,editMenu,this,{
+    SET_ANCTION(act13,tr("桌面模式"),editMenu,this,{
         toDesktopMode();
     })
 
-    SET_ANCTION(act4,退出程序,editMenu,this,
+    SET_ANCTION(act4,tr("退出程序"),editMenu,this,
                 {
                     SExit();
                 })
@@ -247,15 +251,15 @@ void MainWindow::setupMultiMenu()
     multiMenu = new SMenu(this);
     multiMenu->ismain = true;
     // 给当前窗口添加QAction对象
-    SET_ANCTION(act01,切换精简,multiMenu,this,
+    SET_ANCTION(act01,tr("切换精简"),multiMenu,this,
     {switchSimpleModeG();})
 
-    SET_ANCTION(act02,切换始终显示,multiMenu,this,{
+    SET_ANCTION(act02,tr("切换始终显示"),multiMenu,this,{
         swtichAlwayShowG();
 
     });
 
-    SET_ANCTION(act03,删除,multiMenu,this,{
+    SET_ANCTION(act03,tr("删除"),multiMenu,this,{
         removeG();
     });
 

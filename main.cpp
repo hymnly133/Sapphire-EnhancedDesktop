@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
 
 
+
     qDebug()<<"Sapphire Startup";
     QTextCodec *code = QTextCodec::codecForName("UTF-8");
     QTextCodec::setCodecForLocale(code);
@@ -40,6 +41,9 @@ int main(int argc, char *argv[])
 
 
     QApplication a(argc, argv);
+
+    SMenu::initSysCommands();
+
 
 
     pir = new IconReader;

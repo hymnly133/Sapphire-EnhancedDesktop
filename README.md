@@ -95,7 +95,7 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 
 - [ ] 全局深色模式
 - [ ] 备份
-- [ ] 设置面板
+- [ ] 设置面板项目补全
 - [ ] 资源管理器功能
     - [X] 完善拖拽交互
     - [X] 复制/粘贴
@@ -108,6 +108,7 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 - [ ] 关机检测
 - [ ] 黑屏第二次修复
 
+- [X] 设置面板
 - [X] 容器缩放
 - [X] 文件夹交互
 - [X] ToolTip

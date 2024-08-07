@@ -15,6 +15,7 @@ public:
     QString filePath;
     QString fullName();
     QString suffix();
+    QString targetSuffix();
     QString baseName();
     bool isDir = false;
 
@@ -70,6 +71,14 @@ inline QString SFile::fullName(){
 
 inline QString SFile::suffix(){
     return QFileInfo(filePath).suffix();
+}
+
+inline QString SFile::targetSuffix()
+{
+    if(QFileInfo(filePath).isSymLink()){
+        return QFileInfo(QFileInfo(filePath).symLinkTarget()).suffix();
+    }
+    else return suffix();
 }
 
 inline QString SFile::baseName(){

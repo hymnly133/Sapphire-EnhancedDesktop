@@ -2,6 +2,7 @@
 #include"QProcess"
 #include "SQSS.h"
 #include "filefunc.h"
+#include "guifunc.h"
 #include "mainwindow.h"
 #include "qboxlayout.h"
 #include"SysFunctions.h"
@@ -67,11 +68,9 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
     lb->setText(elidedLineText(lb, 3, name));
 
 
-    auto tem = displayColor();
-    tem.setAlpha(icon_shadow_alpha);
 
     pix_shadow = new QGraphicsDropShadowEffect;
-    pix_shadow->setColor(tem);
+    pix_shadow->setColor(applyAlpha(displayColor(),icon_shadow_alpha));
     pix_shadow->setBlurRadius(icon_shadow_blur_radius);   // 模糊半径
     pix_shadow->setOffset(0,0);      // 偏移量
     connectTo(icon_shadow_blur_radius,int,int,{
@@ -80,7 +79,7 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
     gv->setGraphicsEffect(pix_shadow);
 
     text_shadow = new QGraphicsDropShadowEffect;
-    text_shadow->setColor(tem);
+    text_shadow->setColor(displayColor());
     text_shadow->setBlurRadius(10);   // 模糊半径
     text_shadow->setOffset(10);      // 偏移量
     text_shadow->setEnabled(enable_text_shadow);
@@ -177,8 +176,8 @@ void SMultiFunc::onMainColorChange(QColor val)
 {
     SUnit::onMainColorChange(val);
 
-    pix_shadow->setColor(val);
-    text_shadow->setColor(val);
+    pix_shadow->setColor(applyAlpha(displayColor(),icon_shadow_alpha));
+    text_shadow->setColor(displayColor());
 
     pix_shadow->update();
     text_shadow->update();
@@ -193,6 +192,8 @@ void SMultiFunc::onMainColorChange(QColor val)
 
 void SMultiFunc::endUpdate()
 {
+    pix_shadow->setColor(applyAlpha( displayColor(),icon_shadow_alpha));
+    pix_shadow->update();
     SUnit::endUpdate();
     gv->requireRefresh = true;
     gv->updateDispaly();
@@ -254,7 +255,7 @@ bool SMultiFunc::ProcessPath(QString path)
 void SMultiFunc::setupEditMenu()
 {
     SUnit::setupEditMenu();
-    SET_ANCTION(act1,选择图标,editMenu,this,{
+    SET_ANCTION(act1,tr("选择图标"),editMenu,this,{
         QString tem =  QFileDialog::getOpenFileName(nullptr,tr("open a file."),"D:/");
         if(!tem.isEmpty()){
             setPix(tem,true);
@@ -263,7 +264,7 @@ void SMultiFunc::setupEditMenu()
         }
     })
 
-    SET_ANCTION(act2,切换铺满,editMenu,this,{
+    SET_ANCTION(act2,tr("切换铺满"),editMenu,this,{
         switchFullShowG(this);
     })
 }
@@ -346,6 +347,13 @@ void SMultiFunc::onCelectedProcessor(bool val)
 void SMultiFunc::updateColor()
 {
     setMainColor(pixmapMainColor(pix));
+}
+
+void SMultiFunc::whenFocusAnimationChange()
+{
+    pix_shadow->setColor(applyAlpha(displayColor(),icon_shadow_alpha));
+    pix_shadow->update();
+    SUnit::whenFocusAnimationChange();
 }
 
 void SMultiFunc::onSimpleModeChange(bool val){

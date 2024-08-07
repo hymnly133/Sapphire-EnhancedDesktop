@@ -124,7 +124,7 @@ bool SDock::switchDirection()
         return true;
     }
     else{
-        SToolTip::tip("当前布局无法容纳改变后Dock，请调整布局或者减小大小");
+        SToolTip::tip(tr("当前布局无法容纳改变后Dock，请调整布局或者减小大小"));
         return false;
     }
 }
@@ -150,10 +150,10 @@ void SDock::switchFinishedSlot()
 void SDock::setupEditMenu()
 {
     SUnit::setupEditMenu();
-    SET_ANCTION(actSwitchDirection,改变方向,editMenu,this,{
+    SET_ANCTION(actSwitchDirection,tr("改变方向"),editMenu,this,{
         switchDirection();
     });
-    SET_ANCTION(actSwichUseContentColor,切换适应颜色,editMenu,this,{
+    SET_ANCTION(actSwichUseContentColor,tr("切换适应颜色"),editMenu,this,{
         useContentColor = !useContentColor;
         update();
     });

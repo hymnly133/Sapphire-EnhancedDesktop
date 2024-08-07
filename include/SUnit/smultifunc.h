@@ -87,6 +87,10 @@ signals:
     // SUnit interface
 public slots:
     void updateColor() override;
+
+    // SUnit interface
+public:
+    void whenFocusAnimationChange() override;
 };
 
 

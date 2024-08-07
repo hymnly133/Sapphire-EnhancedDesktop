@@ -104,14 +104,14 @@ void SBlockContainer::setupEditMenu()
 {
     SUnit::setupEditMenu();
 
-    QAction *act1 = new QAction("切换长聚焦效果(测试版)");
+    QAction *act1 = new QAction(tr("切换长聚焦效果(测试版)"));
     editMenu->addAction(act1);
     connect(act1, &QAction::triggered, this, [=](){
         if(onLongFocus) preSetLongFocus(false);
         enableLongFocusEffect = !enableLongFocusEffect;
     });
 
-    SET_ANCTION(act2,调整布局,editMenu,this,{
+    SET_ANCTION(act2,tr("调整布局"),editMenu,this,{
         resizeForWithDialog((SBlockLayout*)inside);
     });
 }
