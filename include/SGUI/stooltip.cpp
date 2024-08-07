@@ -20,8 +20,6 @@ SToolTip::SToolTip(QWidget *parent)
     rs->distriRadius(&arect->nowRadius);
     rs->raise();
 
-    font = new QFont(qApp->font().family(), 10);   //字体，大小，粗体，斜体
-    font->setCapitalization(QFont::Capitalize);   //设置字母大小写
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setAttribute(Qt::WA_InputMethodTransparent);
     setWindowFlags(Qt::WindowTransparentForInput|Qt::NoDropShadowWindowHint);
@@ -39,7 +37,7 @@ SToolTip::SToolTip(QWidget *parent)
 
 void SToolTip::setInfo(QString info)
 {
-    QFontMetrics fm(*font);
+    QFontMetrics fm(qApp->font());
     QRect rec = fm.boundingRect(info);
     this->info = info;
 
@@ -113,6 +111,7 @@ void SToolTip::end()
 
 SToolTip* SToolTip::tip(QString info, QPoint pos, bool shift,bool up)
 {
+    if(!enable_tooltip)return nullptr;
     SToolTip* Tip = new SToolTip(activepmw->pls);
     if(pos==NO_POS)
         Tip->previousPos = activepmw->pls->mapFromGlobal(QCursor::pos());
@@ -141,7 +140,7 @@ void SToolTip::paintEvent(QPaintEvent *event)
     tem = text_color;
     tem.setAlpha(arect->nowAlpha);
     painter.setPen(tem);
-    painter.setFont(*font);
+    painter.setFont(qApp->font());
 
     QRect temsize = QRect(0,0,aimSize.width(),aimSize.height());
     if(left){

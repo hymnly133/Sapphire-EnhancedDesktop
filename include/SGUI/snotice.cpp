@@ -145,6 +145,7 @@ void SNotice::endOne()
 
 void SNotice::notice(QStringList info, QString title, int time)
 {
+    if(!enable_notice) return;
     SNotice* notice;
     if(activepmw)
     notice = new SNotice(activepmw->pls);

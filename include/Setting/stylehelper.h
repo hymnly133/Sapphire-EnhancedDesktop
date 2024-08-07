@@ -245,6 +245,7 @@ public:
     QMap<QString,colorVal*> colorStyles;
 
     StyleHelper();
+    void connectSysChanges();
 
     //增加DisplayName
     void Add(QStringList,QString,bool*,QString displayName,bool,bool);
@@ -266,6 +267,7 @@ public:
 
 public: signals:
     void colorChanged();
+    void fontChanged();
 };
 
 

@@ -132,6 +132,11 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey):QWidget(nullptr)
         whenFocusAnimationChange();
     });
 
+    // connectTo(always_simple_mode,bool,bool,{
+    //     setSimpleMode(value);
+    //                             })
+
+
     connect(this,&SUnit::mainColor_changed,this,&SUnit::onMainColorChange);
 
     connect(focusAnimations,&QParallelAnimationGroup::finished,this,[=](){
@@ -599,6 +604,7 @@ void SUnit::remove()
 
 void SUnit::endUpdate(){
     //当初始化完成之后调用以更新状态
+    setSimpleMode(simpleMode);
     colorAlpha = aim_colorAlpha();
     nowPadRatio = aim_padRatio();
     scaleFix = aim_scaleFix();

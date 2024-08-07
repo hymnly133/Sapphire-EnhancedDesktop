@@ -112,11 +112,20 @@ extern bool enable_refresh_animation;
 // 启用背景透视
 extern bool enable_background_transparent;
 
+//颜色系统
 extern QColor theme_color;
 extern QColor background_color;
 extern QColor highlight_color;
 extern QColor text_color;
 extern bool use_syscolor_as_themecolor;
+
+//默认精简
+extern bool always_simple_mode;
+
+//字体大小
+extern int font_size;
+extern bool enable_notice;
+extern bool enable_tooltip;
 
 // 供外部调用的方法
 QColor themeColor();

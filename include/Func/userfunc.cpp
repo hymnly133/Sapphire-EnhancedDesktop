@@ -317,3 +317,14 @@ void resizeForWithDialog(SBlockLayout *aimlayout)
     SBlockLayoutSettingWindow* dialog = new SBlockLayoutSettingWindow(aimlayout);
     dialog->show();
 }
+
+void updateFont()
+{
+
+    QFont font = qApp->font();
+    font.setFamily(user_font);
+    font.setPointSize(font_size);
+    font.setHintingPreference(QFont::PreferNoHinting);
+    qApp->setFont(font);
+
+}

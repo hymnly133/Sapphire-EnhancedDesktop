@@ -63,11 +63,7 @@ int main(int argc, char *argv[])
     sh.readStyleIni();
 
 
-    QFont font = qApp->font();
-    font.setFamily(user_font);
-    font.setPointSize(10);
-    font.setHintingPreference(QFont::PreferNoHinting);
-    qApp->setFont(font);
+    updateFont();
 
 
     qRegisterMetaType<SUnit>();

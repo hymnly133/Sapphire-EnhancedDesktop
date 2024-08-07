@@ -17,9 +17,9 @@ public:
     QString getFontName();
 
 signals:
-    void on_fontChangeBox_clicked();
     // void on_rebootBox_clicked();
     void on_resizeBox_clicked();
+    void on_fontChangeBox_clicked();
 
 private slots:
     void on_ButtonLoadCustomIcons_pressed();

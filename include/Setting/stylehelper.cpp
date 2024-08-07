@@ -29,16 +29,16 @@ StyleHelper::StyleHelper()
     ADD(tr("颜色")<<tr("聚焦"),unfocused_color_ratio,tr("未聚焦的色值混合比率"),0,1);
     ADD(tr("颜色")<<tr("聚焦"),focused_color_ratio,tr("聚焦时的色值混合比率"),0,1);
 
-    ADD(tr("特效")<<tr("光效"),light_alpha_start,tr("光效的起点 Alpha"),0,255);
-    ADD(tr("特效")<<tr("光效"),light_alpha_end,tr("光效的终点 Alpha") ,0,255);
-    ADD(tr("特效")<<tr("光效"),enable_light_track,tr("特效追踪"),0,0);
+    ADD(tr("颜色")<<tr("光效"),light_alpha_start,tr("光效的起点 Alpha"),0,255);
+    ADD(tr("颜色")<<tr("光效"),light_alpha_end,tr("光效的终点 Alpha") ,0,255);
+    ADD(tr("颜色")<<tr("光效"),enable_light_track,tr("特效追踪"),0,0);
 
-    ADD(tr("特效")<<tr("阴影"),icon_shadow_alpha,tr("图标阴影特效 Alpha"),0,255);
-    ADD(tr("特效")<<tr("阴影"),icon_shadow_blur_radius,tr("图标阴影特效 Radius"),1,100);
+    ADD(tr("颜色")<<tr("阴影"),icon_shadow_alpha,tr("图标阴影特效 Alpha"),0,255);
+    ADD(tr("颜色")<<tr("阴影"),icon_shadow_blur_radius,tr("图标阴影特效 Radius"),1,100);
 
-    ADD(tr("特效")<<tr("阴影"),unit_shadow_alpha,tr("所有组件阴影特效 Alpha"),0,255);
-    ADD(tr("特效")<<tr("阴影"),unit_shadow_blur_radius,tr("所有组件阴影特效 Radius"),1,100);
-    ADD(tr("特效")<<tr("阴影"),enable_text_shadow,tr("文字阴影"),0,0);
+    ADD(tr("颜色")<<tr("阴影"),unit_shadow_alpha,tr("所有组件阴影特效 Alpha"),0,255);
+    ADD(tr("颜色")<<tr("阴影"),unit_shadow_blur_radius,tr("所有组件阴影特效 Radius"),1,100);
+    ADD(tr("颜色")<<tr("阴影"),enable_text_shadow,tr("文字阴影"),0,0);
 
 
     ADD(tr("动画")<<tr("放置"),position_animation_time,tr("放置动画时长"),0,400);
@@ -59,10 +59,14 @@ StyleHelper::StyleHelper()
     ADD(tr("外观"),ShowSide,tr("绘制组件边框"),0,0);
     ADD(tr("外观"),ShowLight,tr("绘制组件光效"),0,0);
 
+    ADD(tr("外观")<<tr("界面"),enable_notice,tr("启用通知"),0,0);
+    ADD(tr("外观")<<tr("界面"),enable_tooltip,tr("启用标签"),0,0);
+
     ADD(tr("外观"),enable_background_transparent,tr("背景透视"),0,0);
     ADD(tr("外观"),enable_background_blur,tr("背景模糊-未完工"),0,0);
 
     ADD(tr("外观"),enable_image_fill,tr("大图标填充"),0,0);
+    ADD(tr("外观")<<tr("字体"),font_size,tr("字体大小"),3,20);
     ADD(tr("系统"),enable_highdef_icon,tr("超清图标"),0,0);
     ADD(tr("偏好"),default_steam_icon_type,tr("封面获取方式"),0,2);
     ADD(tr("偏好"),use_pic_as_icon,tr("使用图片作为Icon"),0,0);
@@ -70,12 +74,27 @@ StyleHelper::StyleHelper()
 
     ADD(tr("系统"),enable_intime_repaint,tr("即时重绘"),0,0);
     ADD(tr("偏好"),user_font,tr("用户字体"),0,0);
+    ADD(tr("偏好"),always_simple_mode,tr("新图标默认精简"),0,0);
+    psh = this;
 
+    connectSysChanges();
+}
+
+void StyleHelper::connectSysChanges()
+{
     connect(boolVal("use_syscolor_as_themecolor"),&boolVal::valueChanged,this,[=](){
         emit colorChanged();
     });
 
-    psh = this;
+    connectTo(font_size,int,int,{
+        emit fontChanged();
+    })
+
+    connectTo(user_font,string,QString,{
+        emit fontChanged();
+    })
+
+    connect(this,&StyleHelper::fontChanged,this,updateFont);
 }
 
 
@@ -591,10 +610,8 @@ void StyleSettingWindow::closeEvent(QCloseEvent *event)
 void StyleSettingWindow::on_fontChangeBox_clicked()
 {
     QString fontname = this->m_totalWidget->getFontName();
-    QFont currentFont = qApp->font();
-    currentFont.setFamily(fontname);
-    qApp->setFont(currentFont);
-    user_font = fontname;
+    psh->stringVal("user_font")->set(fontname);
+    // user_font = fontname;
 }
 
 

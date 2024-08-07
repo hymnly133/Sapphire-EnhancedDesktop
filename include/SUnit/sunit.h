@@ -74,7 +74,7 @@ public:
 
     //各种当前属性
     bool alwaysShow = false;
-    bool simpleMode = false;
+    bool simpleMode = always_simple_mode;
     bool onFocus = false;
     bool onCelect = false;
     bool onContextMenuShowing = false;

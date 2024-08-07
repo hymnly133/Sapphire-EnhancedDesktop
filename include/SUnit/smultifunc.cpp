@@ -63,7 +63,6 @@ SMultiFunc::SMultiFunc(SLayout *dis,int sizex,int sizey):SUnit(dis,sizex,sizey)
 
     // 显示名字
     lb->setAlignment(Qt::AlignCenter);
-    lb->setFont(QFont(qApp->font().family(), 10, 40));
     lb->setFixedWidth(width() - 5);
     lb->setText(elidedLineText(lb, 3, name));
 

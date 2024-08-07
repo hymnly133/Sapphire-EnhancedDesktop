@@ -25,5 +25,8 @@ void toDesktopMode();
 void toEditMode();
 void switchMode();
 
+//更新字体
+void updateFont();
+
 void SExit();
 #endif // USERFUNC_H

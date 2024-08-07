@@ -76,8 +76,10 @@ QColor theme_color = QColor(QString("ffaec3f5").toUInt(NULL,16));
 QColor highlight_color = QColor(QString("ff7e84ff").toUInt(NULL,16));
 QColor text_color = QColor(QString("ff26242f").toUInt(NULL,16));
 bool use_syscolor_as_themecolor = false;
-
-
+bool always_simple_mode = false;
+int font_size = 9;
+bool enable_notice = true;
+bool enable_tooltip = true;
 QColor themeColor()
 {
     if(use_syscolor_as_themecolor)

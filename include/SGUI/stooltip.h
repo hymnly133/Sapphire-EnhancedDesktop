@@ -15,7 +15,6 @@ public:
     roundShower* rs;
     SAnimationRect* arect;
 
-    QFont* font;
     //是否左侧显示
     bool left = false;
     //是否漂移
