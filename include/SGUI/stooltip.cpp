@@ -25,7 +25,7 @@ SToolTip::SToolTip(QWidget *parent)
     setWindowFlags(Qt::WindowTransparentForInput|Qt::NoDropShadowWindowHint);
     // connect(animations,&)
 
-    connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
+    connect(arect,&SAnimationRect::finishedFinal,this,[=]{
         deleteLater();
     });
     connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){

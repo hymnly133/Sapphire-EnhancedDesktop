@@ -219,7 +219,7 @@ void MainWindow::setupMultiMenu()
 }
 
 
-void MainWindow::setupUnits()
+void MainWindow::setupShower()
 {
     // setMouseTracking(true);
     // 设置背景
@@ -272,11 +272,11 @@ void MainWindow::setupLayout(int x, int y)
 MainWindow::MainWindow(MainWindow *parent, int screenInd)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
+    ui->setupUi(this);
+    this->screenInd = screenInd;
     qDebug() << "MainWindow Thread" << QThread::currentThread();
     setObjectName("MainWindow" + QString::number(screenInd));
-    ui->setupUi(this);
-    bgPicPath = QApplication::applicationDirPath() + QString("/UserBG%1.png").arg(screenInd);
-    this->screenInd = screenInd;
+
     setFocusPolicy( Qt::StrongFocus );
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
@@ -286,31 +286,9 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     // qDebug() << ChangeWindowMessageFilterEx((HWND)winId(), WM_COPYDATA, MSGFLT_ALLOW, NULL);
     inplace(this);
     positionToScreen(this, screenInd);
-    //shift:Windows主屏幕位于全局的位置;
-    showerSize = size();
-    // plsB = new LayerShower(this,screenInd);
-    // plsB->layer = LayerShower::Bottom;
-    QFuture<void> lsCreat = QtConcurrent::run([ = ]() {
-        pls = new LayerShower(this, screenInd);
-        pls->layer = LayerShower::Upper;
-        pls->startBootAnimation();
-    });
-    lsCreat.waitForFinished();
-    qDebug() << "MainWindow" << screenInd << "Information Fixed:" << rect() << pos() << geometry() << mapToGlobal(QPoint(0, 0)) << mapFromGlobal(QPoint(0, 0)) ;
-    setupUnits();
-    setupLayout(10, 10);
-    setupDesktopMenu();
-    setupEditMenu();
-    setupMultiMenu();
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updatePer01second())); // slotCountMessage是我们需要执行的响应函数
-    // timer->start(50);                                                   // 每隔0.1s
-    //检测是否有自选背景
-    if(QFile::exists(bgPicPath)) {
-        setBackgoundPic(QImage(bgPicPath));
-    }
-    setTransparent(enable_background_transparent);
-    connect(this, &MainWindow::loadDone, this, &MainWindow::finishBootAnimation);
+    qDebug() << "MainWindow" << screenInd << "Information Fixed:" << rect() << pos() << geometry() << mapToGlobal(QPoint(0, 0)) << mapFromGlobal(QPoint(0, 0));
+
+    preSetup();
 }
 
 
@@ -359,7 +337,6 @@ void MainWindow::load_json(QJsonObject rootObject)
     setupLayout(10, 10);
     inside->load_json(rootObject.value("content").toObject());
     endUpdate();
-    emit loadDone();
 }
 
 QList<MyFileInfo> MainWindow::Init(QList<MyFileInfo> data)
@@ -378,7 +355,6 @@ QList<MyFileInfo> MainWindow::Init(QList<MyFileInfo> data)
         // inside->printOccupied();
     }
     qDebug() << "Init" << objectName() << "Done,Remainin" << data.size() << "file data";
-    emit loadDone();
     return data;
 }
 
@@ -422,7 +398,7 @@ void MainWindow::Init(bool final)
     }
     //如果只是单纯初始化（如第二屏，没有加载的数据，直接发送信号）
     if(final) {
-        emit loadDone();
+
     }
 }
 
@@ -439,11 +415,38 @@ void MainWindow::refresh()
     }
 }
 
-void MainWindow::startBootAnimation()
+void MainWindow::preSetup()
 {
-    qDebug() << "MainWindow Starting Boot Animation";
-    pls->startBootAnimation();
+    pls = new LayerShower(this, screenInd);
+    pls->layer = LayerShower::Upper;
+    pls->startBootAnimationIn();
+    //作为主窗口，调用UserFunc中的setupG进行软件的内容加载
+    if(screenInd == 0) {
+        connect(pls, &LayerShower::bootAnimationInEnd, this, &setupG);
+    }
 }
+
+void MainWindow::setup()
+{
+    bgPicPath = QApplication::applicationDirPath() + QString("/UserBG%1.png").arg(screenInd);
+    showerSize = size();
+
+    setupShower();
+    setupLayout(10, 10);
+    setupDesktopMenu();
+    setupEditMenu();
+    setupMultiMenu();
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updatePer01second())); // slotCountMessage是我们需要执行的响应函数
+    // timer->start(50);                                                   // 每隔0.1s
+    //检测是否有自选背景
+    if(QFile::exists(bgPicPath)) {
+        setBackgoundPic(QImage(bgPicPath));
+    }
+    setTransparent(enable_background_transparent);
+}
+
+
 
 void MainWindow::capture()
 {
@@ -635,7 +638,9 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
 {
     pls->close();
     psh->writeStyleIni();
+#ifdef QT_DEBUG
     QMessageBox::about(NULL, "cs", "closeEvent");
+#endif
     event->accept();
     writeJson();
 }

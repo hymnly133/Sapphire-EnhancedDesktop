@@ -15,6 +15,7 @@
 #include "qapplication.h"
 #include "qpainter.h"
 #include "screenfunc.h"
+#include"guifunc.h"
 
 LayerShower::LayerShower(MainWindow *parent, int screenId)
     : QWidget{nullptr}
@@ -54,12 +55,13 @@ void LayerShower::clearInputDialog()
 
 void LayerShower::paintEvent(QPaintEvent *event)
 {
-    if(onBootAnimation) {
+
+    if(state != normal) {
         //启动动画
         QPainter painter(this);
-        painter.setBrush(themeColor());
+        painter.setBrush(applyAlpha(themeColor(), ar->nowAlpha));
         painter.setPen(Qt::NoPen);
-        painter.drawRect(rect());
+        painter.drawRect(QRect(ar->nowPos, ar->nowSize));
         return;
     }
     auto tem = themeColor();
@@ -114,16 +116,7 @@ void LayerShower::paintEvent(QPaintEvent *event)
 #endif
 }
 
-void LayerShower::startBootAnimation()
-{
-    qDebug() << "LayerShower Showing Boot Animation";
-    ar = new SAnimationRect(this);
-    ar->setTime(1000);
-    ar->setStartValue(QPoint(width() / 2, height() / 2), size() / 2, 0, 100);
-    ar->setEndValue(QPoint(0, 0), size(), 255, 0);
-    connect(ar, &SAnimationRect::animationUpdating, this, &LayerShower::whenBootAnimationUpdation);
-    ar->start();
-}
+
 
 
 
@@ -146,11 +139,48 @@ void LayerShower::focusInEvent(QFocusEvent *event)
     // pmws[0]->setFocus();
 }
 
+void LayerShower::startBootAnimationIn()
+{
+    qDebug() << "LayerShower star tBoot Animation In";
+
+    ar = new SAnimationRect(this);
+    connect(ar, &SAnimationRect::animationUpdating, this, &LayerShower::whenBootAnimationUpdation);
+
+    ar->setTime(500);
+    ar->setStartValue(QPoint(0, 0), size(), 0, 0);
+    ar->setEndValue(QPoint(0, 0), size(), 255, 0);
+
+    //绑定In事件
+    connect(ar, &SAnimationRect::finished, this, [ = ]() {
+        emit bootAnimationInEnd();
+        state = bootOn;
+        //解绑In事件
+        disconnect(ar, &SAnimationRect::finished, this, nullptr);
+    });
+    ar->start();
+    emit bootAnimationInStart();
+}
+
+void LayerShower::startBootAnimationOut()
+{
+    state = bootOut;
+
+    //绑定Out事件
+    connect(ar, &SAnimationRect::finishedFinal, this,  [ = ]() {
+        emit bootAnimationOutEnd();
+        state = normal;
+        //解绑Out事件
+        disconnect(ar, &SAnimationRect::finished, this, nullptr);
+    });
+    ar->setFinal();
+    ar->setEndValue(QPoint(0, 0), size(), 0, 0);
+    ar->start();
+    emit bootAnimationOutStart();
+}
+
 void LayerShower::whenBootAnimationUpdation()
 {
-    qDebug() << "LayerShower Updating Boot Animation";
-    move(finalPos + ar->nowPos);
-    setFixedSize(ar->nowSize);
+    // qDebug() << "LayerShower Updating Boot Animation";
     update();
 }
 

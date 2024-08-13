@@ -4,15 +4,15 @@
 #include "qevent.h"
 
 
+//最初步的初始化，并创建主窗口并显示启动动画
+void preSetupG();
 
-//启动
-void SetUp();
+//主要的加载函数
+void setupG();
 
 //加载主窗口数据
 bool loadMainWindows();
 
-//创建主窗口
-void setupMainWindows();
 
 //设置自启
 void setMyAppAutoRun(bool isStart);

@@ -134,8 +134,12 @@ public:
     //刷新
     void refresh();
 
-    //启动加载动画
-    void startBootAnimation();
+
+    //刚创建到启动加载动画的阶段(以迅速创建出加载动画为目标)
+    void preSetup();
+
+    //主要加载函数(在加载动画中进行的初始化和内容加载)
+    void setup();
 
 private:
     //设置编辑模式菜单
@@ -144,8 +148,8 @@ private:
     void setupDesktopMenu();
     //设置多文件选中菜单
     void setupMultiMenu();
-    //设置内容
-    void setupUnits();
+    //设置一些层
+    void setupShower();
     //设置布局
     void setupLayout(int x, int y);
 
@@ -162,7 +166,6 @@ public:
 signals:
     void showerSize_changed(QSize);
     void showerRadius_changed(int);
-    void loadDone();
 
 
 

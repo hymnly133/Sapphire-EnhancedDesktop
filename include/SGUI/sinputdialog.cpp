@@ -31,7 +31,7 @@
     rs->aliment = roundShower::Default;
     rs->distri(&arect->nowSize,&arect->nowRadius);
     rs->raise();
-    connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
+    connect(arect,&SAnimationRect::finishedFinal,this,[=]{
         deleteLater();
     });
     connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){

@@ -17,17 +17,17 @@ public:
     Q_PROPERTY(QPoint nowPos MEMBER nowPos NOTIFY nowPos_changed)
 
 public:
-    int nowRadius=0;
-    int aimRadius=0;
+    int nowRadius = 0;
+    int aimRadius = 0;
 
-    int nowAlpha=255;
+    int nowAlpha = 255;
     int aimAlpha;
 
-    QSize nowSize = QSize(0,0);
+    QSize nowSize = QSize(0, 0);
     QSize aimSize;
 
-    QPoint nowPos = QPoint(0,0);
-    QPoint aimPos = QPoint(0,0);
+    QPoint nowPos = QPoint(0, 0);
+    QPoint aimPos = QPoint(0, 0);
 
     QPropertyAnimation* radiusAnimation;
     QPropertyAnimation* sizeAnimation;
@@ -39,9 +39,9 @@ public:
     void end();
 
 
-    void setStartValue(QPoint pos, QSize size, int alpha,int radius);
+    void setStartValue(QPoint pos, QSize size, int alpha, int radius);
 
-    void setEndValue(QPoint pos, QSize size, int alpha,int radius);
+    void setEndValue(QPoint pos, QSize size, int alpha, int radius);
     void setTime(int time);
     void setFinal(bool val = true);
     void start();
@@ -52,8 +52,10 @@ signals:
     void nowAlpha_changed(int val);
     void nowSize_changed(QSize val);
     void nowPos_changed(QPoint val);
-    void animationUpdating(QPoint ,QSize,int,int);
-    void whenEndAnimationEnd();
+    void animationUpdating(QPoint, QSize, int, int);
+    void finishedFinal();
+    void finished();
+    void finishedAll();
 
 };
 

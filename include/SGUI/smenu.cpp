@@ -27,7 +27,7 @@ SMenu::SMenu(QWidget *parent):QMenu(parent)
     rs->raise();
     arect->setTime(150);
 
-    connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
+    connect(arect,&SAnimationRect::finishedFinal,this,[=]{
         // setVisible(false);
         // arect->setFinal(false);
         // setFixedSize(aimSize);

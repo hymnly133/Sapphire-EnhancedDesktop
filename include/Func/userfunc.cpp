@@ -2,6 +2,7 @@
 #include "SysFunctions.h"
 #include "filefunc.h"
 #include "global.h"
+#include "iconfunc.h"
 #include "qclipboard.h"
 #include "qdir.h"
 #include "qfuture.h"
@@ -16,45 +17,81 @@
 #include"QMessageBox"
 #include "sfile.h"
 #include"snotice.h"
+#include "stylehelper.h"
 #include "unitfunc.h"
 
-
-void SetUp()
+void preSetupG()
 {
-    QString application_name = QApplication::applicationName();//获取应用名称
-    QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
-    enable_auto_run = !settings->value(application_name).isNull();
+    qDebug() << "preSetting Up Glabal...";
     initiateDesktop();
-    ExcludeFiles.append("desktop.ini");
-    qDebug() << "Setting Up...";
-    UserDesktopPath = new  QString(QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0]);
-    qDebug() << "User Desktop:" << *UserDesktopPath;
-    PublicDesktopPath = new QString("C:/Users/Public/Desktop");
-    qDebug() << "Public Desktop:" << *PublicDesktopPath;
     pdt = QApplication::desktop();
     pscs[0] = QGuiApplication::primaryScreen();
     Shift_Global = -pscs[0]->virtualGeometry().topLeft();
     // 通过循环可以遍历每个显示器
     QList<QScreen *> list_screen = QGuiApplication::screens();
     screenNum = list_screen.size();
+
+    psh = new StyleHelper;
+    psh->readStyleIni();
+
+    updateFont();
+
     for (int i = 0; i < screenNum; i++) {
         QScreen * qs = list_screen.at(i);
         QRect rect = qs->geometry();
         qDebug() << "Setting Screen" << i << rect << (pscs[0] == qs);
         pscs[i] = list_screen[i];
     }
+    for(int i = 0; i < screenNum; i++) {
+        qDebug() << "Creating Mainwindow" << i;
+        //在Mainwindow中创建启动函数
+        pmws[i] = new MainWindow(nullptr, i);
+    }
+
+    activepmw = pmws[0];
+}
+
+void setupG()
+{
+
+    qDebug() << "Setting Up Glabal...";
+    QString application_name = QApplication::applicationName();//获取应用名称
+    QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
+    enable_auto_run = !settings->value(application_name).isNull();
+
+    //排除文件
+    ExcludeFiles.append("desktop.ini");
+
+    //桌面路径
+    UserDesktopPath = new  QString(QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0]);
+    qDebug() << "User Desktop:" << *UserDesktopPath;
+    PublicDesktopPath = new QString("C:/Users/Public/Desktop");
+    qDebug() << "Public Desktop:" << *PublicDesktopPath;
+
+    //菜单
+    SMenu::initSysCommands();
+
+    //自定义图标
+    pir = new IconReader;
+    pir->scanForDefault();
     qDebug() << "Setting MainWinodws";
-    setupMainWindows();
+
+    //加载Mainwindow的内容
     loadMainWindows();
     qDebug() << "Final:";
     for(int i = 0; i < screenNum; i++) {
         qDebug() << "Mainwindow" << i << pmws[i]->mapToGlobal(QPoint(0, 0));
     }
-    activepmw = pmws[0];
+
     if(init) {
         SNotice::notice(QStringList() << "为了您拥有更好的体验，Sapphire编写了使用手册" << "您可以在软件目录内找到", "欢迎使用Sapphire！", 15000);
     }
     onLoading  = false;
+    foreach (auto pmw, pmws) {
+        pmw->show();
+        pmw->update();
+        pmw->pls->startBootAnimationOut();
+    }
 }
 
 
@@ -181,6 +218,7 @@ void SExit()
         pmw->pls->close();
         // pmw->plsB->close();
     }
+    psh->writeStyleIni();
     qApp->exit(0);
 }
 
@@ -290,6 +328,9 @@ void scanForChange()
 
 bool loadMainWindows()
 {
+    foreach (auto pmw, pmws) {
+        pmw->setup();
+    }
     QMap<int, QJsonObject> jsons = readJson();
     jsonNum = jsons.size();
     if(jsonNum == 0) {
@@ -336,9 +377,7 @@ bool loadMainWindows()
 
 void setupMainWindows()
 {
-    for(int i = 0; i < screenNum; i++) {
-        qDebug() << "Creating Mainwindow" << i;
-        pmws[i] = new MainWindow(nullptr, i);
-    }
+
 }
+
 

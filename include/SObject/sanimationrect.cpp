@@ -11,45 +11,42 @@ ANIMATION = new QPropertyAnimation(this,#NAME);\
 SAnimationRect::SAnimationRect(QWidget *parent)
     : QObject{parent}
 {
-
     animations = new QParallelAnimationGroup(this);
-
-    int animationTime =200;
-    SET_ANIMATION(radiusAnimation,nowRadius,animationTime);
-    SET_ANIMATION(alphaAnimation,nowAlpha,animationTime);
-    SET_ANIMATION(sizeAnimation,nowSize,animationTime);
-    SET_ANIMATION(posAnimation,nowPos,animationTime);
-
-
-    connect(this,&SAnimationRect::nowAlpha_changed,this,[=](int val){
-        emit animationUpdating(nowPos,nowSize,nowAlpha,nowRadius);
+    int animationTime = 200;
+    SET_ANIMATION(radiusAnimation, nowRadius, animationTime);
+    SET_ANIMATION(alphaAnimation, nowAlpha, animationTime);
+    SET_ANIMATION(sizeAnimation, nowSize, animationTime);
+    SET_ANIMATION(posAnimation, nowPos, animationTime);
+    connect(this, &SAnimationRect::nowAlpha_changed, this, [ = ](int val) {
+        emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
     });
-    connect(this,&SAnimationRect::nowRadius_changed,this,[=](int val){
-        emit animationUpdating(nowPos,nowSize,nowAlpha,nowRadius);
+    connect(this, &SAnimationRect::nowRadius_changed, this, [ = ](int val) {
+        emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
     });
-    connect(this,&SAnimationRect::nowSize_changed,this,[=](QSize val){
-        emit animationUpdating(nowPos,nowSize,nowAlpha,nowRadius);
+    connect(this, &SAnimationRect::nowSize_changed, this, [ = ](QSize val) {
+        emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
     });
-    connect(this,&SAnimationRect::nowPos_changed,this,[=](QPoint val){
-        emit animationUpdating(nowPos,nowSize,nowAlpha,nowRadius);
+    connect(this, &SAnimationRect::nowPos_changed, this, [ = ](QPoint val) {
+        emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
     });
-
-    connect(animations,&QParallelAnimationGroup::finished,this,[this](){
-        if(onEnd){
-            emit whenEndAnimationEnd();
+    connect(animations, &QParallelAnimationGroup::finished, this, [this]() {
+        if(onEnd) {
+            emit finishedFinal();
+        } else {
+            emit finished();
         }
+        emit finishedAll();
     });
 }
 
 
 
-void SAnimationRect::setStartValue(QPoint pos, QSize size, int alpha,int radius)
+void SAnimationRect::setStartValue(QPoint pos, QSize size, int alpha, int radius)
 {
     nowPos = pos;
     nowSize = size;
     nowRadius = radius;
     nowAlpha = alpha;
-
 }
 
 void SAnimationRect::setTime(int time)
@@ -66,12 +63,10 @@ void SAnimationRect::setEndValue(QPoint pos, QSize size, int alpha, int radius)
     aimSize = size;
     aimRadius = radius;
     aimAlpha = alpha;
-
     posAnimation->setEndValue(pos);
     sizeAnimation->setEndValue(size);
     alphaAnimation->setEndValue(alpha);
     radiusAnimation->setEndValue(radius);
-
 }
 
 void SAnimationRect::setFinal(bool val)

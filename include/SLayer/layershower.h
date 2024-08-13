@@ -15,24 +15,29 @@ public:
         Bottom = 0,
         Upper = 2
     };
+    enum State {
+        bootIn,
+        bootOn,
+        bootOut,
+        normal
+    };
+
     int screenId;
     Layer layer;
-    bool onBootAnimation = true;
+    State state = bootIn;
     SAnimationRect* ar;
     QPoint finalPos;
     QSize finalSize;
 
-    bool lowerShower = false;
     void clearTooltip();
     void clearInputDialog();
-    void startBootAnimation();
 signals:
-
+    void bootAnimationInStart();
+    void bootAnimationInEnd();
+    void bootAnimationOutStart();
+    void bootAnimationOutEnd();
 protected:
     void paintEvent(QPaintEvent *event) override;
-
-
-
 
     // QWidget interface
 protected:
@@ -42,6 +47,8 @@ protected:
 protected:
     void focusInEvent(QFocusEvent *event) override;
 public slots:
+    void startBootAnimationIn();
+    void startBootAnimationOut();
     void whenBootAnimationUpdation();
 };
 

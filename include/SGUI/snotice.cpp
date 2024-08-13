@@ -36,7 +36,7 @@ SNotice::SNotice(QWidget *parent)
     // connect(animations,&)
     rs->distriRadius(&arect->nowRadius);
     rs->raise();
-    connect(arect,&SAnimationRect::whenEndAnimationEnd,this,[=]{
+    connect(arect,&SAnimationRect::finishedFinal,this,[=]{
         noticeList.removeOne(this);
         deleteLater();
         updateAllNoticeAnimation();
