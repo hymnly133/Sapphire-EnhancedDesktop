@@ -5,6 +5,7 @@
 #include "qfileinfo.h"
 #include "qsettings.h"
 #include"QInputDialog"
+#include "stylehelper.h"
 #include"ui_styleSetting.h"
 #include "userfunc.h"
 #include "QProcess"
@@ -43,11 +44,11 @@ bool enable_light_track = false;
 
 bool enable_intime_repaint = false;
 
-bool enable_image_fill=false;
-bool enable_highdef_icon =1;
+bool enable_image_fill = false;
+bool enable_highdef_icon = 1;
 bool dark_mode = 0;
 
-int default_steam_icon_type =1;
+int default_steam_icon_type = 1;
 
 int long_focus_in_delta_time = 500;
 int long_focus_out_delta_time = 1000;
@@ -66,15 +67,15 @@ bool use_pic_as_icon = 1;
 bool enable_auto_run = 0;
 bool enable_resize_to_rect = 0;
 
-bool enable_refresh_animation=0;
+bool enable_refresh_animation = 0;
 bool enable_background_transparent = 1;
 QString user_font = "Microsoft YaHei";
 
 
-QColor background_color = QColor(QString("ffe0dcf0").toUInt(NULL,16));
-QColor theme_color = QColor(QString("ffaec3f5").toUInt(NULL,16));
-QColor highlight_color = QColor(QString("ff7e84ff").toUInt(NULL,16));
-QColor text_color = QColor(QString("ff26242f").toUInt(NULL,16));
+QColor background_color = QColor(QString("ffe0dcf0").toUInt(NULL, 16));
+QColor theme_color = QColor(QString("ffaec3f5").toUInt(NULL, 16));
+QColor highlight_color = QColor(QString("ff7e84ff").toUInt(NULL, 16));
+QColor text_color = QColor(QString("ff26242f").toUInt(NULL, 16));
 bool use_syscolor_as_themecolor = false;
 bool always_simple_mode = false;
 int font_size = 9;
@@ -82,8 +83,11 @@ bool enable_notice = true;
 bool enable_tooltip = true;
 QColor themeColor()
 {
-    if(use_syscolor_as_themecolor)
+    if(use_syscolor_as_themecolor) {
         return winThemeColor();
-    else
+    } else {
         return theme_color;
+    }
 }
+
+

@@ -1,4 +1,4 @@
-QT += core gui widgets winextras network concurrent quick qml xml
+QT += core gui widgets winextras network concurrent qml xml opengl
 
 include($$PWD/QXlsx/QXlsx.pri)
 INCLUDEPATH += $$PWD/QXlsx
@@ -44,7 +44,7 @@ INCLUDEPATH+= $$PWD/include/Setting
 
 LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
-LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi -lcomctl32
+LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi -lcomctl32 -lopengl32 -lglu32
 
 
 
@@ -96,9 +96,11 @@ SOURCES += \
     include/SUnit/sdock.cpp \
     include/SUnit/seditbox.cpp \
     include/SUnit/sfile.cpp \
+    include/SUnit/sglshower.cpp \
     include/SUnit/smultifunc.cpp \
     include/SUnit/sshellfuncunit.cpp \
     include/SUnit/sunit.cpp \
+    include/SWidget/glpicturebox.cpp \
     include/SWidget/picturebox.cpp \
     include/SWidget/roundshower.cpp \
     include/SWidget/sbgshower.cpp \
@@ -151,9 +153,11 @@ HEADERS += \
     include/SUnit/sdock.h \
     include/SUnit/seditbox.h \
     include/SUnit/sfile.h \
+    include/SUnit/sglshower.h \
     include/SUnit/smultifunc.h \
     include/SUnit/sshellfuncunit.h \
     include/SUnit/sunit.h \
+    include/SWidget/glpicturebox.h \
     include/SWidget/picturebox.h \
     include/SWidget/roundshower.h \
     include/SWidget/sbgshower.h \

@@ -17,7 +17,7 @@
 
 class MainWindow;
 
-//桌面组件的所有基类
+//所有桌面组件的基类
 class SUnit : public QWidget
 {
     Q_OBJECT

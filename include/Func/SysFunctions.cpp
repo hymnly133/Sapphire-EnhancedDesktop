@@ -1,6 +1,7 @@
 #include <shlwapi.h>
 #include<windows.h>
 #include "global.h"
+#include "glpicturebox.h"
 #include"mainwindow.h"
 #include "layershower.h"
 #include "qpainter.h"
@@ -584,4 +585,10 @@ void shellContextMenuRun(QString command, QString path)
     // QProcess::startDetached(command);
     qDebug()<<shellrun(command);
     // process.start("cmd",QStringList()<<command);
+}
+
+void test()
+{
+    GLPictureBox box;
+    box.show();
 }

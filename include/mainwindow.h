@@ -15,8 +15,9 @@
 #include "smultifunc.h"
 #include "sunit.h"
 QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
+namespace Ui
+{
+    class MainWindow;
 }
 QT_END_NAMESPACE
 class SFile;
@@ -27,7 +28,7 @@ class MainWindow : public QMainWindow
     Q_PROPERTY(QSize showerSize MEMBER showerSize NOTIFY showerSize_changed)
     Q_PROPERTY(int showerRadius MEMBER showerRadius NOTIFY showerRadius_changed)
 public:
-    MainWindow(MainWindow *parent = nullptr,int screenInd=0);
+    MainWindow(MainWindow *parent = nullptr, int screenInd = 0);
     ~MainWindow();
 
     QString bgPicPath;
@@ -35,7 +36,7 @@ public:
     //用于消除从外部程序回到Sapphire时的判断飘逸
     QPoint focusInPoint;
     bool focusin = false;
-    LayerBackground* plsBG =nullptr;
+    LayerBackground* plsBG = nullptr;
     //顶层，用于绘制顶层特效
     LayerShower* pls;
     //中间层，用于放置图标
@@ -80,19 +81,13 @@ public:
 
     bool showeredVisibal = false;
     int showerRadius = 500;
-    double globalScale =1;
+    double globalScale = 1;
     QPropertyAnimation* showerSizeAnimation;
     QPropertyAnimation* showerRadiusAnimation;
     QParallelAnimationGroup * showerAnimations;
-    QSize aim_showerSize(){
-        if(showeredVisibal) return size();
-        else return QSize(0,0);
-    }
+    QSize aim_showerSize();
 
-    int aim_showerRadius(){
-        if(showeredVisibal) return 0;
-        else return 500;
-    }
+    int aim_showerRadius();
 
     //屏幕序号
     int screenInd;
@@ -121,9 +116,10 @@ public:
     void updata_animation();
 
     //各种添加SFile的方法(不创建文件）
-    bool addAIcon(QString path, bool notice = false,QPoint globalPos = QPoint(-1,-1));
-    bool addAIcon(QFileInfo info, bool notice = false,QPoint globalPos = QPoint(-1,-1));
-    bool addAIcon(MyFileInfo info, bool notice = false,QPoint globalPos = QPoint(-1,-1));
+    bool addAIcon(QString path, bool notice = false, QPoint globalPos = QPoint(-1, -1));
+    bool addAIcon(QFileInfo info, bool notice = false, QPoint globalPos = QPoint(-1, -1));
+    bool addAIcon(MyFileInfo info, bool notice = false, QPoint globalPos = QPoint(-1, -1));
+
 
 
 
@@ -133,17 +129,25 @@ public:
     //初始化并加载data
     QList<MyFileInfo> Init(QList<MyFileInfo> data);
     //初始化
-    void Init();
+    void Init(bool final = false);
 
     //刷新
     void refresh();
 
+    //启动加载动画
+    void startBootAnimation();
+
 private:
+    //设置编辑模式菜单
     void setupEditMenu();
+    //设置编辑模式菜单
     void setupDesktopMenu();
+    //设置多文件选中菜单
     void setupMultiMenu();
+    //设置内容
     void setupUnits();
-    void setupLayout(int x,int y);
+    //设置布局
+    void setupLayout(int x, int y);
 
 public slots:
     //设置全局scale，（待重构
@@ -151,9 +155,14 @@ public slots:
     void onSelectBackground();  // 新增：选择背景文件槽函数
     //即时更新
     void updatePer01second();
-public: signals:
+
+    //加载完成后的处理
+    void finishBootAnimation();
+public:
+signals:
     void showerSize_changed(QSize);
     void showerRadius_changed(int);
+    void loadDone();
 
 
 
@@ -184,7 +193,31 @@ protected:
 
     void paintEvent(QPaintEvent * ev) override;
 
+
     void resizeEvent(QResizeEvent *event) override;
+
+
+    // QWidget interface
+protected:
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
 };
+
+inline QSize MainWindow::aim_showerSize()
+{
+    if(showeredVisibal) {
+        return size();
+    } else {
+        return QSize(0, 0);
+    }
+}
+
+inline int MainWindow::aim_showerRadius()
+{
+    if(showeredVisibal) {
+        return 0;
+    } else {
+        return 500;
+    }
+}
 
 #endif // MAINWINDOW_H

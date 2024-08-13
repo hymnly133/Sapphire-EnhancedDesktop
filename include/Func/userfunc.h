@@ -8,8 +8,16 @@
 //启动
 void SetUp();
 
+//加载主窗口数据
+bool loadMainWindows();
+
+//创建主窗口
+void setupMainWindows();
+
 //设置自启
 void setMyAppAutoRun(bool isStart);
+
+
 
 //设置创建注册表数据
 void setSapphireRegDate(bool isSet);
@@ -27,6 +35,9 @@ void switchMode();
 
 //更新字体
 void updateFont();
+
+//扫描文件改动
+void scanForChange();
 
 void SExit();
 #endif // USERFUNC_H

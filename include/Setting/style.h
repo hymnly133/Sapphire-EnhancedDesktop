@@ -129,5 +129,4 @@ extern bool enable_tooltip;
 
 // 供外部调用的方法
 QColor themeColor();
-
 #endif // STYLE_H

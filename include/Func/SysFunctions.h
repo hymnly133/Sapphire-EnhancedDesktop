@@ -5,7 +5,7 @@
 class MainWindow;
 class SFile;
 
-
+void test();
 
 //处理多行显示
 QString elidedLineText(QWidget *pWidget, int nLine, QString strText);

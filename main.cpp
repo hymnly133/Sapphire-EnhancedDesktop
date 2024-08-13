@@ -17,55 +17,34 @@
 #include "qscreen.h"
 #include "qsharedmemory.h"
 #include "repaintcounterunit.h"
+#include "sglshower.h"
 #include "sshellfuncunit.h"
 #include"QProcess"
 #include "userfunc.h"
 #include"stylehelper.h"
-
+#include <QtOpenGL>
 int main(int argc, char *argv[])
 {
 #ifndef QT_DEBUG
-
     qInstallMessageHandler(customMessageHandler);
-
 #endif
-
-
-
-
-    qDebug()<<"Sapphire Startup";
     QTextCodec *code = QTextCodec::codecForName("UTF-8");
     QTextCodec::setCodecForLocale(code);
-
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
-
     QApplication a(argc, argv);
-
+    qDebug() << "Sapphire Startup";
     SMenu::initSysCommands();
-
-
-
     pir = new IconReader;
     pir->scanForDefault();
-
-
     static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块
-    if (!shareMem->create(1))//创建大小1b的内存
-    {
+    if (!shareMem->create(1)) { //创建大小1b的内存
         QMessageBox::about(NULL, "提示", "已经打开了另一个程序！");
         qApp->quit();
         return -1;
     }
-
-
     StyleHelper sh = StyleHelper();
     sh.readStyleIni();
-
-
     updateFont();
-
-
     qRegisterMetaType<SUnit>();
     qRegisterMetaType<SFile>();
     qRegisterMetaType<SContainer>();
@@ -74,18 +53,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<SDock>();
     qRegisterMetaType<SEditBox>();
     qRegisterMetaType<RepaintCounterUnit>();
-
-    QSurfaceFormat format;
-    format.setDepthBufferSize(24);
-    format.setStencilBufferSize(8);
-    format.setVersion(3, 2);
-    format.setProfile(QSurfaceFormat::CoreProfile);
-    QSurfaceFormat::setDefaultFormat(format);
-
-
-
-
-
+    qRegisterMetaType<SGLShower>();
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
@@ -95,26 +63,19 @@ int main(int argc, char *argv[])
             break;
         }
     }
-
     SetUp();
-    if(isQuit){
+    if(isQuit) {
         qApp->quit();
         return -1;
     }
-
-
-
     scanForChange();
     int ret = a.exec();
     sh.writeStyleIni();
-
-    if(ret==733){
+    if(ret == 733) {
         shareMem->detach();
         QProcess::startDetached(qApp->applicationFilePath(), QStringList());
         sh.writeStyleIni();
         return 0;
     }
-
-
     return 0;
 }
