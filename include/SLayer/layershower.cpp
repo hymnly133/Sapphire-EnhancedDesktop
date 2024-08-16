@@ -10,6 +10,7 @@
 #include"QStyle"
 #include "global.h"
 #include "mainwindow.h"
+#include "qbitmap.h"
 #include "sinputdialog.h"
 #include "stooltip.h"
 #include "qapplication.h"
@@ -32,6 +33,10 @@ LayerShower::LayerShower(MainWindow *parent, int screenId)
     qDebug() << "Layer Shower Information:" << rect() << pos() << geometry() << mapToGlobal(QPoint(0, 0));
     finalPos = pos();
     finalSize = size();
+    QImage im(":/appIcon/Sapphire.png");
+    QPixmap iconMapp = QPixmap::fromImage(im);
+    iconMapp = iconMapp.scaled(pmw->size() / 4, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    iconMap = new QPixmap(iconMapp);
     show();
     setVisible(true);
 }
@@ -62,6 +67,28 @@ void LayerShower::paintEvent(QPaintEvent *event)
         painter.setBrush(applyAlpha(themeColor(), ar->nowAlpha));
         painter.setPen(Qt::NoPen);
         painter.drawRect(QRect(ar->nowPos, ar->nowSize));
+
+
+        //图片路径可以通过右击工程的图片获取
+
+        // QPixmap alphaChannel = pixmap.createMaskFromColor(QColor(ar->nowAlpha, ar->nowAlpha, ar->nowAlpha), Qt::MaskInColor);
+        // pixmap.setMask(alphaChannel);
+
+        QPixmap temp(iconMap->size());
+        temp.fill(Qt::transparent);
+
+        QPainter p1(&temp);
+        p1.setCompositionMode(QPainter::CompositionMode_Source);
+        p1.drawPixmap(0, 0, *iconMap);
+        p1.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+
+        //根据QColor中第四个参数设置透明度，此处position的取值范围是0～255
+        p1.fillRect(temp.rect(), QColor(0, 0, 0, ar->nowAlpha));
+        p1.end();
+
+
+        painter.drawPixmap(mapFromGlobal(pmw->mapToGlobal(pmw->rect().center())) - QPoint(iconMap->width() / 2, iconMap->height() / 2), temp);
+
         return;
     }
     auto tem = themeColor();

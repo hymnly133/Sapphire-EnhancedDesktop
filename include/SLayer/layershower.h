@@ -11,6 +11,7 @@ class LayerShower : public QWidget
 public:
     explicit LayerShower(MainWindow *parent, int screenId);
     MainWindow* pmw;
+    QPixmap* iconMap;
     enum Layer {
         Bottom = 0,
         Upper = 2

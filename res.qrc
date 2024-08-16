@@ -10,7 +10,8 @@
         <file alias="DustbinFull">SysIcons/imageres 051.png</file>
         <file alias="Computer">SysIcons/imageres 105.png</file>
     </qresource>
-    <qresource prefix="/icon">
-        <file>sapphire.ico</file>
+    <qresource prefix="/appIcon">
+        <file>Sapphire.ico</file>
+        <file>Sapphire.png</file>
     </qresource>
 </RCC>

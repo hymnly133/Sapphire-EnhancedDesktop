@@ -273,6 +273,7 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowIcon(appIcon);
     this->screenInd = screenInd;
     qDebug() << "MainWindow Thread" << QThread::currentThread();
     setObjectName("MainWindow" + QString::number(screenInd));

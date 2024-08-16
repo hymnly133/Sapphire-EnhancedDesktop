@@ -23,6 +23,8 @@
 void preSetupG()
 {
     qDebug() << "preSetting Up Glabal...";
+    appIcon = QIcon(":/appIcon/Sapphire.ico");
+
     initiateDesktop();
     pdt = QApplication::desktop();
     pscs[0] = QGuiApplication::primaryScreen();

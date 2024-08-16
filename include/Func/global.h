@@ -6,13 +6,13 @@
 #define EXE_PATH QCoreApplication::applicationDirPath()
 
 #ifdef QT_DEBUG
-#define xmlDirPath PROJECT_PATH+"/xml"
-#define xlsxDirPath  PROJECT_PATH+"/xlsx"
-#define iconDirPath  PROJECT_PATH+"/icon"
+    #define xmlDirPath PROJECT_PATH+"/xml"
+    #define xlsxDirPath  PROJECT_PATH+"/xlsx"
+    #define iconDirPath  PROJECT_PATH+"/icon"
 #else
-#define xmlDirPath EXE_PATH+"/xml"
-#define xlsxDirPath EXE_PATH+"/xlsx"
-#define iconDirPath EXE_PATH+"/icon"
+    #define xmlDirPath EXE_PATH+"/xml"
+    #define xlsxDirPath EXE_PATH+"/xlsx"
+    #define iconDirPath EXE_PATH+"/icon"
 #endif
 
 #define numCelected pCelectedUnits.size()
@@ -47,10 +47,10 @@ extern bool firstNotice;
 //标识加载失败即将退出
 extern bool isQuit;
 //MainWindows
-extern QMap<int,MainWindow*> pmws;
+extern QMap<int, MainWindow*> pmws;
 extern MainWindow* activepmw;
 //Screens
-extern QMap<int,QScreen*> pscs;
+extern QMap<int, QScreen*> pscs;
 //desktop
 extern QDesktopWidget* pdt;
 extern SUnit* pFocusedUnit;
@@ -65,13 +65,14 @@ extern int screenNum;
 //布局文件数量
 extern int jsonNum;
 //未使用的Json数据
-extern QMap<int,QJsonObject> UnusedJsons;
+extern QMap<int, QJsonObject> UnusedJsons;
 //目前存在的SFile
-extern QMap<QString,SFile*> nowExits;
+extern QMap<QString, SFile*> nowExits;
 
 extern QList<QString> ExcludeFiles;
 extern SMenu* unitsMenu;
 extern bool editMode;
 extern IconReader* pir;
+extern QIcon appIcon;
 
 #endif // GLOBAL_H
