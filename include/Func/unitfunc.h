@@ -17,9 +17,9 @@ SUnit* unit = pFocusedUnit;\
     FUNC \
 }\
 
-
+class SFile;
 //拖出
-void dragOutG(SUnit* sender = nullptr,QMouseEvent* event = nullptr);
+void dragOutG(SUnit* sender = nullptr, QMouseEvent* event = nullptr);
 //移动选择的组件
 void moveCelect(SUnit* sender = nullptr);
 //清楚选择的组件
@@ -30,7 +30,10 @@ void releaseCelect(SUnit* sender = nullptr);
 void updateCelect(SUnit* sender = nullptr);
 
 //请求右键菜单
-void requireContexMenu(QContextMenuEvent* event,SUnit* sender);
+void requireContexMenu(QContextMenuEvent* event, SUnit* sender);
+
+//折叠所有文件夹
+void foldG();
 
 
 //所有组件内部函数的全局版
@@ -43,7 +46,8 @@ void removeG(SUnit* sender = nullptr);
 QPair<SLayout *, QPoint> deepFind(SUnit* aim);
 
 //从Json数据生成Unit并加载数据
-SUnit* from_json(QJsonObject data, SLayout *parent);
+SUnit* from_json(QJsonObject data, SLayout *layout);
+SFile *from_path(QString path, SLayout* layout = nullptr);
 
 //获取所有Unit
 QList<SUnit*> units();

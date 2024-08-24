@@ -4,6 +4,7 @@
 #include "qmessagebox.h"
 #include "qtconcurrentrun.h"
 #include "sbgshower.h"
+#include "sdir.h"
 #include "sglshower.h"
 #include "snotice.h"
 #include "sshellfuncunit.h"
@@ -43,7 +44,7 @@
 void MainWindow::setupDesktopMenu()
 {
     desktopMenu = new SMenu(this);
-    desktopMenu->path = *UserDesktopPath;
+    desktopMenu->path = UserDesktopPath;
     desktopMenu->ismain = true;
     // 给当前窗口添加QAction对象
     // SET_ANCTION(act01,刷新,desktopMenu,this,
@@ -61,7 +62,7 @@ void MainWindow::setupDesktopMenu()
         QStringList filePaths = QFileDialog::getOpenFileNames(this, tr("选择文件"), "D:/", nullptr, nullptr, QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
         foreach (const QString& filePath, filePaths)
         {
-            addAIcon(filePath);
+            addAFile(filePath);
         }
     })
     QAction *creatNewFileAction = new QAction(desktopMenu);
@@ -70,19 +71,19 @@ void MainWindow::setupDesktopMenu()
     creatNewFileMenu = new SMenu();
     creatNewFileAction->setMenu(creatNewFileMenu);
     SET_ANCTION(actNewDir, tr("文件夹"), creatNewFileMenu, this, {
-        fileCreator::creatNewDir();
+        FileHelper::creatNewDir();
     });
     SET_ANCTION(act13, tr("文本文档"), creatNewFileMenu, this, {
-        fileCreator::creatNewFile(FileType::txt);
+        FileHelper::creatNewFile(FileType::txt);
     });
     SET_ANCTION(act14, tr("PPT演示文稿"), creatNewFileMenu, this, {
-        fileCreator::creatNewFile(FileType::pptx);
+        FileHelper::creatNewFile(FileType::pptx);
     });
     SET_ANCTION(act15, tr("Word文档"), creatNewFileMenu, this, {
-        fileCreator::creatNewFile(FileType::docx);
+        FileHelper::creatNewFile(FileType::docx);
     });
     SET_ANCTION(act16, tr("空文件"), creatNewFileMenu, this, {
-        fileCreator::creatNewFile(FileType::empty);
+        FileHelper::creatNewFile(FileType::empty);
     });
     QAction *systemSettingMenuAction = new QAction(desktopMenu);
     systemSettingMenuAction->setText(tr("系统设置"));
@@ -130,7 +131,7 @@ void MainWindow::setupEditMenu()
     editMenu = new SMenu(this);
     editMenu->ismain = true;
     SET_ANCTION(act2, tr("切换精简"), editMenu, this, {
-        for(SUnit * content : * (inside->contents))
+        for(SUnit * content : inside->contents)
         {
             content->changeSimpleMode();
         }
@@ -186,7 +187,7 @@ void MainWindow::setupEditMenu()
         // InitAUnit(dock);
     })
     SET_ANCTION(act14, tr("调整布局"), editMenu, this, {
-        resizeForWithDialog(inside);
+        resizeForWithDialog((SBlockLayout*)(inside));
     })
     SET_ANCTION(act13, tr("桌面模式"), editMenu, this, {
         toDesktopMode();
@@ -194,6 +195,9 @@ void MainWindow::setupEditMenu()
 #ifdef QT_DEBUG
     SET_ANCTION(actgl, tr("gl"), editMenu, this, {
         auto gl = new SGLShower(inside);
+    })
+    SET_ANCTION(actdir, tr("文件夹"), editMenu, this, {
+        auto gl = new SDir(inside, 3, 3, "D:/Github/dirTest");
     })
 #endif
     SET_ANCTION(act4, tr("退出程序"), editMenu, this, {
@@ -265,8 +269,7 @@ void MainWindow::setupLayout(int x, int y)
 {
     inside = new SBlockLayout(this, x, y);
     inside->isMain = true;
-    QRect tem = QRect(0, 0, pscs[screenInd]->availableSize().width(), pscs[screenInd]->availableSize().height());
-    inside->setStandalongRect(tem);
+    updateSize();
 }
 
 MainWindow::MainWindow(MainWindow *parent, int screenInd)
@@ -278,15 +281,17 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     qDebug() << "MainWindow Thread" << QThread::currentThread();
     setObjectName("MainWindow" + QString::number(screenInd));
 
+
     setFocusPolicy( Qt::StrongFocus );
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
-    setAcceptDrops(true);
+    // setAcceptDrops(true);
     // qDebug() << ChangeWindowMessageFilterEx((HWND)winId(), WM_DROPFILES, MSGFLT_ALLOW, NULL);
     // qDebug() << ChangeWindowMessageFilterEx((HWND)winId(), 0x0049, MSGFLT_ALLOW, NULL);
     // qDebug() << ChangeWindowMessageFilterEx((HWND)winId(), WM_COPYDATA, MSGFLT_ALLOW, NULL);
     inplace(this);
     positionToScreen(this, screenInd);
+
     qDebug() << "MainWindow" << screenInd << "Information Fixed:" << rect() << pos() << geometry() << mapToGlobal(QPoint(0, 0)) << mapFromGlobal(QPoint(0, 0));
 
     preSetup();
@@ -309,9 +314,7 @@ void MainWindow::raiseLayers()
 void MainWindow::setScale(double scale)
 {
     scale = qBound(0.001, scale, 1.0);
-    foreach(SUnit *content, *(inside->contents)) {
-        content->setScale(scale);
-    }
+    SLayoutContainer::setScale(scale);
     globalScale = scale;
     SEditBox *ed = findChild<SEditBox *>();
     if(ed != nullptr) {
@@ -336,11 +339,11 @@ void MainWindow::load_json(QJsonObject rootObject)
     screenInd = rootObject.value("ind").toInt();
     qDebug() << "loading Mainwindow" << screenInd;
     setupLayout(10, 10);
-    inside->load_json(rootObject.value("content").toObject());
+    SLayoutContainer::load_json(rootObject.value("content").toObject());
     endUpdate();
 }
 
-QList<MyFileInfo> MainWindow::Init(QList<MyFileInfo> data)
+QStringList MainWindow::Init(QStringList data)
 {
     qDebug() << "initing Mainwindow" << screenInd;
     Init();
@@ -350,7 +353,7 @@ QList<MyFileInfo> MainWindow::Init(QList<MyFileInfo> data)
             break;
         } else {
             qDebug() << "ok";
-            addAIcon(data[0]);
+            addAFile(data[0]);
             data.removeAt(0);
         }
         // inside->printOccupied();
@@ -366,10 +369,9 @@ void MainWindow::endUpdate()
     if(changeShower) {
         changeShower->updateDisplay();
     }
-    if(inside != nullptr)
-        foreach(SUnit *content, *(inside->contents)) {
-            content->endUpdate();
-        }
+    if(inside != nullptr) {
+        SLayoutContainer::endUpdate();
+    }
 }
 
 
@@ -420,7 +422,11 @@ void MainWindow::preSetup()
 {
     pls = new LayerShower(this, screenInd);
     pls->layer = LayerShower::Upper;
+    if(MultiScreen) {
+        show();
+    }
     pls->startBootAnimationIn();
+    updateSize();
     //作为主窗口，调用UserFunc中的setupG进行软件的内容加载
     if(screenInd == 0) {
         connect(pls, &LayerShower::bootAnimationInEnd, this, &setupG);
@@ -432,6 +438,8 @@ void MainWindow::setup()
     bgPicPath = QApplication::applicationDirPath() + QString("/UserBG%1.png").arg(screenInd);
     showerSize = size();
 
+
+    setupDrop();
     setupShower();
     setupLayout(10, 10);
     setupDesktopMenu();
@@ -445,6 +453,15 @@ void MainWindow::setup()
         setBackgoundPic(QImage(bgPicPath));
     }
     setTransparent(enable_background_transparent);
+
+    connectTo(always_fill_screen, int, int, {
+        updateSize();
+    });
+}
+
+QSize MainWindow::blockSize()
+{
+    return QSize(((SBlockLayout*)inside)->W_Block_Clean(), ((SBlockLayout*)inside)->H_Block_Clean());
 }
 
 
@@ -462,7 +479,7 @@ void MainWindow::setShoweredVisibal(bool val)
     // changeShower->raise();
     if(val) {
     } else {
-        foreach (SUnit* content, *(inside->contents)) {
+        foreach (SUnit* content, inside->contents) {
             if(content->alwaysShow) {
                 content->setVisible(false);
             }
@@ -470,13 +487,13 @@ void MainWindow::setShoweredVisibal(bool val)
         if(!(showerAnimations->state() == QParallelAnimationGroup::Running)) {
             capture();
         }
-        foreach (SUnit* content, *(inside->contents)) {
+        foreach (SUnit* content, inside->contents) {
             content->setVisible(true);
         }
         inside->setVisible(false);
         changeShower->setVisible(true);
         changeShower->raise();
-        foreach (SUnit* content, *(inside->contents)) {
+        foreach (SUnit* content, inside->contents) {
             if(content->alwaysShow) {
                 content->raise();
             }
@@ -534,43 +551,40 @@ void MainWindow::updata_animation()
     showerAnimations->start();
 }
 
-bool MainWindow::addAIcon(QString path, bool notice, QPoint globalPos)
-{
-    return addAIcon(path2MyFI(path), notice, globalPos);
-}
 
-bool MainWindow::addAIcon(QFileInfo qinfo, bool notice, QPoint globalPos)
-{
-    return addAIcon(MyFileInfo(qinfo), notice, globalPos);
-}
 
-bool MainWindow::addAIcon(MyFileInfo info, bool notice, QPoint globalPos)
-{
-    qDebug() << "Mainwindow try to add a info" << info.filePath;
-    if(!inside->OKForDefaultPut(new SFile())) {
-        SNotice::notice("布局无法容纳目标，请调整布局", "布局错误");
-        return false;
-    };
-    SFile *tem = nullptr;
-    tem = new SFile();
-    tem->loadFromMyFI(info, true);
-    // qDebug()<<tem->colorAlpha;
-    if (tem) {
-        if(globalPos == QPoint(-1, -1)) {
-            inside->defaultPut(tem, false);
-        } else {
-            tem->setParent(this);
-            tem->move(mapFromGlobal(globalPos));
-            inside->clearPut(tem, false);
-        }
-        tem->raise();
-        if(notice) {
-            SNotice::notice(QStringList() << tem->filePath, "增添文件", 3000);
-        }
-        return true;
-    }
-    return false;
-}
+// bool MainWindow::addAIcon(QFileInfo qinfo, bool notice, QPoint globalPos)
+// {
+//     return addAIcon(MyFileInfo(qinfo), notice, globalPos);
+// }
+
+// bool MainWindow::addAIcon(MyFileInfo info, bool notice, QPoint globalPos)
+// {
+//     qDebug() << "Mainwindow try to add a info" << info.filePath;
+//     if(!inside->OKForDefaultPut(new SFile())) {
+//         SNotice::notice("布局无法容纳目标，请调整布局", "布局错误");
+//         return false;
+//     };
+//     SFile *tem = nullptr;
+//     tem = new SFile();
+//     tem->loadFromMyFI(info, true);
+//     // qDebug()<<tem->colorAlpha;
+//     if (tem) {
+//         if(globalPos == QPoint(-1, -1)) {
+//             inside->defaultPut(tem, false);
+//         } else {
+//             tem->setParent(this);
+//             tem->move(mapFromGlobal(globalPos));
+//             inside->clearPut(tem, false);
+//         }
+//         tem->raise();
+//         if(notice) {
+//             SNotice::notice(QStringList() << tem->filePath, "增添文件", 3000);
+//         }
+//         return true;
+//     }
+//     return false;
+// }
 
 
 void MainWindow::appendPoints(QPoint p)
@@ -596,42 +610,36 @@ void MainWindow::finishBootAnimation()
 
 
 
-void MainWindow::dropEvent(QDropEvent *e)
-{
-    if(e->mimeData()->hasUrls()) { //处理期望数据类型
-        // if()
-        qDebug() << e->dropAction();
-        QList<QUrl> list = e->mimeData()->urls();//获取数据并保存到链表中
-        for(int i = 0; i < list.count(); i++) {
-            QString path = list[i].toLocalFile();
-            QString newName =  (*UserDesktopPath) + "/" + okName(QFileInfo(path).fileName());
-            bool removed = false;
-            if(e->dropAction() == Qt::CopyAction) {
-                removed = QFile::copy(path, newName);
-            } else if(e->dropAction() == Qt::MoveAction) {
-                removed = QFile::rename(path, newName);
-            }
-            qDebug() << "move" << newName;
-            if(removed) {
-                qDebug() << "moved";
-                addAIcon(newName, true, QCursor::pos());
-            } else {
-                SNotice::notice("添加失败", "糟糕");
-            }
-        }
-    } else {
-        e->ignore();
-    }
-}
+// void MainWindow::dropEvent(QDropEvent *e)
+// {
+//     if(e->mimeData()->hasUrls()) { //处理期望数据类型
+//         // if()
+//         foreach(QString format, e->mimeData()->formats()) {
+//             // Retrieving data
+//             QByteArray data = e->mimeData()->data(format);
+//             qDebug() << format << data;
+//         }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent *e)
-{
-    if(e->mimeData()->hasUrls()) { //判断数据类型
-        e->acceptProposedAction();//接收该数据类型拖拽事件
-    } else {
-        e->ignore();//忽略
-    }
-}
+//         // return;
+//         qDebug() << e->dropAction();
+//         QList<QUrl> list = e->mimeData()->urls();//获取数据并保存到链表中
+//         for(int i = 0; i < list.count(); i++) {
+//             QString path = list[i].toLocalFile();
+//             whenDropAFile(path);
+//         }
+//     } else {
+//         e->ignore();
+//     }
+// }
+
+// void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+// {
+//     if(e->mimeData()->hasUrls()) { //判断数据类型
+//         e->acceptProposedAction();//接收该数据类型拖拽事件
+//     } else {
+//         e->ignore();//忽略
+//     }
+// }
 
 
 
@@ -640,7 +648,7 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
     pls->close();
     psh->writeStyleIni();
 #ifdef QT_DEBUG
-    QMessageBox::about(NULL, "cs", "closeEvent");
+    // QMessageBox::about(NULL, "cs", "closeEvent");
 #endif
     event->accept();
     writeJson();
@@ -666,9 +674,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 void MainWindow::contextMenuEvent(QContextMenuEvent *event)
 {
     if(event->modifiers() == Qt::ShiftModifier) {
-        StyleSettingWindow* k = new StyleSettingWindow;
-        k->show();
-        inside->printOccupied();
+        openSettingWindow();
+        // inside->printOccupied();
     } else {
         if(editMode) {
             editMenu->exec(event->globalPos());
@@ -737,16 +744,114 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
 }
 
+void MainWindow::updateAfterPut(SUnit *aim)
+{
+
+    if(aim->inherits("SFile")) {
+        SFile* sfile = (SFile*)aim;
+        //为了避免bug，不移动文件夹
+        if(sfile->isDir) {
+            return;
+        }
+
+        //屏蔽原本就在桌面的文件
+        if(sfile->dirPath() == UserDesktopPath || sfile->dirPath() == PublicDesktopPath) {
+            return;
+        }
+        qDebug() << UserDesktopPath + "/" + sfile->fullName();
+        sfile->moveToDir(UserDesktopPath);
+    }
+}
+
+void MainWindow::whenDropAFile(QString &fileName)
+{
+    QString path = fileName.replace("\\", "/");
+    QString newName =  (UserDesktopPath) + "/" + okName(QFileInfo(path).fileName());
+    bool removed = QFile::copy(path, newName);
+
+
+    qDebug() << "move" << newName;
+    if(removed) {
+        qDebug() << "moved";
+        addAFile(newName, true, QCursor::pos());
+    } else {
+        SNotice::notice("添加失败", "糟糕");
+    }
+}
+
+void MainWindow::setupDrop()
+{
+    // void* user32 = LoadLibraryA("user32");
+    // FARPROC func = GetProcAddress((HMODULE)user32, "ChangeWindowMessageFilter");
+    // qDebug() << (*func)();
+    // user32 = LoadLibraryA("user32");
+    // func = GetProcAddress((HMODULE)user32, "ChangeWindowMessageFilter");
+    // qDebug() << (*func)();
+    setAcceptDrops(true);
+    ChangeWindowMessageFilter(WM_DROPFILES, 1);
+    //    ChangeWindowMessageFilter(WM_COPYDATA, 1);
+    //    ChangeWindowMessageFilter(0x0049, 1);
+    qDebug() << winId() << effectiveWinId();
+    qDebug() << ChangeWindowMessageFilterEx((HWND)effectiveWinId(), WM_DROPFILES, 1, NULL);
+    qDebug() << ChangeWindowMessageFilterEx((HWND)effectiveWinId(), WM_COPYDATA, 1, NULL);
+    qDebug() << ChangeWindowMessageFilterEx((HWND)effectiveWinId(), 0x0049, 1, NULL);
+    DragAcceptFiles((HWND)effectiveWinId(), true);
+    qDebug() << GetLastError();
+    HRESULT res = RevokeDragDrop((HWND)winId());
+    qDebug() << "res:" << res;
+}
+
+void MainWindow::updateSize()
+{
+    QSize aim = pscs[screenInd]->availableSize();
+
+
+    if(!MultiScreen) {
+        aim = pscs[screenInd]->size();
+    }
+    setFixedSize(aim);
+
+    if(inside) {
+        QSize aim_inside = pscs[screenInd]->availableSize();
+
+        if(always_fill_screen) {
+            aim_inside = pscs[screenInd]->size();
+        }
+        inside->setStandalongRect(QRect(QPoint(0, 0), aim_inside));
+    }
+    endUpdate();
+}
+
 bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
 {
     MSG *msg = (MSG *)message;
+    // qDebug() << eventType;
     if(msg->message == WM_QUERYENDSESSION ) { //Win下的关机消息
         //TODO...
         qDebug() << "User Shutdown";
         SExit();
         return true;
+    } else if (eventType == "windows_generic_MSG") {
+        PMSG msg = (PMSG) message;
+        if(msg->message == 563) {
+            // qDebug() << msg->message << msg->hwnd << msg->wParam << msg->lParam << msg->time << msg->pt.x << msg->pt.y;
+            UINT file_num = DragQueryFile((HDROP) msg->wParam, 0xFFFFFFFF, NULL, 0);
+            qDebug() << "文件数量:" << file_num;
+            for(int i = 0; i < (int)file_num; i++) {
+                UINT file_name_size = DragQueryFile((HDROP) msg->wParam, i, NULL, 0);
+                qDebug() << file_name_size;
+                LPWSTR  fn = (LPWSTR)malloc(sizeof(WCHAR) * file_name_size + 1);
+                //! https://learn.microsoft.com/zh-cn/windows/win32/api/shellapi/nf-shellapi-dragqueryfilew
+                UINT code = DragQueryFileW((HDROP) msg->wParam, i, fn, file_name_size + 1);
+                QString filename = QString::fromStdWString(fn);
+                free(fn);
+                whenDropAFile(filename);
+                qDebug() << "get name error:" << code;
+            }
+            qDebug() << eventType << message << *result;
+        }
     }
-    return QWidget::nativeEvent(eventType, message, result);
+    return QMainWindow::nativeEvent(eventType, message, result);
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
@@ -762,6 +867,7 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
 void MainWindow::mousePressEvent(QMouseEvent* event)
 {
     cleanCelect();
+    foldG();
     if(event->button() == Qt::LeftButton) {
         appendPoints(event->pos());
     } else if(event->button() == Qt::MiddleButton) {
@@ -778,7 +884,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event)
     // SToolTip::Tip("样例文本");
     // // SNotice::notice(QStringList()<<"现在Sapphire将会实时更新桌面文件！"<<"你在Sapphire中对图标的操作均会对应到系统文件中！","重要通知!",15000);
     // SNotice::notice(QStringList()<<"infoTestinfoTestinfoTestinfoTestinfoTest","TitleTest");
-    qDebug() << inside->W_Block_Clean() << inside->boradXPix() << inside->spaceXPix();
+    // qDebug() << inside->W_Block_Clean() << inside->boradXPix() << inside->spaceXPix();
 #endif
     pls->raise();
 }

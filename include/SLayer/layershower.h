@@ -23,7 +23,7 @@ public:
         normal
     };
 
-    int screenId;
+    int screenInd;
     Layer layer;
     State state = bootIn;
     SAnimationRect* ar;
@@ -51,6 +51,7 @@ public slots:
     void startBootAnimationIn();
     void startBootAnimationOut();
     void whenBootAnimationUpdation();
+    void updateSize();
 };
 
 #endif // LAYERSHOWER_H

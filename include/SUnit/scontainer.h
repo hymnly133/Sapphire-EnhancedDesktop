@@ -1,45 +1,34 @@
 #ifndef SCONTAINER_H
 #define SCONTAINER_H
 
+#include "slayoutcontainer.h"
 #include "sunit.h"
 #include <QWidget>
 class SUnit;
 
-class SContainer : public SUnit
+class SContainer : public SUnit, public SLayoutContainer
 {
     Q_OBJECT
 public:
 
-    explicit SContainer(SLayout *dis = nullptr, int sizex=3, int sizey=3);
+    explicit SContainer(SLayout *dis = nullptr, int sizex = 3, int sizey = 3);
 
     SContainer(const SContainer &other)
-        :SContainer(other.layout,other.sizeX,other.sizeY)
+        : SContainer(other.layout, other.sizeX, other.sizeY)
     {
 
     }
-    SLayout* inside = nullptr;
-    // virtual void InitLayout();
-    void clearPut(SUnit* aim,bool animated);
-    bool OKForClearPut(SUnit* aim);
+
+    virtual void Say();
     void afterResize(QResizeEvent* event) override;
     void setSimpleMode(bool)override;
     void setScale(double val)override;
     void endUpdate()override;
-
-
-
-
-    virtual void Say();
-    // ED_Unit interface
-public:
-    QJsonObject to_json()override ;
-    void load_json(QJsonObject rootObject)override ;
-signals:
-
-    // ED_Unit interface
-public:
+    QJsonObject to_json() override;
+    void load_json(QJsonObject rootObject) override;
     void setPMW(MainWindow *pmw) override;
 
+signals:
 
     // SUnit interface
 public slots:

@@ -32,15 +32,15 @@ void SUnit::edmove(QPoint dis)
 {
     QPoint red = dis;
     if(layout != nullptr)
-        if(parentWidget() != layout->pContainer) {
-            red = parentWidget()->mapFromGlobal(layout->pContainer->mapToGlobal(dis));
+        if(parentWidget() != layout->pContainerW) {
+            red = parentWidget()->mapFromGlobal(layout->pContainerW->mapToGlobal(dis));
         }
     move(red);
 }
 
 QPoint SUnit::edpos()
 {
-    return layout->pContainer->mapFromGlobal(mapToGlobal(QPoint(0, 0)));
+    return layout->pContainerW->mapFromGlobal(mapToGlobal(QPoint(0, 0)));
 }
 
 
@@ -136,14 +136,14 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey): QWidget(nullptr)
 
 
 
-void SUnit::single_click_action()
-{
-    //最终单击执行
-}
-
 void SUnit::double_click_action(QMouseEvent *event)
 {
     //最终双击执行
+}
+
+void SUnit::single_click_action(QMouseEvent *event)
+{
+    //最终单击执行
 }
 
 void SUnit::mouse_enter_action()
@@ -233,7 +233,6 @@ void SUnit::mousePressEvent(QMouseEvent *event)
     qDebug() << objectName() << "press" << event->pos() << event->globalPos() << mapTo(pmw, event->pos());
     if(event->button() == Qt::LeftButton) {
         grabMouse();
-        single_click_action();
         premove = true;
         relativeP = event->pos();
         if(!pCelectedUnits.contains(this)) {
@@ -258,10 +257,18 @@ void SUnit::mouseReleaseEvent(QMouseEvent *event)
     qDebug() << objectName() << "Release" << event->pos() << event->globalPos() << mapTo(pmw, event->pos());
     releaseMouse();
     mouse_release_action();
-    if(moving) {
-        releaseCelect(this);
+
+    if(event->button() == Qt::LeftButton) {
+        if(moving) {
+            releaseCelect(this);
+            event->accept();
+        } else {
+            single_click_action(event);
+        }
     }
-    event->accept();
+
+
+    // event->accept();
 }
 
 void SUnit::mouseDoubleClickEvent(QMouseEvent *event)
@@ -295,8 +302,8 @@ void SUnit::enterEvent(QEvent *event)
     event->accept();
     if(layout != nullptr)
         if(!layout->isMain) {
-            layout->pContainer->update();
-            layout->pContainer->repaint();
+            layout->pContainerS->update();
+            // layout->pContainerW->repaint();
         }
     if(!moving) {
         preSetLongFocus(true);
@@ -314,8 +321,8 @@ void SUnit::leaveEvent(QEvent *event)
     updateFocusAnimation();
     if(layout != nullptr)
         if(!(layout->isMain)) {
-            layout->pContainer->update();
-            layout->pContainer->repaint();
+            layout->pContainerS->update();
+            // layout->pContainerW->repaint();
         }
 }
 
@@ -325,7 +332,7 @@ void SUnit::updateInLayout(bool animated)
     if(animated) {
         moveto(MyPos(), MySize());
     } else {
-        move(MyPos());
+        edmove(MyPos());
         setFixedSize(MySize());
     }
 }
@@ -343,6 +350,7 @@ void SUnit::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
     rs->updateDisplay();
+    emit resized(event->size());
     afterResize(event);
 }
 
@@ -357,6 +365,9 @@ void SUnit::contextMenuEvent(QContextMenuEvent *event)
 
 bool SUnit::setBlockSize(int w, int h)
 {
+    if(!resizable()) {
+        return false;
+    }
     if(w <= 0) {
         return false;
     }
@@ -400,7 +411,7 @@ void SUnit::onShiftContextMenu(QContextMenuEvent *event)
 {
 }
 
-void SUnit::onProcessAnother(SUnit *another)
+void SUnit::processAnother(SUnit *another)
 {
 }
 
@@ -499,6 +510,18 @@ void SUnit::setAlwaysShow(bool val)
 void SUnit::setPMW(MainWindow *pmw)
 {
     this->pmw = pmw;
+}
+
+void SUnit::setOpacity(double val)
+{
+    rs->setOpacity(val);
+    if(val <= 0) {
+        setVisible(false);
+    } else {
+        if(!isVisible()) {
+            setVisible(true);
+        }
+    }
 }
 
 void SUnit::onSwitch(MainWindow *aimpmw)
@@ -634,6 +657,10 @@ void SUnit::updatePositionAnimation()
 
 void SUnit::onDragedOut()
 {
+    if(!movable) {
+        setCelect(false, true);
+        return;
+    }
     if(!premove) {
         relativeP = mapFromGlobal(QCursor::pos());
     }
@@ -644,7 +671,7 @@ void SUnit::onDragedOut()
     positionAnimations->stop();
     if(layout)
         if(!layout->isMain) {
-            layout->pContainer->update();
+            layout->pContainerS->update();
         }
     if(layout) {
         removeFromLayout();
@@ -691,10 +718,11 @@ void SUnit::setInLayout(bool animated)
 {
     QPoint tem = edpos();
     // qDebug()<<tem<<dis;
-    setParent(layout->pContainer);
+    setParent(layout->pContainerW);
     edmove(tem);
     setVisible(true);
     layout->updateAfterPut(this, indX, indY);
+    layout->pContainer->updateAfterPut(this);
     update();
 }
 
@@ -755,6 +783,30 @@ bool SUnit::onSmaller()
     return true;
 }
 
+void SUnit::leaveParent()
+{
+    if(outOfParent) {
+        return;
+    }
+    outOfParent = true;
+    auto tem = edpos();
+    setParent(pmw);
+    edmove(tem);
+    show();
+}
+
+void SUnit::enterParent()
+{
+    if(!outOfParent) {
+        return;
+    }
+    outOfParent = false;
+    auto tem = edpos();
+    setParent(layout->pContainerW);
+    edmove(tem);
+    show();
+}
+
 void SUnit::afterResize(QResizeEvent* event)
 {
 }
@@ -768,8 +820,8 @@ void SUnit::whenFocusAnimationChange()
     onScaleChange(scale*scaleFix);
     shadow_main_color->setColor(applyAlpha( displayColor(), unit_shadow_alpha));
     shadow_main_color->update();
-    if(layout && layout->pContainer->inherits("SDock")) {
-        layout->pContainer->update();
+    if(layout && layout->pContainerS->inherits("SDock")) {
+        layout->pContainerS->update();
     } else {
         update();
     }
@@ -777,21 +829,24 @@ void SUnit::whenFocusAnimationChange()
 
 double SUnit::aim_padRatio()
 {
-    double val = 0.5;
-    if(layout == nullptr) {
-        val = 1.0;
-    } else {
-        if(layout->isMain) {
-            val = 1.0;
-        } else {
-            if(onFocus) {
-                val = 1.0;
-            } else {
-                val =  0.0;
-            }
-        }
+    // double val = 0.5;
+    // if(layout == nullptr) {
+    //     val = 1.0;
+    // } else {
+    //     if(layout->isMain) {
+    //         val = 1.0;
+    //     } else {
+    //         if(onFocus) {
+    //             val = 1.0;
+    //         } else {
+    //             val =  0.0;
+    //         }
+    //     }
+    // }
+    if(layout && !layout->isMain && !outOfParent && !onFocus) {
+        return 0.0;
     }
-    return val;
+    return 1.0;
 }
 
 void SUnit::setCelect(bool newOnCelected, bool disableAnimation )

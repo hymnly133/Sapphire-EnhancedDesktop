@@ -13,25 +13,36 @@ public:
     int* pRadius = nullptr;
     bool follow = true;
 
-    void distri(QSize* sizedis,int* radiusdis);
+    void distri(QSize* sizedis, int* radiusdis);
     void distriRadius(int* radiusdis);
 
-    enum Aliment{
-        Center=0,
-        Default =1
+    double opacity = 1.0;
+    void setOpacity(double val);
+
+    enum Aliment {
+        Center = 0,
+        Default = 1
     };
     Aliment aliment = Center;
 
-    QSize aim_size(){
-        if(follow) return parentWidget()->size();
-        else return *pSize;
+    QSize aim_size()
+    {
+        if(follow) {
+            return parentWidget()->size();
+        } else {
+            return *pSize;
+        }
     }
 
     void updateDisplay();
 
-    int aim_radius(){
-        if(pRadius==nullptr) return unit_radius;
-        else return *pRadius;
+    int aim_radius()
+    {
+        if(pRadius == nullptr) {
+            return unit_radius;
+        } else {
+            return *pRadius;
+        }
     }
 signals:
 

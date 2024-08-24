@@ -4,6 +4,7 @@
 #include "guifunc.h"
 #include "mainwindow.h"
 #include "qdir.h"
+#include "qjsonarray.h"
 #include "qregularexpression.h"
 #include "qwinfunctions.h"
 #include "sfile.h"
@@ -44,7 +45,7 @@ QString path2Name(QString path)
     return QFileInfo(path).baseName();
 }
 
-QPixmap getWinIcon(QString path, bool small)
+QPixmap getWinIcon(QString path, bool isSmall)
 {
     if(path[0] == "\"") {
         path.replace("\"", "");
@@ -61,7 +62,7 @@ QPixmap getWinIcon(QString path, bool small)
     // 获取大号图像列表
     IImageList *piml;
     int aim = (enable_highdef_icon) ? 4 : 2;
-    if(small) {
+    if(isSmall) {
         aim = 2;
     }
     if (FAILED(SHGetImageList(aim, IID_PPV_ARGS(&piml)))) {
@@ -79,28 +80,28 @@ QPixmap getWinIcon(QString path, bool small)
 }
 
 
-QList<MyFileInfo> scandesktopfiles(const QString &desktopPath)
+QStringList scanFilesInDir(const QString &dirPath)
 {
     //对于指定桌面路径，返还桌面路径中的文件信息的列表
-    QList<MyFileInfo> files;
-    QDir desktopDir(desktopPath);
-    desktopDir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
-    QFileInfoList fileInfoList = desktopDir.entryInfoList();
-    foreach(const QFileInfo &x, fileInfoList) {
-        files.append(MyFileInfo(x));
+    QStringList files;
+    QDir dir(dirPath);
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
+    QStringList fileList = dir.entryList();
+    foreach(const QString &x, fileList) {
+        files.append(dir.absoluteFilePath(x));
     }
     std::sort(files.begin(), files.end());
     return files;
 }
 
-QList<MyFileInfo> scanalldesktopfiles()
+QStringList scanalldesktopfiles()
 {
     //寻找桌面路径，并返回两个桌面中所有文件信息的列表
-    QList<MyFileInfo> files;
-    files.append(scandesktopfiles(*PublicDesktopPath));
-    files.append(scandesktopfiles(*UserDesktopPath));
+    QStringList files;
+    files.append(scanFilesInDir(PublicDesktopPath));
+    files.append(scanFilesInDir(UserDesktopPath));
     std::sort(files.begin(), files.end());
-    qDebug() << *PublicDesktopPath << *UserDesktopPath;
+    qDebug() << PublicDesktopPath << UserDesktopPath;
     return files;
 }
 
@@ -207,10 +208,7 @@ LPITEMIDLIST GetIDListFromPath(QString path)
 void OpenFileProperty(QString path)
 {
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    qDebug() << "on1" << path;
-    // Convert the path into a PIDL.
     path = toWindowsPath(path);
-    qDebug() << "on1" << path;
     std::wstring wlpstrv = QString("properties").toStdWString();
     SHELLEXECUTEINFO sei;
     ZeroMemory(&sei, sizeof(sei));
@@ -240,7 +238,7 @@ bool isPic(QString pah)
 
 
 
-void fileCreator::creatNewFile(FileType type)
+void FileHelper::creatNewFile(FileType type)
 {
     QString defaultname = "";
     switch (type) {
@@ -263,7 +261,7 @@ void fileCreator::creatNewFile(FileType type)
     });
 }
 
-void fileCreator::creatNewDir()
+void FileHelper::creatNewDir()
 {
     QString defaultname = "新文件夹";
     SInputDialog* sid = SInputDialog::showInput("请输入文件夹名", defaultname);
@@ -273,15 +271,16 @@ void fileCreator::creatNewDir()
     });
 }
 
+
 bool creatAFileInDesktop(QString name, bool notice, QPoint globalPos)
 {
     if(name == "") {
         name = "空文件";
     }
-    QString path = okPath(*UserDesktopPath + "/" + name);
+    QString path = okPath(UserDesktopPath + "/" + name);
     bool ret = creatAFile(path);
     if(ret) {
-        return activepmw->addAIcon(path, notice, globalPos);
+        return activepmw->addAFile(path, notice, globalPos);
     } else {
         return false;
     }
@@ -332,7 +331,7 @@ bool creatAFile(const QString &absolutePath)
 
 QString okName(QString fileName)
 {
-    QString resOkPath = okPath(*UserDesktopPath + '/' + fileName);
+    QString resOkPath = okPath(UserDesktopPath + '/' + fileName);
     return resOkPath.mid(resOkPath.lastIndexOf("/") + 1, resOkPath.length());
 }
 
@@ -380,10 +379,10 @@ bool creatADirInDesktop(QString name, bool notice, QPoint globalPos)
     if(name == "") {
         name = "新文件夹";
     }
-    QString path = okPath(*UserDesktopPath + "/" + name);
+    QString path = okPath(UserDesktopPath + "/" + name);
     bool ret = creatADir(path);
     if(ret) {
-        return activepmw->addAIcon(path, notice, globalPos);
+        return activepmw->addAFile(path, notice, globalPos);
     } else {
         return false;
     }
@@ -463,3 +462,38 @@ QIcon getShellIcon(QString path, int ind)
     // }
     return icon;
 }
+
+QJsonObject mergeJsonObject(QJsonObject src, QJsonObject other)
+{
+    for(auto it = other.constBegin(); it != other.constEnd(); ++it) {
+        if(src.contains(it.key())) {
+            if(src.value(it.key()).isObject() && other.value(it.key()).isObject()) {
+                QJsonObject one(src.value(it.key()).toObject());
+                QJsonObject two(other.value(it.key()).toObject());
+
+                mergeJsonObject(one, two);
+                src[it.key()] = one;
+            } else if(src.value(it.key()).isArray() && other.value(it.key()).isArray()) {
+                QJsonArray arr = other.value(it.key()).toArray();
+                QJsonArray srcArr = src.value(it.key()).toArray();
+                for(int i = 0; i < arr.size(); i++) {
+                    srcArr.append(arr[i]);
+                }
+                src[it.key()] = srcArr;
+            }
+        } else {
+            src[it.key()] = it.value();
+        }
+    }
+    return src;
+}
+
+// void addFileInfo(SFileInfo *info)
+// {
+
+// }
+
+// void removeFileInfo(SFileInfo *info)
+// {
+
+// }

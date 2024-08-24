@@ -38,6 +38,7 @@ INCLUDEPATH+= $$PWD/include/SLayout
 INCLUDEPATH+= $$PWD/include/SObject
 INCLUDEPATH+= $$PWD/include/SWidget
 INCLUDEPATH+= $$PWD/include/Setting
+INCLUDEPATH+= $$PWD/include/SInterface
 # INCLUDEPATH+= $$PWD/include/Ela
 # INCLUDEPATH+= $$PWD/include/Ela/Example
 # DEPENDPATH += $$PWD/include/Ela
@@ -80,11 +81,17 @@ SOURCES += \
     include/SGUI/slabel.cpp \
     include/SGUI/smenu.cpp \
     include/SGUI/snotice.cpp \
+    include/SGUI/sscrollarea.cpp \
     include/SGUI/stooltip.cpp \
+    include/SGUI/strayicon.cpp \
+    include/SInterface/sfileinfo.cpp \
+    include/SInterface/slayoutcontainer.cpp \
+    include/SInterface/spixtrueandname.cpp \
     include/SLayer/layerbackground.cpp \
     include/SLayer/layermousegetter.cpp \
     include/SLayer/layershower.cpp \
     include/SLayout/sblocklayout.cpp \
+    include/SLayout/sflowlayout.cpp \
     include/SLayout/slayout.cpp \
     include/SLayout/slinearlayout.cpp \
     include/SObject/sanimationrect.cpp \
@@ -93,6 +100,7 @@ SOURCES += \
     include/SUnit/repaintcounterunit.cpp \
     include/SUnit/sblockcontainer.cpp \
     include/SUnit/scontainer.cpp \
+    include/SUnit/sdir.cpp \
     include/SUnit/sdock.cpp \
     include/SUnit/seditbox.cpp \
     include/SUnit/sfile.cpp \
@@ -137,11 +145,17 @@ HEADERS += \
     include/SGUI/slabel.h \
     include/SGUI/smenu.h \
     include/SGUI/snotice.h \
+    include/SGUI/sscrollarea.h \
     include/SGUI/stooltip.h \
+    include/SGUI/strayicon.h \
+    include/SInterface/sfileinfo.h \
+    include/SInterface/slayoutcontainer.h \
+    include/SInterface/spixtrueandname.h \
     include/SLayer/layerbackground.h \
     include/SLayer/layermousegetter.h \
     include/SLayer/layershower.h \
     include/SLayout/sblocklayout.h \
+    include/SLayout/sflowlayout.h \
     include/SLayout/slayout.h \
     include/SLayout/slinearlayout.h \
     include/SObject/sanimationrect.h \
@@ -150,6 +164,7 @@ HEADERS += \
     include/SUnit/repaintcounterunit.h \
     include/SUnit/sblockcontainer.h \
     include/SUnit/scontainer.h \
+    include/SUnit/sdir.h \
     include/SUnit/sdock.h \
     include/SUnit/seditbox.h \
     include/SUnit/sfile.h \

@@ -9,20 +9,34 @@
 #include "qmimedata.h"
 #include "qscreen.h"
 #include "qstandardpaths.h"
+#include "qsystemtrayicon.h"
 #include "qtconcurrentrun.h"
 #include "qthreadpool.h"
 #include "sblocklayoutsettingwindow.h"
 #include "screenfunc.h"
 #include"QInputDialog"
 #include"QMessageBox"
+#include "sdir.h"
 #include "sfile.h"
 #include"snotice.h"
 #include "stylehelper.h"
 #include "unitfunc.h"
+#include <shlobj.h>
 
 void preSetupG()
 {
     qDebug() << "preSetting Up Glabal...";
+
+    BOOL bIsAdmin = IsUserAnAdmin();
+    if (bIsAdmin) {
+        qDebug() << ("Run As administrator");
+        isAdmin = true;
+    } else {
+        qDebug() << ("Run As User");
+        isAdmin = false;
+    }
+
+
     appIcon = QIcon(":/appIcon/Sapphire.ico");
 
     initiateDesktop();
@@ -57,6 +71,10 @@ void setupG()
 {
 
     qDebug() << "Setting Up Glabal...";
+
+
+
+
     QString application_name = QApplication::applicationName();//获取应用名称
     QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
     enable_auto_run = !settings->value(application_name).isNull();
@@ -65,13 +83,23 @@ void setupG()
     ExcludeFiles.append("desktop.ini");
 
     //桌面路径
-    UserDesktopPath = new  QString(QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0]);
-    qDebug() << "User Desktop:" << *UserDesktopPath;
-    PublicDesktopPath = new QString("C:/Users/Public/Desktop");
-    qDebug() << "Public Desktop:" << *PublicDesktopPath;
+    UserDesktopPath = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0];
+    qDebug() << "User Desktop:" << UserDesktopPath;
+    PublicDesktopPath = QString("C:/Users/Public/Desktop");
+    qDebug() << "Public Desktop:" << PublicDesktopPath;
 
     //菜单
     SMenu::initSysCommands();
+
+    //设置托盘图标
+
+    QSystemTrayIcon* pSystemTray = new QSystemTrayIcon();
+    if (NULL != pSystemTray) {
+        pSystemTray->setIcon(QIcon(":/appIcon/Sapphire.ico"));
+        pSystemTray->setToolTip("Sapphire");
+        pSystemTray->setContextMenu(trayMenu);
+        pSystemTray->show();
+    }
 
     //自定义图标
     pir = new IconReader;
@@ -123,7 +151,7 @@ void checkForKey(QKeyEvent *event)
             QList<QUrl> list = clip->mimeData()->urls();//获取数据并保存到链表中
             for(int i = 0; i < list.count(); i++) {
                 QString path = list[i].toLocalFile();
-                QString newPath =  okPath((*UserDesktopPath) + "/" + QFileInfo(path).fileName());
+                QString newPath =  okPath((UserDesktopPath) + "/" + QFileInfo(path).fileName());
                 bool Copied = false;
                 if(QFileInfo(path).isFile()) {
                     Copied = QFile::copy(path, newPath);
@@ -133,7 +161,7 @@ void checkForKey(QKeyEvent *event)
                 qDebug() << "Try to copy to" << newPath;
                 if(Copied) {
                     qDebug() << "Copid";
-                    activepmw->addAIcon(newPath, true, QCursor::pos());
+                    activepmw->addAFile(newPath, true, QCursor::pos());
                 }
             }
         }
@@ -221,6 +249,7 @@ void SExit()
         // pmw->plsB->close();
     }
     psh->writeStyleIni();
+    writeJson();
     qApp->exit(0);
 }
 
@@ -255,60 +284,24 @@ void scanForChange()
         return;
     }
     //Scan For Loss
-    QList<QString> keyList = nowExits.keys();
-    QMap<QString, SFile*> loss;
-    QVector<QString> newFiles;
-    //使用QFileInfo判断
-    // foreach (QString path, keyList) {
-    //     if(!QFileInfo::exists(path)){
-    //         if(QFileInfo(path).isFile())continue;
-    //         // if(QFileInfo(path).isShortcut())continue;
-    //         if(QFileInfo(path).isSymLink())continue;
-    //         loss[path] = nowExits[path];
-    //     }
-    //     else if(ExcludeFiles.contains( QFileInfo(path).fileName())){
-    //         loss[path] = nowExits[path];
-    //     }
-    // }
+    QList<QString> keyList = nowExitFiles.keys();
+    QMap<QString, SUnit*> loss;
+    QStringList newfiles;
+
     //使用自编写判断
     foreach (QString path, keyList) {
         if(!fileExist(path)) {
-            loss[path] = nowExits[path];
+            loss[path] = nowExitFiles[path];
         } else if(ExcludeFiles.contains( QFileInfo(path).fileName())) {
-            loss[path] = nowExits[path];
+            loss[path] = nowExitFiles[path];
         }
     }
-    //Scan For New
-    QDir uPathDir(*UserDesktopPath);
-    qDebug() << "Scanningfor" << *UserDesktopPath;
-    uPathDir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
-    QStringList files = uPathDir.entryList();
-    foreach (QString name, files) {
-        QString absolute = uPathDir.absoluteFilePath(name);
-        if(!nowExits.contains(absolute)) {
-            if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) {
-                continue;
-            }
-            newFiles.append(absolute);
-        }
-    }
-    QDir pPathDir(*PublicDesktopPath);
-    qDebug() << "Scanningfor" << *PublicDesktopPath;
-    pPathDir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
-    foreach (QString name, pPathDir.entryList()) {
-        QString absolute = pPathDir.absoluteFilePath(name);
-        if(!nowExits.contains(absolute)) {
-            if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) {
-                continue;
-            }
-            newFiles.append(absolute);
-        }
-    }
+
     QStringList removefiles;
     QList<QString> removed = loss.keys();
     foreach (QString path, removed) {
-        if(nowExits.contains(path)) {
-            nowExits[path]->remove();
+        if(nowExitFiles.contains(path)) {
+            nowExitFiles[path]->remove();
         }
         removefiles << path;
     }
@@ -316,18 +309,45 @@ void scanForChange()
     if(!removefiles.empty()) {
         SNotice::notice(removefiles, "移除文件", 5000);
     }
-    QStringList newfiles;
-    foreach (QString newfile, newFiles) {
-        pmws[0]->addAIcon(newfile, true);
-        pmws[0]->endUpdate();
+
+
+    scanForChangeInDir(UserDesktopPath, pmws[0], &newfiles);
+    scanForChangeInDir(PublicDesktopPath, pmws[0], &newfiles);
+    foreach (SDir* sdir, nowExitDirs) {
+        if(sdir->inherits("SDir") && sdir->layout->isMain) {
+            scanForChangeInDir(sdir->filePath, dynamic_cast<SLayoutContainer*>(sdir), &newfiles);
+        }
     }
+    // scanForChangeInDir(UserDesktopPath, pmws[0], &newfiles);
     //提示
     if(!newfiles.empty()) {
         SNotice::notice(newfiles, "新增文件", 5000);
     }
+
     writeJson();
 }
+void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QStringList *newfiles)
+{
 
+    // QString path = fileInfo->filePath;
+    // //Scan For New
+    QDir uPathDir(path);
+    qDebug() << "Scanningfor" << path;
+    uPathDir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
+    QStringList files = uPathDir.entryList();
+    foreach (QString name, files) {
+        QString absolute = uPathDir.absoluteFilePath(name);
+        if(!nowExitFiles.contains(absolute)) {
+            if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) {
+                continue;
+            }
+            *newfiles << absolute;
+            // newFiles->append(absolute);
+            layoutContainer->addAFile(absolute, false);
+        }
+    }
+
+}
 bool loadMainWindows()
 {
     foreach (auto pmw, pmws) {
@@ -344,7 +364,7 @@ bool loadMainWindows()
         } else {
             QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化~\n请注意弹出窗口！");
         }
-        QList<MyFileInfo> iconns = scanalldesktopfiles();
+        QStringList iconns = scanalldesktopfiles();
         for(int i = 0; i < screenNum; i++) {
             //对于第一次初始化，由于是顺序加载，所以直接单线程加载
             iconns = pmws[i]->Init(iconns);
@@ -381,5 +401,29 @@ void setupMainWindows()
 {
 
 }
+
+
+
+void SReboot()
+{
+    foreach(auto pmw, pmws) {
+        pmw->close();
+        if(pmw->plsBG != nullptr) {
+            pmw->plsBG->close();
+        }
+        pmw->pls->close();
+        // pmw->plsB->close();
+    }
+    psh->writeStyleIni();
+    writeJson();
+    qApp->exit(733);
+}
+
+void openSettingWindow()
+{
+    StyleSettingWindow* k = new StyleSettingWindow;
+    k->show();
+}
+
 
 

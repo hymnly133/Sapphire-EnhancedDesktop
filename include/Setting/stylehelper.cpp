@@ -51,6 +51,7 @@ StyleHelper::StyleHelper()
     ADD(tr("外观"), enable_image_fill, tr("大图标填充"), 0, 0);
     ADD(tr("外观") << tr("字体"), font_size, tr("字体大小"), 3, 20);
     ADD(tr("系统"), enable_highdef_icon, tr("超清图标"), 0, 0);
+    ADD(tr("系统"), always_fill_screen, tr("布局填满屏幕（即包括任务栏区域）"), 0, 0);
     ADD(tr("偏好"), default_steam_icon_type, tr("封面获取方式"), 0, 2);
     ADD(tr("偏好"), use_pic_as_icon, tr("使用图片作为Icon"), 0, 0);
     ADD(tr("系统"), enable_intime_repaint, tr("即时重绘"), 0, 0);
@@ -442,8 +443,7 @@ void StyleSettingWindow::IniAboutPage()
     auto authorLabel = new QLabel(QString(R"(
 作者: 诗音种的土豆/Hymnly 1336325450@qq.com
 其他制作者：微风中的快乐 2329484200
-Icon贡献：
-制作帮助：
+Icon贡献：L St4r 1207638671
 
 使用：QXlsx
     )"));
@@ -538,13 +538,13 @@ void StyleSettingWindow::on_fontChangeBox_clicked()
 
 void StyleSettingWindow::on_rebootBox_clicked()
 {
-    qApp->exit(733);
+    SReboot();
 }
 
 
 void StyleSettingWindow::on_resizeBox_clicked()
 {
-    resizeForWithDialog(activepmw->inside);
+    resizeForWithDialog((SBlockLayout*)(activepmw->inside));
 }
 
 

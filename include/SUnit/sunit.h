@@ -32,7 +32,7 @@ class SUnit : public QWidget
     Q_PROPERTY(double nowMainColorRatio MEMBER nowMainColorRatio NOTIFY nowMainColorRatio_changed)
 public:
     //用于区分容器（即将弃用）
-    enum STYPE {Unit,Container};
+    enum STYPE {Unit, Container};
     STYPE type = Unit;
 
     //所在的布局管理器
@@ -42,7 +42,7 @@ public:
     SMenu* editMenu;
     SMenu* desktopMenu;
     //用于标记是否设置了菜单
-    bool unset =true;
+    bool unset = true;
 
     //指向当前的MainWindow
     MainWindow* pmw = nullptr;
@@ -88,8 +88,12 @@ public:
     bool showSide = true;
     bool deepColor = false;
     bool dark = false;
+    bool movable = true;
+    bool thisResizable = true;
+    bool resizable();
     double scaleFix = 1.0;
     double scale = 1.0;
+    bool outOfParent = false;
 
     //移动时使用鼠标的本地坐标
     QPoint relativeP;
@@ -98,8 +102,9 @@ public:
     QColor mainColor;
 
     //组件主颜色与主题颜色混合 不关注透明度
-    QColor displayColor(){
-        return mixColor(mainColor,themeColor(),nowMainColorRatio);
+    QColor displayColor()
+    {
+        return mixColor(mainColor, themeColor(), nowMainColorRatio);
     }
 
     //加入alpha的dispalycolor
@@ -141,7 +146,7 @@ public:
     QGraphicsDropShadowEffect* shadow_main_color;
 
 
-    explicit SUnit(SLayout* dis = nullptr,int sizex =1,int sizey =1);
+    explicit SUnit(SLayout* dis = nullptr, int sizex = 1, int sizey = 1);
 
     SUnit(const SUnit &other);
 
@@ -157,8 +162,8 @@ public:
     // virtual void update_after_resize();
     //重定向之后的双击事件
     virtual void double_click_action(QMouseEvent* event);
-    //重定向之后的单击事件（未启用
-    virtual void single_click_action();
+    //重定向之后的单击事件
+    virtual void single_click_action(QMouseEvent* event);
     //重定向之后的移动事件（未启用
     virtual void mouse_move_action();
     //重定向之后的释放事件（未启用
@@ -169,7 +174,7 @@ public:
     virtual void mouse_leave_action();
 
     //设置格数大小
-    virtual bool setBlockSize(int w,int h);
+    virtual bool setBlockSize(int w, int h);
 
     //重定向之后的菜单事件
     virtual void onContextMenu(QContextMenuEvent* event);
@@ -177,7 +182,7 @@ public:
     virtual void onShiftContextMenu(QContextMenuEvent* event);
 
     //作为处理器时处理其他SUnit的事件
-    virtual void onProcessAnother(SUnit* another);
+    virtual void processAnother(SUnit* another);
 
     //精简模式更改时触发一次
     virtual void onSimpleModeChange(bool val);
@@ -195,6 +200,8 @@ public:
     virtual bool onBigger();
     virtual bool onSmaller();
 
+    void leaveParent();
+    void enterParent();
 
     //长聚焦动画更新时
     virtual void whenLongFocusAnimationChange();
@@ -235,12 +242,13 @@ public:
     virtual void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
     virtual void setLongFocus(bool);
-    virtual void setCelect(bool,bool animaion = false);
+    virtual void setCelect(bool, bool animaion = false);
     virtual void preSetLongFocus(bool);
     virtual void setScale(double val);
     virtual void setScaleFix(double val);
     virtual void setAlwaysShow(bool val);
     virtual void setPMW(MainWindow* pmw);
+    void setOpacity(double val);
 
 
     //切换屏幕
@@ -269,7 +277,9 @@ public:
     virtual void updateInLayout(bool animated = true);
 
     //动画move
-    virtual void moveto(QPoint edpos,QSize size);
+    virtual void moveto(QPoint edpos, QSize size);
+
+
 
 public slots:
     //用于接受计时器
@@ -286,7 +296,8 @@ signals:
 
     //未启用
     void mainColor_changed(QColor);
-
+    // 改变大小时触发
+    void resized(QSize);
     //以下全部为动画更新的数值
     void colorAlpha_changed(int);
     void scale_changed(double);
@@ -297,29 +308,49 @@ signals:
     void nowMainColorRatio_changed(double);
 
 
+
 };
-inline  double SUnit:: aim_mainColorRatio(){
-    if(onFocus||onCelect)return focused_color_ratio;
-    else return unfocused_color_ratio;
-}
-
-
-inline int SUnit::aim_colorAlpha(){
-    if(onFocus||onCelect){
-        if(deepColor) return focused_alpha_deep;
-        else return focused_alpha;
-    }
-    else{
-        if(deepColor) return unfocused_alpha_deep;
-        else return unfocused_alpha;
+inline  double SUnit:: aim_mainColorRatio()
+{
+    if(onFocus || onCelect) {
+        return focused_color_ratio;
+    } else {
+        return unfocused_color_ratio;
     }
 }
 
-inline double SUnit::aim_scaleFix(){
-    if(onFocus){
+inline bool SUnit::resizable()
+{
+    bool layoutResizable = true;
+    if(layout) {
+        layoutResizable = layout->contentResizable;
+    }
+    return thisResizable&&layoutResizable;
+}
+
+
+inline int SUnit::aim_colorAlpha()
+{
+    if(onFocus || onCelect) {
+        if(deepColor) {
+            return focused_alpha_deep;
+        } else {
+            return focused_alpha;
+        }
+    } else {
+        if(deepColor) {
+            return unfocused_alpha_deep;
+        } else {
+            return unfocused_alpha;
+        }
+    }
+}
+
+inline double SUnit::aim_scaleFix()
+{
+    if(onFocus) {
         return scale_fix_ratio;
-    }
-    else{
+    } else {
         return 1.0;
     }
 }
@@ -329,33 +360,37 @@ inline double SUnit::aim_scaleFix(){
 
 
 inline SUnit::SUnit(const SUnit &other)
-    :SUnit(other.layout,other.sizeX,other.sizeY)
+    : SUnit(other.layout, other.sizeX, other.sizeY)
 {
 
 }
 
-inline bool SUnit::operator<(const SUnit &another) const{
-    if(indX!=another.indX) return indX<another.indX;
-    else return indY<another.indY;
+inline bool SUnit::operator<(const SUnit &another) const
+{
+    if(indX != another.indX) {
+        return indX < another.indX;
+    } else {
+        return indY < another.indY;
+    }
 }
 
 
-inline QPoint SUnit::MyPos(){
-    if(layout!=nullptr){
-        my_pos_tem = layout->ind2Pos(indX,indY);
-    }
-    else{
-        qDebug()<<"Use Temp Pos"<<my_pos_tem;
+inline QPoint SUnit::MyPos()
+{
+    if(layout != nullptr) {
+        my_pos_tem = layout->unit2Pos(this);
+    } else {
+        qDebug() << "Use Temp Pos" << my_pos_tem;
     }
     return my_pos_tem;
 }
 
-inline QSize SUnit::MySize(){
-    if(layout!=nullptr){
-        my_size_tem = layout->ind2Size(indX,indY);
-    }
-    else{
-        qDebug()<<"Use Temp Size"<<my_size_tem;
+inline QSize SUnit::MySize()
+{
+    if(layout != nullptr) {
+        my_size_tem = layout->unit2Size(this);
+    } else {
+        qDebug() << "Use Temp Size" << my_size_tem;
     }
     return my_size_tem;
 }

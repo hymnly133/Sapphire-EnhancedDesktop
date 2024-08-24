@@ -17,7 +17,7 @@
 #include "qpainter.h"
 #include "screenfunc.h"
 #include"guifunc.h"
-
+#include"stylehelper.h"
 LayerShower::LayerShower(MainWindow *parent, int screenId)
     : QWidget{nullptr}
 {
@@ -26,10 +26,10 @@ LayerShower::LayerShower(MainWindow *parent, int screenId)
     setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TransparentForMouseEvents);
     pmw = parent;
-    this->screenId = screenId;
+    this->screenInd = screenId;
     inplace(this);
     positionToScreen(this, screenId);
-    setFixedSize(size() * 2);
+
     qDebug() << "Layer Shower Information:" << rect() << pos() << geometry() << mapToGlobal(QPoint(0, 0));
     finalPos = pos();
     finalSize = size();
@@ -39,6 +39,11 @@ LayerShower::LayerShower(MainWindow *parent, int screenId)
     iconMap = new QPixmap(iconMapp);
     show();
     setVisible(true);
+
+
+    connectTo(always_fill_screen, int, int, {
+        updateSize();
+    });
 }
 
 void LayerShower::clearTooltip()
@@ -74,20 +79,9 @@ void LayerShower::paintEvent(QPaintEvent *event)
         // QPixmap alphaChannel = pixmap.createMaskFromColor(QColor(ar->nowAlpha, ar->nowAlpha, ar->nowAlpha), Qt::MaskInColor);
         // pixmap.setMask(alphaChannel);
 
-        QPixmap temp(iconMap->size());
-        temp.fill(Qt::transparent);
-
-        QPainter p1(&temp);
-        p1.setCompositionMode(QPainter::CompositionMode_Source);
-        p1.drawPixmap(0, 0, *iconMap);
-        p1.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-
-        //根据QColor中第四个参数设置透明度，此处position的取值范围是0～255
-        p1.fillRect(temp.rect(), QColor(0, 0, 0, ar->nowAlpha));
-        p1.end();
 
 
-        painter.drawPixmap(mapFromGlobal(pmw->mapToGlobal(pmw->rect().center())) - QPoint(iconMap->width() / 2, iconMap->height() / 2), temp);
+        painter.drawPixmap(mapFromGlobal(pmw->mapToGlobal(pmw->rect().center())) - QPoint(iconMap->width() / 2, iconMap->height() / 2), applyUntransparentRatio(*iconMap, ar->nowAlpha * 1.0 / 255));
 
         return;
     }
@@ -209,6 +203,22 @@ void LayerShower::whenBootAnimationUpdation()
 {
     // qDebug() << "LayerShower Updating Boot Animation";
     update();
+}
+
+void LayerShower::updateSize()
+{
+    QSize aim = pscs[screenInd]->availableSize();
+    if(!MultiScreen) {
+        aim = pscs[screenInd]->size();
+    }
+
+    if(MultiScreen) {
+        setFixedSize(aim * 2.5);
+    } else {
+        setFixedSize(aim);
+    }
+    update();
+
 }
 
 

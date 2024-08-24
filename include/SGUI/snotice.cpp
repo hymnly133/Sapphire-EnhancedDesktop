@@ -31,22 +31,22 @@ SNotice::SNotice(QWidget *parent)
 
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setAttribute(Qt::WA_InputMethodTransparent);
-    setWindowFlags(Qt::WindowTransparentForInput|Qt::NoDropShadowWindowHint);
+    setWindowFlags(Qt::WindowTransparentForInput | Qt::NoDropShadowWindowHint);
     arect = new SAnimationRect(this);
     // connect(animations,&)
     rs->distriRadius(&arect->nowRadius);
     rs->raise();
-    connect(arect,&SAnimationRect::finishedFinal,this,[=]{
+    connect(arect, &SAnimationRect::finishedFinal, this, [ = ] {
         noticeList.removeOne(this);
         deleteLater();
         updateAllNoticeAnimation();
     });
-    connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){
+    connect(arect, &SAnimationRect::animationUpdating, this, [ = ]() {
 
         updateAllNoticeAnimation();
     });
 
-    connect(endTimer,&QTimer::timeout,this,[=](){
+    connect(endTimer, &QTimer::timeout, this, [ = ]() {
         end();
     });
     setVisible(false);
@@ -59,7 +59,7 @@ void SNotice::setTitle(QString Title)
 {
     title = Title;
     QFontMetrics fm(*titleFont);
-    titleSize = fm.boundingRect(Title).size()+QSize(boradTitle*2,boradTitle*2);
+    titleSize = fm.boundingRect(Title).size() + QSize(boradTitle * 2, boradTitle * 2);
 }
 
 void SNotice::setInfo(QStringList info)
@@ -68,12 +68,12 @@ void SNotice::setInfo(QStringList info)
     int aimwidth = 0;
     int aimheight = 0;
     QFontMetrics fm(*infoFont);
-    foreach(QString k ,info){
+    foreach(QString k, info) {
         infoSize = fm.boundingRect(k).size();
-        aimwidth = qMax(aimwidth,infoSize.width());
-        aimheight+=infoSize.height();
+        aimwidth = qMax(aimwidth, infoSize.width());
+        aimheight += infoSize.height();
     }
-    infoSize= QSize(aimwidth,aimheight)+QSize(boradInfo*2,boradInfo*2);
+    infoSize = QSize(aimwidth, aimheight) + QSize(boradInfo * 2, boradInfo * 2);
 }
 
 void SNotice::setStayTime(int time)
@@ -82,24 +82,27 @@ void SNotice::setStayTime(int time)
 }
 
 void SNotice::comeout()
-{   if(onLoading) return;
-    if(nowOKPosY(this)>=activepmw->height()*0.4){
+{
+    if(onLoading) {
+        return;
+    }
+    if(nowOKPosY(this) >= activepmw->height() * 0.4) {
         endOne();
     }
     noticeList.append(this);
-    aimSize = QSize(qMax(titleSize.width(),infoSize.width())+borad*2,titleSize.height()+infoSize.height()+borad*2+spaceBetweenTileInfo);
+    aimSize = QSize(qMax(titleSize.width(), infoSize.width()) + borad * 2, titleSize.height() + infoSize.height() + borad * 2 + spaceBetweenTileInfo);
 
-    arect->setStartValue(QPoint(0,0),
-                         QSize(0,0),
-                         0,0);
+    arect->setStartValue(QPoint(0, 0),
+                         QSize(0, 0),
+                         0, 0);
 
-    arect->setEndValue(QPoint(-aimSize.width()/2,0),
-                       QSize(aimSize.width(),aimSize.height()),
-                       230,unit_radius);
+    arect->setEndValue(QPoint(-aimSize.width() / 2, 0),
+                       QSize(aimSize.width(), aimSize.height()),
+                       230, unit_radius);
 
 
-    QPoint shift = activepmw->pls->mapFromGlobal(activepmw->mapToGlobal(QPoint(0,0)));
-    move(QPoint((activepmw->width()-aimSize.width())/2,nowOKPosY(this))+shift);
+    QPoint shift = activepmw->pls->mapFromGlobal(activepmw->mapToGlobal(QPoint(0, 0)));
+    move(QPoint((activepmw->width() - aimSize.width()) / 2, nowOKPosY(this)) + shift);
     arect->start();
     endTimer->start(staytime);
     setEnabled(true);
@@ -112,9 +115,9 @@ void SNotice::end()
     onEnd = true;
     arect->stop();
 
-    arect->setEndValue(QPoint(0,0),
-                       QSize(0,0),
-                       0,0);
+    arect->setEndValue(QPoint(0, 0),
+                       QSize(0, 0),
+                       0, 0);
     arect->setFinal();
 
     arect->start();
@@ -124,17 +127,19 @@ void SNotice::whenAnimationUpdate()
 {
 
     // qDebug()<<pos()<<size();
-    QPoint shift = activepmw->pls->mapFromGlobal(activepmw->mapToGlobal(QPoint(0,0)));
-    move(QPoint(activepmw->width()/2,nowOKPosY(this))+shift+arect->nowPos);
+    QPoint shift = activepmw->pls->mapFromGlobal(activepmw->mapToGlobal(QPoint(0, 0)));
+    move(QPoint(activepmw->width() / 2, nowOKPosY(this)) + shift + arect->nowPos);
     setFixedSize(arect->nowSize);
     update();
 }
 
 void SNotice::endOne()
 {
-    if(noticeList.empty()) return;
+    if(noticeList.empty()) {
+        return;
+    }
     foreach (SNotice* notice, noticeList) {
-        if(!notice->onEnd){
+        if(!notice->onEnd) {
             notice->end();
             return;
         }
@@ -145,12 +150,15 @@ void SNotice::endOne()
 
 void SNotice::notice(QStringList info, QString title, int time)
 {
-    if(!enable_notice) return;
+    if(!enable_notice) {
+        return;
+    }
     SNotice* notice;
-    if(activepmw)
-    notice = new SNotice(activepmw->pls);
-    else
-    notice = new SNotice(nullptr);
+    if(activepmw) {
+        notice = new SNotice(activepmw->pls);
+    } else {
+        notice = new SNotice(nullptr);
+    }
 
     notice->setInfo(info);
     notice->setTitle(title);
@@ -160,7 +168,7 @@ void SNotice::notice(QStringList info, QString title, int time)
 
 void SNotice::notice(QString info, QString title, int time)
 {
-    notice(QStringList()<<info,title,time);
+    notice(QStringList() << info, title, time);
 }
 
 //从MainWindow顶端到将要显示通知的顶端的距离
@@ -168,11 +176,10 @@ int SNotice::nowOKPosY(SNotice *aim)
 {
     int res = spaceBetweenNotice;
     foreach (SNotice* notice, noticeList) {
-        if(notice!=aim){
-            res+=notice->height();
-            res+=spaceBetweenNotice;
-        }
-        else{
+        if(notice != aim) {
+            res += notice->height();
+            res += spaceBetweenNotice;
+        } else {
             break;
         }
     }
@@ -204,15 +211,15 @@ void SNotice::paintEvent(QPaintEvent *event)
     //    font.setUnderline(true); //设置下划线
     //    font.setOverline(true); //设置上划线
     // font.setLetterSpacing(QFont::AbsoluteSpacing, 10); //设置字符间的间距
-    int Xshift =  mapFromGlobal(activepmw->mapToGlobal(QPoint(activepmw->width()/2,0))).x();
+    int Xshift =  mapFromGlobal(activepmw->mapToGlobal(QPoint(activepmw->width() / 2, 0))).x();
 
     painter.setFont(*titleFont);
-    QRect titleRect = QRect(-aimSize.width()/2+borad+Xshift,borad,titleSize.width(),titleSize.height());
+    QRect titleRect = QRect(-aimSize.width() / 2 + borad + Xshift, borad, titleSize.width(), titleSize.height());
     painter.drawText(titleRect, Qt::AlignCenter, title);//字体水平居中
 
 
     painter.setFont(*infoFont);
-    QRect infoRect = QRect(-aimSize.width()/2+borad+Xshift , borad+titleSize.height(),infoSize.width(),infoSize.height());
+    QRect infoRect = QRect(-aimSize.width() / 2 + borad + Xshift, borad + titleSize.height(), infoSize.width(), infoSize.height());
     painter.drawText(infoRect, Qt::AlignCenter, info);//字体水平居中
 }
 

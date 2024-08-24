@@ -69,6 +69,8 @@ bool enable_resize_to_rect = 0;
 
 bool enable_refresh_animation = 0;
 bool enable_background_transparent = 1;
+
+bool always_fill_screen = 0;
 QString user_font = "Microsoft YaHei";
 
 

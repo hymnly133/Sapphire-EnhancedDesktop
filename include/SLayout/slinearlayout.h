@@ -8,58 +8,69 @@
 
 class SLinearLayout : public SLayout
 {
+    Q_OBJECT
 public:
-    explicit SLinearLayout(QWidget *parent = nullptr);
-    int nowNum=0;
+    explicit SLinearLayout(SLayoutContainer *parent = nullptr);
+    // int nowNum = 0;
     //用于维持内部顺序
     QList<SUnit*> list;
     //用于标识方向
-    enum Dire{
+    enum Dire {
         Horr = 0,
         Vert = 1
     };
     Dire direction = Horr;
 
-    double longSide(){
-        if(direction==Horr)
-            return pContainer->width();
-        else
-            return pContainer->height();
+    double longSide()
+    {
+        if(direction == Horr) {
+            return pContainerW->width();
+        } else {
+            return pContainerW->height();
+        }
     }
-    double shortSide(){
-        if(direction==Horr)
-            return pContainer->height();
-        else
-            return pContainer->width();
-    }
-
-    double insideSize(){
-        return shortSide()*0.9;
-    }
-
-    double disToCursor(int posx){
-        return abs(pContainer->mapFromGlobal(pContainer->cursor().pos()).x()-posx);
+    double shortSide()
+    {
+        if(direction == Horr) {
+            return pContainerW->height();
+        } else {
+            return pContainerW->width();
+        }
     }
 
-    double fixedDis(){
-        if(contents->size())
-            return longSide()/contents->size();
-        else return longSide();
+    double insideSize()
+    {
+        return shortSide() * 0.9;
+    }
+
+    double disToCursor(int posx)
+    {
+        return abs(pContainerW->mapFromGlobal(pContainerW->cursor().pos()).x() - posx);
+    }
+
+    double fixedDis()
+    {
+        if(contents.size()) {
+            return longSide() / contents.size();
+        } else {
+            return longSide();
+        }
     }
 
     void refresh();
 
-    double fixedCX(int ind){
-        return fixedDis()*(ind+0.5);
+    double fixedCX(int ind)
+    {
+        return fixedDis() * (ind + 0.5);
     }
 
 signals:
     // ED_Layout interface
 public:
     //采用（x，0）作为索引
-    QPoint pos2Ind(int posx, int posy) override;
-    QSize ind2Size(int xind, int yind) override;
-    QPoint ind2Pos(int xind, int yind) override;
+    // QPoint pos2Ind(int posx, int posy) override;
+    QSize unit2Size(SUnit* aim) override;
+    QPoint unit2Pos(SUnit* aim) override;
 
     bool Occupied(int x, int y) override;
     SUnit *ind2Unit(int xind, int yind) override;

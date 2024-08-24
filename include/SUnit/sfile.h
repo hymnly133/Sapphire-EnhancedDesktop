@@ -7,52 +7,49 @@
 #include <QWidget>
 //新增
 #include <QVBoxLayout>
+#include"sfileinfo.h"
 
-class SFile : public SMultiFunc
+class SFile : public SMultiFunc, public SFileInfo
 {
     Q_OBJECT;
 public:
-    QString filePath;
-    QString fullName();
-    QString suffix();
-    QString targetSuffix();
-    QString baseName();
-    bool isDir = false;
 
-
-    explicit SFile(SLayout* dis = nullptr, int sizex =1, int sizey=1, QString filePath = "");
-
-    QPropertyAnimation* defaultScaleAnimation;
+    explicit SFile(SLayout* dis = nullptr, int sizex = 1, int sizey = 1, QString filePath = "");
 
     SFile(const SFile& other);;
 
     void mouse_enter_action() override;
 
-    virtual void loadFromPath(QString filepath, bool init);
-    virtual void loadFromMyFI(MyFileInfo info, bool init);
+    void loadFromPath(QString filepath, bool init);
+    void loadFromMyFI(MyFileInfo info, bool init);
 
     void double_click_action(QMouseEvent* event) override;
 
-    void open(bool Admin = false);
+
 
     QJsonObject to_json() override;
     void load_json(QJsonObject rootObject) override;
 
     void processorTip() override;
     void onShiftContextMenu(QContextMenuEvent *event) override;
-    bool ProcessPath(QString path) override;
+    void processFile(SFileInfo *sfileInfo) override;
 
     void loadAimIcon(MyFileInfo info);
 
     // SMultiFunc interface
     void setPix(QString pixPath, bool save) override;
-    void renameFile(QString newNameWithSuffix);
+
+    //呼出是个对话框来进行重命名
     void renameWithDialog();
 
+    //设置显示的name名
     void setName(QString name) override;
 
+    //重置
     void recoverForDefault();
 
+    //作为SUnit的rename，调用文件重命名并更新unit显示效果
+    bool rename(QString newNameWithSuffix);
 
 
 
@@ -65,27 +62,7 @@ public:
     void setupDesktopMenu() override;
 };
 
-inline QString SFile::fullName(){
-    return QFileInfo(filePath).fileName();
-}
-
-inline QString SFile::suffix(){
-    return QFileInfo(filePath).suffix();
-}
-
-inline QString SFile::targetSuffix()
-{
-    if(QFileInfo(filePath).isSymLink()){
-        return QFileInfo(QFileInfo(filePath).symLinkTarget()).suffix();
-    }
-    else return suffix();
-}
-
-inline QString SFile::baseName(){
-    return QFileInfo(filePath).baseName();
-}
-
-inline SFile::SFile(const SFile &other):SFile(other.layout,other.sizeX,other.sizeY){}
+inline SFile::SFile(const SFile &other): SFile(other.layout, other.sizeX, other.sizeY) {}
 
 Q_DECLARE_METATYPE(SFile)
 

@@ -2,6 +2,7 @@
 #define FILEFUNC_H
 #include "qfileinfo.h"
 #include "qpixmap.h"
+#include "sfileinfo.h"
 #include "style.h"
 #include"QFileInfo"
 
@@ -14,7 +15,7 @@ enum FileType {
 };
 
 //用于提供用户调用的含GUI的方法
-class fileCreator: public QObject
+class FileHelper: public QObject
 {
     Q_OBJECT
 public:
@@ -22,6 +23,8 @@ public:
     // 从已有预设的类型新建文件,用于菜单调用
     static void creatNewFile(FileType type);
     static void creatNewDir();
+
+    // static void renameFile();
 
 };
 
@@ -79,7 +82,7 @@ struct MyFileInfo {
 
 
 //从文件获得Icon
-QPixmap getWinIcon(QString path, bool small = false);
+QPixmap getWinIcon(QString path, bool isSmall = false);
 
 //从Shell索引获得Icon
 QIcon getShellIcon(QString path, int ind);
@@ -103,12 +106,20 @@ bool isPic(QString pah);
 
 
 //扫描所有文件
-QList<MyFileInfo> scanalldesktopfiles();
+QStringList scanalldesktopfiles();
 
 //从QFileInfo转化
 QList<MyFileInfo>getFormFileInfo(QFileInfo x);
 
+//优化后的判断文件存在方法
 bool fileExist(const QString& path);
 
+//合并json
+QJsonObject mergeJsonObject(QJsonObject obj1, QJsonObject obj2);
+
+// //添加全局变量
+// void addFileInfo(SFileInfo* info);
+// //删除全局变量
+// void removeFileInfo(SFileInfo* info);
 
 #endif // FILEFUNC_H

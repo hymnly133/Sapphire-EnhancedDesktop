@@ -4,7 +4,11 @@
 #include "qcolor.h"
 #include "style.h"
 #include"stylehelper.h"
+QString scroll_qss = R"(
+#QScrollArea{border-radius: 2px;background-color: transparent;border:0px;}
 
+
+)";
 
 QString label_qss = R"(
     color: [text_color];
@@ -42,59 +46,69 @@ margin:5px;
 }
 
     )";
-QString rgb2qss(QColor color){
+QString rgb2qss(QColor color)
+{
     QString res = "rgba(R,G,B,A)";
-    res.replace("R",QString::number(color.red()));
-    res.replace("G",QString::number(color.green()));
-    res.replace("B",QString::number(color.blue()));
-    res.replace("A",QString::number(color.alpha()));
+    res.replace("R", QString::number(color.red()));
+    res.replace("G", QString::number(color.green()));
+    res.replace("B", QString::number(color.blue()));
+    res.replace("A", QString::number(color.alpha()));
     return res;
 }
 
-QString Process(QString resource){
-    resource.replace("[background_color]",rgb2qss(background_color));
-    resource.replace("[highlight_color]",rgb2qss(highlight_color));
-    resource.replace("[theme_color]",rgb2qss(themeColor()));
-    resource.replace("[text_color]",rgb2qss(text_color));
+QString Process(QString resource)
+{
+    resource.replace("[background_color]", rgb2qss(background_color));
+    resource.replace("[highlight_color]", rgb2qss(highlight_color));
+    resource.replace("[theme_color]", rgb2qss(themeColor()));
+    resource.replace("[text_color]", rgb2qss(text_color));
     return resource;
 }
 
 
-void linkToStyle(QWidget* aim,STYLEGUI gui)
+void linkToStyle(QWidget* aim, STYLEGUI gui)
 {
     switch (gui) {
 
-    case Label:
-        aim->setStyleSheet(QSS_Label());
-        QObject::connect(psh,&StyleHelper::colorChanged,aim,[=](){
-        aim->setStyleSheet(QSS_Label());
-        });
-        break;
-    case CheckBox:
-        aim->setStyleSheet(QSS_CheckBox());
-        QObject::connect(psh,&StyleHelper::colorChanged,aim,[=](){
+        case Label:
+            aim->setStyleSheet(QSS_Label());
+            QObject::connect(psh, &StyleHelper::colorChanged, aim, [ = ]() {
+                aim->setStyleSheet(QSS_Label());
+            });
+            break;
+        case CheckBox:
             aim->setStyleSheet(QSS_CheckBox());
-        });
-        break;
-    case Menu:
-        aim->setStyleSheet(QSS_SMenu());
-        QObject::connect(psh,&StyleHelper::colorChanged,aim,[=](){
+            QObject::connect(psh, &StyleHelper::colorChanged, aim, [ = ]() {
+                aim->setStyleSheet(QSS_CheckBox());
+            });
+            break;
+        case Menu:
             aim->setStyleSheet(QSS_SMenu());
-        });
-        break;
+            QObject::connect(psh, &StyleHelper::colorChanged, aim, [ = ]() {
+                aim->setStyleSheet(QSS_SMenu());
+            });
+            break;
     }
 }
 
-QString QSS_SMenu(){
+QString QSS_SMenu()
+{
     return Process(menu_qss);
 }
 
 
-QString QSS_Label(){
+QString QSS_Label()
+{
     return Process(label_qss);
 }
 
-QString QSS_CheckBox(){
+QString QSS_CheckBox()
+{
 
     return Process(checkbox_qss);
+}
+QString QSS_Scroll()
+{
+
+    return Process(scroll_qss);
 }

@@ -11,6 +11,7 @@
 #include "qfileinfo.h"
 #include "qparallelanimationgroup.h"
 #include<QLinkedList>
+#include "slayoutcontainer.h"
 #include "smenu.h"
 #include "smultifunc.h"
 #include "sunit.h"
@@ -21,8 +22,7 @@ namespace Ui
 }
 QT_END_NAMESPACE
 class SFile;
-struct MyFileInfo;
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, public SLayoutContainer
 {
     Q_OBJECT
     Q_PROPERTY(QSize showerSize MEMBER showerSize NOTIFY showerSize_changed)
@@ -62,9 +62,6 @@ public:
     //新建文件的菜单
     SMenu* creatNewFileMenu;
 
-    //布局管理器
-    SBlockLayout* inside = nullptr;
-
     //标识背景透视
     bool transparent = true;
     //显示自选背景
@@ -91,9 +88,6 @@ public:
 
     //屏幕序号
     int screenInd;
-    // void InitAUnit(SUnit* aim, bool animated=false);
-
-
 
 
     QPushButton *selectBackgroundButton;  // 选择背景按钮
@@ -115,19 +109,14 @@ public:
 
     void updata_animation();
 
-    //各种添加SFile的方法(不创建文件）
-    bool addAIcon(QString path, bool notice = false, QPoint globalPos = QPoint(-1, -1));
-    bool addAIcon(QFileInfo info, bool notice = false, QPoint globalPos = QPoint(-1, -1));
-    bool addAIcon(MyFileInfo info, bool notice = false, QPoint globalPos = QPoint(-1, -1));
-
-
+    // bool addAFile(QString path, bool notice = false, QPoint globalPos = QPoint(-1, -1));
 
 
     QJsonObject to_json();
     void load_json(QJsonObject rootObject);
 
     //初始化并加载data
-    QList<MyFileInfo> Init(QList<MyFileInfo> data);
+    QStringList Init(QStringList data);
     //初始化
     void Init(bool final = false);
 
@@ -135,13 +124,18 @@ public:
     void refresh();
 
 
+
+
+    QSize blockSize();
+
+
     //刚创建到启动加载动画的阶段(以迅速创建出加载动画为目标)
     void preSetup();
 
     //主要加载函数(在加载动画中进行的初始化和内容加载)
     void setup();
-
 private:
+
     //设置编辑模式菜单
     void setupEditMenu();
     //设置编辑模式菜单
@@ -152,6 +146,8 @@ private:
     void setupShower();
     //设置布局
     void setupLayout(int x, int y);
+    //设置拖拽事件
+    void setupDrop();
 
 public slots:
     //设置全局scale，（待重构
@@ -162,6 +158,9 @@ public slots:
 
     //加载完成后的处理
     void finishBootAnimation();
+
+    //设置窗口和布局大小
+    void updateSize();
 public:
 signals:
     void showerSize_changed(QSize);
@@ -179,8 +178,8 @@ protected:
     void mousePressEvent(QMouseEvent* ev) override;
 
 
-    void dropEvent(QDropEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent *event) override;
+    // void dropEvent(QDropEvent *event) override;
+    // void dragEnterEvent(QDragEnterEvent *event) override;
 
     void closeEvent( QCloseEvent * event ) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -198,6 +197,10 @@ protected:
 
 
     void resizeEvent(QResizeEvent *event) override;
+
+    void updateAfterPut(SUnit* aim) override;
+
+    void whenDropAFile(QString& fileName);
 
 
     // QWidget interface

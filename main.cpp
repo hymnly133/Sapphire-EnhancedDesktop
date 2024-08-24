@@ -2,11 +2,13 @@
 #include "global.h"
 #include "iconfunc.h"
 #include "qtextcodec.h"
+#include "sdir.h"
 #include "sfile.h"
 #include "sblockcontainer.h"
 #include "sdock.h"
 #include "seditbox.h"
 #include "mainwindow.h"
+#include <shlobj.h>
 #include<windows.h>
 #include <QJsonObject>
 #include <QApplication>
@@ -36,6 +38,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     qDebug() << "Sapphire Startup";
 
+
     static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块
     if (!shareMem->create(1)) { //创建大小1b的内存
         QMessageBox::about(NULL, "提示", "已经打开了另一个程序！");
@@ -53,6 +56,10 @@ int main(int argc, char *argv[])
     qRegisterMetaType<SEditBox>();
     qRegisterMetaType<RepaintCounterUnit>();
     qRegisterMetaType<SGLShower>();
+    qRegisterMetaType<SDir>();
+
+    //注册容器对象
+    initContainerTypes();
 
     //翻译
     QTranslator translator;
@@ -65,12 +72,14 @@ int main(int argc, char *argv[])
         }
     }
 
+
+
     preSetupG();
 
-    if(isQuit) {
-        qApp->quit();
-        return -1;
-    }
+    // if(isQuit) {
+    //     qApp->quit();
+    //     return -1;
+    // }
     int ret = a.exec();
 
     if(ret == 733) {

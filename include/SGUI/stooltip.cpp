@@ -21,16 +21,16 @@ SToolTip::SToolTip(QWidget *parent)
     rs->raise();
 
     setAttribute(Qt::WA_TransparentForMouseEvents);
-    setAttribute(Qt::WA_InputMethodTransparent);
-    setWindowFlags(Qt::WindowTransparentForInput|Qt::NoDropShadowWindowHint);
+    // setAttribute(Qt::WA_InputMethodTransparent);
+    setWindowFlags(Qt::WindowTransparentForInput | Qt::NoDropShadowWindowHint);
     // connect(animations,&)
 
-    connect(arect,&SAnimationRect::finishedFinal,this,[=]{
+    connect(arect, &SAnimationRect::finishedFinal, this, [ = ] {
         deleteLater();
     });
-    connect(arect,&SAnimationRect::animationUpdating,this,[=](QPoint pos,QSize size,int,int){
-        move(previousPos+pos);
-        setFixedSize(size);
+    connect(arect, &SAnimationRect::animationUpdating, this, [ = ]() {
+        move(previousPos + arect->nowPos);
+        setFixedSize(arect->nowSize);
         update();
     });
 }
@@ -42,7 +42,7 @@ void SToolTip::setInfo(QString info)
     this->info = info;
 
     //加边框
-    aimSize = rec.size()+QSize(20,20);
+    aimSize = rec.size() + QSize(20, 20);
 
     //这个就获得了字符串所占的像素宽度
 }
@@ -50,41 +50,44 @@ void SToolTip::setInfo(QString info)
 void SToolTip::comeout()
 {
     QPoint tem = previousPos;
-    if(tem.x()+aimSize.width()>pmws[0]->width()){
+    if(tem.x() + aimSize.width() > pmws[0]->width()) {
         //左侧显示
         left = true;
     }
 
 
-    int aimX=0;
-    int aimY=0;
-    if(left)
-        aimX-=aimSize.width();
+    int aimX = 0;
+    int aimY = 0;
+    if(left) {
+        aimX -= aimSize.width();
+    }
 
-    if(up)
-        aimY = -aimSize.height()-5;
-    else
+    if(up) {
+        aimY = -aimSize.height() - 5;
+    } else {
         aimY = 8;
+    }
 
-    if(shift){
-        if(left)
-            aimX -=13;
-        else
-            aimX +=13;
+    if(shift) {
+        if(left) {
+            aimX -= 13;
+        } else {
+            aimX += 13;
+        }
     }
 
 
-    aimPos = QPoint(aimX,aimY);
+    aimPos = QPoint(aimX, aimY);
 
 
 
-    arect->setStartValue(QPoint(0,aimPos.y()),
-                         QSize(0,aimSize.height()),
-                         0,0);
+    arect->setStartValue(QPoint(0, aimPos.y()),
+                         QSize(0, aimSize.height()),
+                         0, 0);
 
     arect->setEndValue(aimPos,
-                         QSize(aimSize.width(),aimSize.height()),
-                       230,10);
+                       QSize(aimSize.width(), aimSize.height()),
+                       230, 10);
 
 
     arect->start();
@@ -98,9 +101,9 @@ void SToolTip::end()
     arect->stop();
 
 
-    arect->setEndValue(QPoint(0,aimPos.y()),
-                       QSize(0,aimSize.height()),
-                       0,0);
+    arect->setEndValue(QPoint(0, aimPos.y()),
+                       QSize(0, aimSize.height()),
+                       0, 0);
     arect->setFinal();
 
 
@@ -109,14 +112,17 @@ void SToolTip::end()
     emit startToEnd();
 }
 
-SToolTip* SToolTip::tip(QString info, QPoint pos, bool shift,bool up)
+SToolTip* SToolTip::tip(QString info, QPoint pos, bool shift, bool up)
 {
-    if(!enable_tooltip)return nullptr;
+    if(!enable_tooltip) {
+        return nullptr;
+    }
     SToolTip* Tip = new SToolTip(activepmw->pls);
-    if(pos==NO_POS)
+    if(pos == NO_POS) {
         Tip->previousPos = activepmw->pls->mapFromGlobal(QCursor::pos());
-    else
+    } else {
         Tip->previousPos = activepmw->pls->mapFromGlobal(pos);
+    }
     Tip->shift = shift;
     Tip->up = up;
     Tip->move(Tip->previousPos);
@@ -142,13 +148,13 @@ void SToolTip::paintEvent(QPaintEvent *event)
     painter.setPen(tem);
     painter.setFont(qApp->font());
 
-    QRect temsize = QRect(0,0,aimSize.width(),aimSize.height());
-    if(left){
+    QRect temsize = QRect(0, 0, aimSize.width(), aimSize.height());
+    if(left) {
 
         int delta = -arect->nowPos.x() - arect->nowSize.width();
-        QPoint globalstill = (previousPos+aimPos);
+        QPoint globalstill = (previousPos + aimPos);
         temsize.setX(mapFromGlobal(globalstill).x());
-        temsize = QRect(mapFromGlobal(globalstill).x()+13-delta,0,aimSize.width(),aimSize.height());
+        temsize = QRect(mapFromGlobal(globalstill).x() + 13 - delta, 0, aimSize.width(), aimSize.height());
         // temsize.setX(0);
     }
     // qDebug()<<temsize;

@@ -127,6 +127,8 @@ extern int font_size;
 extern bool enable_notice;
 extern bool enable_tooltip;
 
+extern bool always_fill_screen;
+
 // 供外部调用的方法
 QColor themeColor();
 #endif // STYLE_H

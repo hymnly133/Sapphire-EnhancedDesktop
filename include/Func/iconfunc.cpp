@@ -102,12 +102,11 @@ void IconReader::scanForDefault()
         return;
     }
     addIconsInDir(iconDirPath);
-    this;
 }
 
 void IconReader::applyForAllSFile()
 {
-    foreach (QString filePath, nowExits.keys()) {
+    foreach (QString filePath, nowExitFiles.keys()) {
         QString target = filePath;
         if(QFileInfo(filePath).isSymLink()) {
             target = QFileInfo(filePath).symLinkTarget();
@@ -116,15 +115,18 @@ void IconReader::applyForAllSFile()
         if(res == "") {
             continue;
         }
-        nowExits[filePath]->setPix(res, true);
+        static_cast<SFile * >(nowExitFiles[filePath])->setPix(res, true);
     }
 }
 
 void IconReader::recoverForDefault()
 {
-    foreach (SFile* sfile, nowExits.values()) {
-        if(sfile->pixPath != "") {
-            sfile->recoverForDefault();
+    foreach (SUnit* unit, nowExitFiles.values()) {
+        if(unit->inherits("SFile")) {
+            SFile* sfile = static_cast<SFile * >(unit);
+            if(sfile->pixPath != "") {
+                sfile->recoverForDefault();
+            }
         }
     }
 }
