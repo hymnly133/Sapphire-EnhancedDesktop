@@ -39,10 +39,9 @@ public:
     SLayout* layout = nullptr;
 
     //右键菜单
-    SMenu* editMenu;
-    SMenu* desktopMenu;
-    //用于标记是否设置了菜单
-    bool unset = true;
+    SMenu* editMenu = nullptr;
+    SMenu* desktopMenu = nullptr;
+
 
     //指向当前的MainWindow
     MainWindow* pmw = nullptr;
@@ -161,6 +160,8 @@ public:
 
     //从layout脱离
     void removeFromLayout();
+
+    void tryToSetupMenu();
 
     virtual void setupEditMenu();
     virtual void setupDesktopMenu();

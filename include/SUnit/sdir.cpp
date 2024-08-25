@@ -98,6 +98,10 @@ void SDir::setFold(bool val)
         return ;
     }
 
+    if(!val && !isEnabled()) {
+        return;
+    }
+
 
 
     isFold = val;

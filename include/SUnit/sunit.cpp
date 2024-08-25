@@ -178,10 +178,21 @@ void SUnit::removeFromLayout()
     updateFocusAnimation();
 }
 
+void SUnit::tryToSetupMenu()
+{
+    if(!editMenu) {
+        setupEditMenu();
+    }
+    if(!desktopMenu) {
+        setupDesktopMenu();
+    }
+}
+
 
 
 void SUnit::setupEditMenu()
 {
+
     editMenu = new SMenu(this);
     editMenu->ismain = true;
     connect(editMenu, &QMenu::aboutToShow, this, [ = ]() {
@@ -219,6 +230,10 @@ void SUnit::setupEditMenu()
 
 void SUnit::setupDesktopMenu()
 {
+    if(desktopMenu) {
+        return;
+    }
+
     desktopMenu = new SMenu(this);
     desktopMenu->ismain = true;
     connect(desktopMenu, &QMenu::aboutToShow, this, [ = ]() {
@@ -242,12 +257,8 @@ void SUnit::mousePressEvent(QMouseEvent *event)
         setCelect(true);
         event->accept();
     } else if(event->button() == Qt::MiddleButton) {
+        tryToSetupMenu();
         if(!editMode) {
-            if(unset) {
-                setupEditMenu();
-                setupDesktopMenu();
-                unset = false;
-            }
             editMenu->exec(event->globalPos());
         }
     }
@@ -358,6 +369,7 @@ void SUnit::resizeEvent(QResizeEvent *event)
 
 void SUnit::contextMenuEvent(QContextMenuEvent *event)
 {
+    tryToSetupMenu();
     if(event->modifiers() == Qt::ShiftModifier) {
         onShiftContextMenu(event);
     } else {
@@ -401,11 +413,6 @@ bool SUnit::setBlockSize(int w, int h)
 
 void SUnit::onContextMenu(QContextMenuEvent *event)
 {
-    if(unset) {
-        setupEditMenu();
-        setupDesktopMenu();
-        unset = false;
-    }
     requireContexMenu(event, this);
 }
 

@@ -46,22 +46,14 @@ void MainWindow::setupDesktopMenu()
     desktopMenu = new SMenu(this);
     desktopMenu->path = UserDesktopPath;
     desktopMenu->ismain = true;
-    // 给当前窗口添加QAction对象
-    // SET_ANCTION(act01,刷新,desktopMenu,this,
-    //             {refresh();})
-    // SAction* act01 = new SAction(tr("刷新"));
-    // desktopMenu->addAction(act01);
-    // connect(act01, &SAction::triggered, this, [ = ]() {
-    //     refresh();
-    // });
+
     SET_ANCTION(act01, tr("刷新"), desktopMenu, this,
     {         refresh(); });
 
     SET_ANCTION(act1, tr("改变可见"), desktopMenu, this,
     { setShoweredVisibal(!showeredVisibal); })
-    act1->setText(tr("改变可见"));
+
     SET_ANCTION(act3, tr("映射文件"), desktopMenu, this, {
-        QFileDialog* fd = new QFileDialog();
         QStringList filePaths = QFileDialog::getOpenFileNames(this, tr("选择文件"), "D:/", nullptr, nullptr, QFileDialog::Options(QFileDialog::DontResolveSymlinks));;
         foreach (const QString& filePath, filePaths)
         {

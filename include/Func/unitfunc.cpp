@@ -245,6 +245,7 @@ void removeG(SUnit *sender)
 
 void requireContexMenu(QContextMenuEvent *event, SUnit *sender)
 {
+    sender->tryToSetupMenu();
     if(!pCelectedUnits.empty()) {
         if(!sender->onCelect) {
             cleanCelect();
