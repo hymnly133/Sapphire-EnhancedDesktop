@@ -51,32 +51,19 @@ QString okName(QString fileName);
 struct MyFileInfo {
     //定义返回的结构体
     enum TYPE {
-        SINGLE = 0,
-        MULTI = 1
+        Default = 0,
+        Aim = 1
     };
     TYPE type;
     QString name;
     QString filePath;
-    QMap<int, QPixmap> icons;
     bool operator<(MyFileInfo& another) const
     {
         return type < another.type;
     }
     MyFileInfo(QString path, int size = 512);
     MyFileInfo(QFileInfo qfi, int size = 512);
-    QPixmap aimIcon()
-    {
-        if(okForAim()) {
-            return icons[default_steam_icon_type];
-        } else {
-            qDebug() << "No aim icon!,use default";
-            return icons[0];
-        }
-    }
-    bool okForAim()
-    {
-        return icons.contains(default_steam_icon_type);
-    }
+    QPixmap aimIcon();
 };
 
 
@@ -89,8 +76,8 @@ QIcon getShellIcon(QString path, int ind);
 //转化为MyFileInfo
 MyFileInfo path2MyFI(QString path, int size = 512);
 
-//获取带有编号信息的Icon图片
-QMap<int, QPixmap> path2Icon(QString path, int size = 512);
+//获取目标的Icon图片
+QPixmap path2Icon(QString path, int size = 512, bool *pres = nullptr);
 
 //basename（file）/ fullname（dir） 以防止以xx.yy形式命名的文件夹误判
 QString path2Name(QString path);

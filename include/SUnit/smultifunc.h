@@ -45,7 +45,8 @@ public:
     void mouse_leave_action()override;
     void onSimpleModeChange(bool) override;
     void onScaleChange(double) override;
-    virtual void setPix(QString pixPath, bool save);
+    virtual void setIconFromPath(QString iconPath, bool save);
+    virtual void setGIF(QString gifPath);
     virtual void setPix(QPixmap pixmap);
     virtual void setName(QString);
 

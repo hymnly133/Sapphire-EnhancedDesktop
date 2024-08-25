@@ -24,6 +24,16 @@ void PictureBox::setBackground(QBrush brush)
     update();
 }
 
+void PictureBox::endGIF()
+{
+    if(gifThread) {
+        gifThread->endPlay();
+        gifThread->exit();
+        gifThread = nullptr;
+    }
+    movieLabel->setVisible(false);
+}
+
 
 void PictureBox::setScale(double scale)
 {
@@ -37,6 +47,7 @@ void PictureBox::setImage(QPixmap &image)
         return;
     }
     type = pic;
+    endGIF();
 
     // if(!followSource&& source!=nullptr)
     //     delete source;
@@ -52,6 +63,7 @@ void PictureBox::setImage(QPixmap &image)
 void PictureBox::follow(QPixmap *pPixmap)
 {
     type = pic;
+    endGIF();
     requireRefresh = true;
     source = pPixmap;
     followSource = true;
@@ -60,22 +72,26 @@ void PictureBox::follow(QPixmap *pPixmap)
 
 void PictureBox::setGIF(QString path)
 {
-    movie = new QMovie(path);
-    movieLabel->setMovie(movie);
-    type = gif;
-    movie->start();
-    updateDispaly();
+    gifThread = new SGifThread(this, path, movieLabel);
+    // movieLabel->setMovie(movie);
+    connect(gifThread, &QThread::started, this, [ = ]() {
+        type = gif;
+        movieLabel->setVisible(true);
+        requireRefresh = true;
+        updateDispaly();
+    });
+
+    gifThread->start();
 }
 
 void PictureBox::paintEvent(QPaintEvent * event)
 {
     Q_UNUSED(event);
+    // updateDispaly();
     if(type == pic) {
         if(source != nullptr) {
             QPainter painter(this);
             // qDebug()<<scaled.size()<<size()<<off_x;
-
-
             painter.setBackground(m_brush);
             painter.drawPixmap(off_x, off_y, applyUntransparentRatio(scaled, untransparentRatio));
         }
@@ -109,9 +125,10 @@ void PictureBox::updateDispaly()
             image_width = source->width();
             image_height = source->height();
         } else {
-            image_width = movie->currentPixmap().size().width();
-            image_height = movie->currentPixmap().size().height();
+            image_width = gifThread->sourceSize.width();
+            image_height = gifThread->sourceSize.height();
         }
+        // qDebug() << image_width << image_height;
 
         r1 = window_width / image_width;
         r2 = window_height / image_height;
@@ -143,12 +160,14 @@ void PictureBox::updateDispaly()
         if(type == gif) {
             movieLabel->move(off_x, off_y);
             movieLabel->setFixedSize(displaySize);
-            movie->setScaledSize(displaySize);
+            gifThread->gif->setScaledSize(displaySize);
+
+        } else {
+
+            scaled = source->scaled(displaySize
+                                    , Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         }
 
-
-        scaled = source->scaled(displaySize
-                                , Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         setFixedSize(actualSize);
     }
 }

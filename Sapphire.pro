@@ -96,6 +96,7 @@ SOURCES += \
     include/SLayout/slinearlayout.cpp \
     include/SObject/sanimationrect.cpp \
     include/SObject/sfieldswidget.cpp \
+    include/SObject/sgifthread.cpp \
     include/SObject/slineranimation.cpp \
     include/SUnit/repaintcounterunit.cpp \
     include/SUnit/sblockcontainer.cpp \
@@ -160,6 +161,7 @@ HEADERS += \
     include/SLayout/slinearlayout.h \
     include/SObject/sanimationrect.h \
     include/SObject/sfieldswidget.h \
+    include/SObject/sgifthread.h \
     include/SObject/slineranimation.h \
     include/SUnit/repaintcounterunit.h \
     include/SUnit/sblockcontainer.h \

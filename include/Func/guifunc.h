@@ -5,7 +5,7 @@
 
 //绘制矩形/边框/光效
 
-
+class MainWindow;
 void paintRect(QWidget* aim, QColor color);
 void paintSide(QWidget* aim, QColor color);
 void paintLight(QWidget* aim, QColor color);
@@ -19,5 +19,7 @@ void repaintAround(QWidget* aim);
 QColor applyAlpha(QColor source, int alpha);
 
 QPixmap applyUntransparentRatio(QPixmap source, double ratio);
+
+QPoint refineRect(QPoint centerPoint_global, QSize size, MainWindow* pmw);
 
 #endif // GUIFUNC_H

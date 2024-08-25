@@ -37,7 +37,7 @@ public:
     void loadAimIcon(MyFileInfo info);
 
     // SMultiFunc interface
-    void setPix(QString pixPath, bool save) override;
+    void setIconFromPath(QString pixPath, bool save) override;
 
     //呼出是个对话框来进行重命名
     void renameWithDialog();

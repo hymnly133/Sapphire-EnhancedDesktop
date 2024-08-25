@@ -647,6 +647,7 @@ void SUnit::updateLongFocusAnimation()
 
 void SUnit::updateFocusAnimation()
 {
+
     focusAnimations->stop();
     // qDebug()<<"colorAlpha Update: now:"<<colorAlpha<<"aim"<<aim_colorAlpha();
     alphaAnimation->setStartValue(colorAlpha);
@@ -661,9 +662,12 @@ void SUnit::updateFocusAnimation()
     mainColorRatioAnimation->setDuration(focus_animation_time);
     mainColorRatioAnimation->setEndValue(aim_mainColorRatio());
     // qDebug()<<"scaleFix Update: now:"<<scaleFix<<"aim"<<aim_scaleFix();
+
+
     scaleFixAnimation->setStartValue(scaleFix);
     scaleFixAnimation->setDuration(focus_animation_time);
     scaleFixAnimation->setEndValue(aim_scaleFix());
+
     focusAnimations->start();
     // linear->stop();
     // linear->setTime(focus_animation_time);

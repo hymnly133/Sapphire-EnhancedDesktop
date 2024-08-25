@@ -115,7 +115,7 @@ void IconReader::applyForAllSFile()
         if(res == "") {
             continue;
         }
-        static_cast<SFile * >(nowExitFiles[filePath])->setPix(res, true);
+        static_cast<SFile * >(nowExitFiles[filePath])->setIconFromPath(res, true);
     }
 }
 

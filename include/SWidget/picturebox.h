@@ -2,6 +2,7 @@
 #define PICTUREBOX_H
 
 #include "qlabel.h"
+#include "sgifthread.h"
 #include <QWidget>
 #include <QImage>
 #include <QPixmap>
@@ -27,8 +28,8 @@ public:
     bool requireRefresh = true;
     double untransparentRatio = 1;
     QLabel* movieLabel;
-    QMovie* movie;
     QPixmap* source;
+    SGifThread* gifThread = nullptr;
     QPixmap scaled;
     QBrush m_brush;
     QSize displaySize;
@@ -60,5 +61,6 @@ public slots:
     void follow(QPixmap* pPixmap);
     void setGIF(QString path);
     void setBackground(QBrush brush);
+    void endGIF();
 };
 #endif

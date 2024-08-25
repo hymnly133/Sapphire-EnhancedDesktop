@@ -13,6 +13,7 @@
 #include"QDesktopServices"
 #include"QTextCodec"
 #include "qmimedata.h"
+#include "qmovie.h"
 #include "qpainter.h"
 #include"QGraphicsDropShadowEffect"
 #include"QFileDialog"
@@ -151,7 +152,7 @@ void SMultiFunc::load_json(QJsonObject rootObject)
     pixPath = rootObject.value("pixPath").toString();
     if(pixPath != "") {
         if(QFile::exists(pixPath)) {
-            SMultiFunc::setPix(path2Icon(pixPath)[0]);
+            SMultiFunc::setIconFromPath(pixPath, false);
         } else {
             SNotice::notice(pixPath, tr("预加载图片丢失！"));
             pixPath = "";
@@ -271,7 +272,7 @@ void SMultiFunc::setupEditMenu()
         QString tem =  QFileDialog::getOpenFileName(nullptr, tr("选择一个文件"), "D:/");
         if(!tem.isEmpty())
         {
-            setPix(tem, true);
+            setIconFromPath(tem, true);
             writeContent();
             gv->updateDispaly();
         }
@@ -280,15 +281,7 @@ void SMultiFunc::setupEditMenu()
     SET_ANCTION(act2, tr("切换铺满"), editMenu, this, {
         switchFullShowG(this);
     })
-    SET_ANCTION(actgif, tr("选择gif"), editMenu, this, {
-        QString tem =  QFileDialog::getOpenFileName(nullptr, tr("选择一个文件"), "D:/", "GIF File(*.gif)");
-        if(!tem.isEmpty())
-        {
-            gv->setGIF(tem);
-            writeContent();
-            gv->updateDispaly();
-        }
-    })
+
 }
 
 void SMultiFunc::dragEnterEvent(QDragEnterEvent *event)
@@ -356,7 +349,11 @@ void SMultiFunc::preSetInLayout(bool animated)
 
 void SMultiFunc::updateColor()
 {
-    setMainColor(pixmapMainColor(pix));
+    if(gv->type == PictureBox::pic) {
+        setMainColor(pixmapMainColor(pix));
+    } else {
+        setMainColor(pixmapMainColor(gv->gifThread->gif->currentPixmap()));
+    }
 }
 
 void SMultiFunc::whenFocusAnimationChange()
@@ -389,22 +386,43 @@ void SMultiFunc::onScaleChange(double val)
     }
 }
 
-void SMultiFunc::setPix(QString pixPath, bool save)
+void SMultiFunc::setIconFromPath(QString iconPath, bool save)
 {
     if(save) {
-        this->pixPath = pixPath;
+        this->pixPath = iconPath;
     }
-    setPix(path2Icon(pixPath)[0]);
+    if(use_pic_as_icon && QFileInfo(pixPath).suffix().toLower() == "gif") {
+        setGIF(iconPath);
+    } else {
+        setPix(path2Icon(iconPath));
+    }
+
+}
+
+void SMultiFunc::setGIF(QString gifPath)
+{
+    // pix = pixmap;
+    gv->setGIF(gifPath);
+    connect(gv->gifThread, &QThread::started, this, [ = ]() {
+        enableFocusScaleAnimation = false;
+        updateColor();
+
+        onScaleChange(scale*scaleFix);
+        gv->updateDispaly();
+        update();
+    });
+
 }
 
 void SMultiFunc::setPix(QPixmap pixmap)
 {
+    enableFocusScaleAnimation = true;
     pix = pixmap;
+    gv->follow(&pix);
 
     updateColor();
 
     onScaleChange(scale*scaleFix);
-    gv->follow(&pix);
     gv->updateDispaly();
     update();
 }

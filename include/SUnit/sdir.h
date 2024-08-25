@@ -2,6 +2,7 @@
 #define SDIR_H
 
 #include <QObject>
+#include "guifunc.h"
 #include "qjsonarray.h"
 #include "sblockcontainer.h"
 #include "sfile.h"
@@ -80,7 +81,11 @@ public:
     QPoint MyPos() override
     {
         QPoint centerPos = layout->unit2CenterPoint(this);
-        return QPoint(centerPos.x() - MySize().width() / 2, centerPos.y() - MySize().height() / 2);
+        QSize aimSize = MySize();
+        centerPos =  refineRect(layout->pContainerW->mapToGlobal(centerPos), aimSize, pmw);
+        centerPos = layout->pContainerW->mapFromGlobal(centerPos);
+
+        return QPoint(centerPos.x() - aimSize.width() / 2, centerPos.y() - aimSize.height() / 2);
         // return refine(tem, MySize());
     };
     QSize MySize() override

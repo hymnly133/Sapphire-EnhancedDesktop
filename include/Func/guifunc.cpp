@@ -176,3 +176,16 @@ QPixmap applyUntransparentRatio(QPixmap source, double ratio)
     p1.end();
     return temp;
 }
+
+QPoint refineRect(QPoint centerPoint_global, QSize size, MainWindow *pmw)
+{
+    QPoint relative = pmw->mapFromGlobal(centerPoint_global);
+    // if(relative.x() - size.width() / 2 < 0) {
+    //     relative.setX(size.width() / 2);
+    // }
+    relative.setX(qMax(relative.x(), size.width() / 2));
+    relative.setY(qMax(relative.y(), size.height() / 2));
+    relative.setX(qMin(relative.x(), pmw->inside->W_Container() - size.width() / 2));
+    relative.setY(qMin(relative.y(), pmw->inside->H_Container() - size.height() / 2));
+    return pmw->mapToGlobal(relative);
+}

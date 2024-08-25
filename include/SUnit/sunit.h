@@ -90,6 +90,8 @@ public:
     bool dark = false;
     bool movable = true;
     bool thisResizable = true;
+
+    bool enableFocusScaleAnimation = true;
     bool resizable();
     double scaleFix = 1.0;
     double scale = 1.0;
@@ -357,6 +359,9 @@ inline int SUnit::aim_colorAlpha()
 
 inline double SUnit::aim_scaleFix()
 {
+    if(!enableFocusScaleAnimation) {
+        return 1.0;
+    }
     if(onFocus) {
         return scale_fix_ratio;
     } else {

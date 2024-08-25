@@ -20,17 +20,23 @@
 #define SHELLICONPATH "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons"
 MyFileInfo::MyFileInfo(QString path, int size)
 {
-    type = TYPE::SINGLE ;
+    type = TYPE::Default ;
     name = path2Name(path);
-    icons = path2Icon(path, size);
-    if(icons.size() > 1) {
-        type = TYPE::MULTI;
-    }
     filePath = path;
 }
 
 MyFileInfo::MyFileInfo(QFileInfo qfi, int size): MyFileInfo(qfi.filePath(), size)
 {
+}
+
+QPixmap MyFileInfo::aimIcon()
+{
+    bool res = false;
+    QPixmap map = path2Icon(filePath, 512, &res);
+    if(res) {
+        type = Aim;
+    }
+    return map;
 }
 
 MyFileInfo path2MyFI(QString path, int size)
@@ -112,16 +118,17 @@ QStringList scanalldesktopfiles()
     return files;
 }
 
-QMap<int, QPixmap> path2Icon(QString path, int size)
+QPixmap path2Icon(QString path, int size, bool* pres)
 {
-    QMap<int, QPixmap> res;
+    QPixmap res;
     QFileInfo qfileinfo(path);
     if(isPic(path) && use_pic_as_icon) {
         QImage im;
         im.load(path);
-        res[0] = QPixmap::fromImage(im);
+        res = QPixmap::fromImage(im);
+        return res;
     } else {
-        res[0] = resizeToRect(getWinIcon(toWindowsPath(path)));
+        res = resizeToRect(getWinIcon(toWindowsPath(path)));
     }
     //针对steam游戏
     if(qfileinfo.suffix() == "url") {
@@ -140,26 +147,43 @@ QMap<int, QPixmap> path2Icon(QString path, int size)
             QStringList steamfileList = directory.entryList(QDir::Files);
             steamfileList = directory.entryList(QDir::Files);
             foreach(const QString& steamfilename, steamfileList) {
-                //小图标版本
-                QString aim = gameId + "_icon";
                 QString file = steamfilename.split('.')[0];
+                QString aim;
                 if(file.mid(0, gameId.size()) != gameId) {
+                    //排除错误匹配
                     continue;
                 }
-                //长竖图标版本
-                // regex = QRegularExpression(gameId+"_library_600x900.jpg");
-                aim = gameId + "_library_600x900";
-                if(file.contains(aim)) {
-                    res[1] = (QPixmap(directory.absoluteFilePath(steamfilename)));
-                    // qDebug() << "Find Verti";
+
+                if(default_steam_icon_type == 0) {
+                    if(pres) {
+                        *pres = true;
+                    }
+
+                } else if(default_steam_icon_type == 1) {
+                    //长竖图标版本
+                    // regex = QRegularExpression(gameId+"_library_600x900.jpg");
+                    aim = gameId + "_library_600x900";
+                    if(file.contains(aim)) {
+                        res = (QPixmap(directory.absoluteFilePath(steamfilename)));
+                        if(pres) {
+                            *pres = true;
+                        }
+                        // qDebug() << "Find Verti";
+                    }
+
+                } else {
+                    //长横图标版本
+                    aim = gameId + "_header";
+                    // regex = QRegularExpression(gameId+"_header.jpg");
+                    if(file.contains(aim)) {
+                        res = (QPixmap(directory.absoluteFilePath(steamfilename)));
+                        if(pres) {
+                            *pres = true;
+                        }
+                        // qDebug() << "Find Hori";
+                    }
                 }
-                //长横图标版本
-                aim = gameId + "_header";
-                // regex = QRegularExpression(gameId+"_header.jpg");
-                if(file.contains(aim)) {
-                    res[2] = (QPixmap(directory.absoluteFilePath(steamfilename)));
-                    // qDebug() << "Find Hori";
-                }
+
             }
             // qDebug()<<QString::fromLocal8Bit(x.absoluteFilePath().toLocal8Bit())<<files.size();
         }
