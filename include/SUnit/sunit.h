@@ -93,7 +93,12 @@ public:
     bool resizable();
     double scaleFix = 1.0;
     double scale = 1.0;
+
+    //只有下面一种情况时两种变量不一样：
+    //即将enterParent的动画时，在qt系统中还并没有设置parent，outOfParent已经更新为false，而actual还是true，并在动画完成后更新
+
     bool outOfParent = false;
+    bool outOfParent_actual = false;
 
     //移动时使用鼠标的本地坐标
     QPoint relativeP;
@@ -202,6 +207,7 @@ public:
 
     void leaveParent();
     void enterParent();
+    void preEnterParent();
 
     //长聚焦动画更新时
     virtual void whenLongFocusAnimationChange();
@@ -241,6 +247,7 @@ public:
     //各种状态的Set函数
     virtual void setMainColor(QColor color);
     virtual void setSimpleMode(bool);
+    virtual void setFocus(bool);
     virtual void setLongFocus(bool);
     virtual void setCelect(bool, bool animaion = false);
     virtual void preSetLongFocus(bool);
@@ -248,6 +255,8 @@ public:
     virtual void setScaleFix(double val);
     virtual void setAlwaysShow(bool val);
     virtual void setPMW(MainWindow* pmw);
+
+    virtual void startToLoad();
     void setOpacity(double val);
 
 

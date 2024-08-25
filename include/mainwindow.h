@@ -54,13 +54,13 @@ public:
 
     //右键菜单
     //桌面模式的菜单
-    SMenu* desktopMenu;
+    SMenu* desktopMenu = nullptr;
     //编辑模式的菜单
-    SMenu* editMenu;
+    SMenu* editMenu = nullptr;
     //多组件框选的菜单
-    SMenu* multiMenu;
+    SMenu* multiMenu = nullptr;
     //新建文件的菜单
-    SMenu* creatNewFileMenu;
+    SMenu* creatNewFileMenu = nullptr;
 
     //标识背景透视
     bool transparent = true;
@@ -107,7 +107,7 @@ public:
 
     void setBackgoundPic(QImage image);
 
-    void updata_animation();
+    void updataShowerAnimation();
 
     // bool addAFile(QString path, bool notice = false, QPoint globalPos = QPoint(-1, -1));
 

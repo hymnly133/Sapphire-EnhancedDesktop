@@ -308,7 +308,7 @@ void sentToWallpaper(QPoint winpos)
 }
 
 
-void writeJson()
+void writeContent()
 {
     QJsonArray rootArrar;
     foreach (auto pmw, pmws) {
@@ -339,7 +339,7 @@ void writeJson()
     file.close();   // 关闭file
 }
 
-QMap<int, QJsonObject> readJson()
+QMap<int, QJsonObject> readContent()
 {
     QMap<int, QJsonObject> res;
 
@@ -394,6 +394,8 @@ QString shellrun(QString filename, QString para, bool admin)
     para.replace('/', '\\');
     filename.replace('\'', '\"');
     filename.replace('/', '\\');
+    qDebug() << QString("ShellRun: file:%1,para:%2").arg(filename).arg(para);
+
 
 
     ZeroMemory(&sei, sizeof(sei));
@@ -405,6 +407,7 @@ QString shellrun(QString filename, QString para, bool admin)
         filename = "explorer.exe";
     }
 
+    qDebug() << QString("After: file:%1,para:%2").arg(filename).arg(para);
 
 
 
@@ -658,11 +661,8 @@ void shellContextMenuRun(QString command, QString path)
         qDebug() << shellrun(exe, para);
         return;
     }
-    // system(command.toStdString().c_str());
-    // QProcess process;
-    // QProcess::startDetached(command);
+
     qDebug() << shellrun(command);
-    // process.start("cmd",QStringList()<<command);
 }
 
 void test()
@@ -699,4 +699,41 @@ void initDrop()
 {
 
     // HRESULT res = RevokeDragDrop(
+}
+
+void writeJsons()
+{
+    writeContent();
+    writeMenu();
+}
+
+void writeMenu()
+{
+    SMenu::write_json();
+}
+
+void readMenu()
+{
+    QJsonObject res;
+
+    QFile file(DATA_PATH);
+
+    if(!file.exists()) {
+        writeMenu();
+        return;
+    }
+
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+
+    QString value = file.readAll();
+    file.close();
+
+    QJsonParseError parseJsonErr;
+    QJsonDocument document = QJsonDocument::fromJson(value.toUtf8(), &parseJsonErr);
+    if (! (parseJsonErr.error == QJsonParseError::NoError)) {
+        QMessageBox::about(NULL, "提示", "菜单配置文件错误！");
+        return;
+    }
+
+    SMenu::read_json(document.object());
 }

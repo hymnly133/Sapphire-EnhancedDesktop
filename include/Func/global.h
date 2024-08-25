@@ -7,7 +7,7 @@
 #define EXE_PATH QCoreApplication::applicationDirPath()
 #define CONTENT_PATH EXE_PATH + "/content.json"
 #define STYLE_PATH EXE_PATH + "/style.ini"
-#define DATA_PATH EXE_PATH + "/data.json"
+#define DATA_PATH EXE_PATH + "/menu.json"
 
 
 #ifdef QT_DEBUG
@@ -26,10 +26,25 @@
 #define NO_POS QPoint(-1,-1)
 #define NO_IND QPoint(-1,-1)
 #define SAPPHIRE_REG_PATH "HKEY_CURRENT_USER\\Software\\Hymnly\\Sapphire"
+
+
 #define SET_ANCTION(NAME,TEXT,MENU,RECIEVER,FUCTION)\
-QAction *NAME = new QAction(TEXT);\
-    MENU->addAction(NAME);\
-    connect(NAME, &QAction::triggered, RECIEVER, [=]()FUCTION);
+SAction *NAME = new SAction(TEXT);\
+NAME->setName(TEXT);\
+NAME->smenu = MENU;\
+MENU->addAction(NAME);\
+connect(NAME, &QAction::triggered, RECIEVER, [=]()FUCTION);
+
+#define SET_ANCTION_MENU(NAME,TEXT,MENU,SUBMENU)\
+SAction *NAME = new SAction(TEXT);\
+SMenu* SUBMENU = new SMenu(MENU);\
+MENU->addAction(NAME);\
+NAME->setName(TEXT);\
+NAME->smenu = MENU;\
+SUBMENU->path = NAME->path();\
+NAME->setMenu(SUBMENU);\
+
+
 
 #define connectTo(NAME,TYPE,VALTYPE,FUNC)\
 connect(psh->TYPE##Val(#NAME),&TYPE##Val::valueChanged,this,[=](VALTYPE value)FUNC);
@@ -95,4 +110,5 @@ extern SMenu* trayMenu;
 extern QList<QString> containerTypes;
 
 extern bool isAdmin;
+extern bool isDebug;
 #endif // GLOBAL_H

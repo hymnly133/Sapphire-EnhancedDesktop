@@ -135,7 +135,23 @@ QPair<SLayout*, QPoint > deepFind(SUnit *aim)
     return QPair<SLayout*, QPoint>(activepmw->inside, activepmw->inside->clearPutableInd(aim));
 }
 
-
+SUnit *from_class(QString Class)
+{
+    QString newname = Class.replace("ED_", "S");
+    int id = QMetaType::type(Class.toStdString().c_str());
+    if (id == QMetaType::UnknownType) {
+        qDebug() << "error0";
+        id = QMetaType::type(newname.toStdString().c_str());
+        if(id == QMetaType::UnknownType) {
+            qDebug() << "error1";
+            return nullptr;
+        }
+    }
+    qDebug() << Class;
+    // auto k = QMetaType::create(id);
+    SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
+    return unit;
+}
 SUnit *from_json(QJsonObject data, SLayout *layout)
 {
     QString name = data.value("Class").toString();
@@ -155,6 +171,9 @@ SUnit *from_json(QJsonObject data, SLayout *layout)
     qDebug() << name;
     // auto k = QMetaType::create(id);
     SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
+
+
+    data.value("Class").toString();
     unit->setPMW(layout->pmw);
     unit->setParent(layout->pContainerW);
     unit->load_json(data);
@@ -280,5 +299,7 @@ void foldG()
         }
     }
 }
+
+
 
 

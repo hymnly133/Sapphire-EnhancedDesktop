@@ -1,4 +1,5 @@
 #include "global.h"
+#include "qthread.h"
 #include "sinputdialog.h"
 #include"sunit.h"
 #include "sfile.h"
@@ -163,7 +164,7 @@ void SFile::recoverForDefault()
 
 void SFile::remove()
 {
-    if(fileExist(filePath)) {
+    if(fileExist(filePath) && inDesktop(filePath)) {
         if(SFileInfo::removeFile()) {
             SMultiFunc::remove();
         }
@@ -208,15 +209,17 @@ void SFile::setupDesktopMenu()
         OpenFileProperty(this->filePath);
     })
     if(isDir) {
+        desktopMenu->addDirBGCommands();
         desktopMenu->addDirCommands();
     } else {
-        desktopMenu->addFileCommands(targetSuffix());
+        desktopMenu->addFileCommands(suffix_red());
     }
 }
 
 
 void SFile::loadFromMyFI(MyFileInfo info, bool init)
 {
+    qDebug() << QString("Loading Form MyFI:%1,at thread:").arg(info.filePath) << (QThread::currentThread());
     SFileInfo::loadFromMyFI(info);
 
 
@@ -257,7 +260,7 @@ void SFile::loadFromMyFI(MyFileInfo info, bool init)
 
 void SFile::loadFromPath(QString filepath, bool init)
 {
-    qDebug() << "Loading form path:" << filepath;
+    // qDebug() << "Loading form path:" << filepath;
 
     MyFileInfo info = path2MyFI(filepath);
     loadFromMyFI(info, init);

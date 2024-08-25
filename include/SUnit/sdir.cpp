@@ -1,7 +1,11 @@
 #include "sdir.h"
 #include "mainwindow.h"
+#include "qjsonarray.h"
+#include "qtconcurrentrun.h"
 #include "sflowlayout.h"
 #include "stylehelper.h"
+#include "unitfunc.h"
+#include "userfunc.h"
 
 SDir::SDir(SLayout *dis, int sizex, int sizey, QString filePath): SFile(dis, sizex, sizey, filePath)
 {
@@ -76,7 +80,7 @@ QJsonObject SDir::to_json()
 void SDir::load_json(QJsonObject rootObject)
 {
     SFile::load_json(rootObject);
-    SLayoutContainer::load_json(rootObject.value("content").toObject());
+    waitedToLoad = rootObject.value("content").toObject().value("contents").toArray();
 }
 
 void SDir::setPMW(MainWindow *pmw)
@@ -106,23 +110,29 @@ void SDir::setFold(bool val)
 
 void SDir::updateAfterPut(SUnit *aim)
 {
+    SLayoutContainer::updateAfterPut(aim);
     if(!isExpand) {
         aim->setEnabled(false);
     }
-    if(aim->inherits("SFile")) {
-        SFile* sfile = (SFile*)aim;
-        //为了避免bug，不移动文件夹
-        if(sfile->isDir) {
-            return;
-        }
-        //排除已经在文件夹中的
-        if(filePath == sfile->dirPath()) {
-            return ;
-        }
-        qDebug() << filePath + "/" + sfile->fullName();
-        sfile->moveToDir(filePath);
-    }
+    aim->setOpacity(1 - ar_fold->nowRatio);
 
+
+    if(!onLoading && moveFile) {
+        if(aim->inherits("SFile")) {
+
+            SFile* sfile = (SFile*)aim;
+            //为了避免bug，不移动文件夹
+            if(sfile->isDir) {
+                return;
+            }
+            //排除已经在文件夹中的
+            if(filePath_red() == sfile->dirPath()) {
+                return ;
+            }
+            qDebug() << filePath_red() + "/" + sfile->fullName();
+            sfile->moveToDir(filePath_red());
+        }
+    }
     // updateExpandAnimation();
 }
 
@@ -154,16 +164,25 @@ void SDir::setExpand(bool val)
     movable = !val;
     thisResizable = !val;
     inside->setEnable(val);
+
+    if(layout) {
+        if(val) {
+            leaveParent();
+        } else {
+            preEnterParent();
+        }
+    }
+
     if(val) {
         setFold(false);
+        // startToLoad();
+        loadInsideAll();
     } else {
         inside_f->scrollTo(0);
         updateFocusAnimation();
     }
 
-    if(layout) {
-        leaveParent();
-    }
+
     raise();
     updateExpandAnimation();
 }
@@ -200,6 +219,70 @@ void SDir::preSetLongFocus(bool val)
     setFold(!val);
 }
 
+void SDir::loadFromMyFI(MyFileInfo info, bool init)
+{
+    SFile::loadFromMyFI(info, init);
+    scanDir();
+}
+
+void SDir::scanDir()
+{
+    scanForChangeInDir(filePath_red(), this, &newfiles);
+    qDebug() << objectName() << "Scaned,newFiles:" << newfiles;
+}
+
+void SDir::startToLoad()
+{
+    qDebug() << objectName() << "StartToLoad";
+    moveFile = false;
+    auto jsonfiles_ = jsonFiles();
+    foreach (QString newFile, newfiles) {
+        if(jsonfiles_.contains(newFile)) {
+            continue;
+        }
+        if(nowExitFiles.contains(newFile)) {
+            continue;
+        }
+        qDebug() << objectName() << "load path:" << newFile;
+        SFile* thisFile;
+        if(QFileInfo(newFile).isDir()) {
+            thisFile = new SDir(inside);
+        } else {
+            thisFile = new SFile(inside);
+        }
+        QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
+    }
+    newfiles.clear();
+
+    foreach (QJsonValue val, waitedToLoad) {
+        if(val.toObject().contains("path")) {
+            if(nowExitFiles.contains(val.toObject().value("path").toString())) {
+                continue;
+            }
+        }
+
+        SUnit* thisFile = from_class(val.toObject().value("Class").toString());
+        initAUnit(thisFile, false);
+        qDebug() << objectName() << "load Json:" <<  val.toObject().value("path").toString();
+
+        QtConcurrent::run(thisFile, &SUnit::load_json, val.toObject());
+    }
+    waitedToLoad = QJsonArray();
+    moveFile = true;
+}
+
+QStringList SDir::jsonFiles()
+{
+    QStringList res;
+    foreach (QJsonValue val, waitedToLoad) {
+        if(val.toObject().contains("path")) {
+            res << val.toObject().value("path").toString();
+
+        }
+    }
+    return res;
+}
+
 void SDir::single_click_action(QMouseEvent *event)
 {
     if(!isExpand) {
@@ -233,7 +316,36 @@ void SDir::whenExpandAnimationUpdate()
 
 void SDir::remove()
 {
-    SFile::remove();
+    QList<SUnit*> con;
+
+    foreach (SUnit* unit, inside->contents) {
+        if(unit->inherits("SFile")) {
+            SFile* sfile = ((SFile*)unit);
+            if(sfile->dirPath() == filePath_red()) {
+                //只是映射出来的文件就删除映射/删除文件，不释放
+                sfile->removeInfo();
+                continue;
+            }
+        }
+
+        unit->removeFromLayout();
+        con.push_back(unit);
+    }
+
+
+    if(fileExist(filePath) && inDesktop(filePath)) {
+        if(SFile::removeFile()) {
+            SMultiFunc::remove();
+        }
+    } else {
+        SMultiFunc::remove();
+    }
+
+    SFileInfo::removeInfo();
+
+    foreach (auto content, con) {
+        activepmw->inside->clearPut(content, true);
+    }
 }
 
 void SDir::wheelEvent(QWheelEvent *event)

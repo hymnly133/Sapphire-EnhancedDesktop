@@ -2,10 +2,9 @@
 #define FILEFUNC_H
 #include "qfileinfo.h"
 #include "qpixmap.h"
-#include "sfileinfo.h"
 #include "style.h"
 #include"QFileInfo"
-
+class SFileInfo;
 // void ScreatNewFile(FileType type){}
 enum FileType {
     txt = 0,
@@ -116,7 +115,8 @@ bool fileExist(const QString& path);
 
 //合并json
 QJsonObject mergeJsonObject(QJsonObject obj1, QJsonObject obj2);
-
+QString path2Name(QString path);
+bool inDesktop(QString path);
 // //添加全局变量
 // void addFileInfo(SFileInfo* info);
 // //删除全局变量

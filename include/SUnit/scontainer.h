@@ -23,6 +23,9 @@ public:
     void afterResize(QResizeEvent* event) override;
     void setSimpleMode(bool)override;
     void setScale(double val)override;
+    virtual void setFocus(bool val) override;
+
+
     void endUpdate()override;
     QJsonObject to_json() override;
     void load_json(QJsonObject rootObject) override;
@@ -37,6 +40,14 @@ public slots:
     // SUnit interface
 public:
     void remove() override;
+
+    // SUnit interface
+public:
+    void preSetLongFocus(bool) override;
+
+    // SUnit interface
+public:
+    void single_click_action(QMouseEvent *event) override;
 };
 
 

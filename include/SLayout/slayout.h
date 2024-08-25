@@ -9,7 +9,7 @@
 class SUnit;
 class SContainer;
 class MainWindow;
-void writeJson();
+void writeContent();
 
 class SLayout: public QObject
 {
@@ -150,7 +150,7 @@ public:
 
     void saveLayout()
     {
-        writeJson();
+        writeContent();
     }
 
     virtual void setEnable(bool val);

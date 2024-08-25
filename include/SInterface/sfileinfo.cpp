@@ -16,9 +16,32 @@ SFileInfo::SFileInfo(SFile *unit, QString path): SFileInfo(unit)
     loadFromPath(path);
 }
 
+QString SFileInfo::filePath_red()
+{
+    auto info = QFileInfo(filePath);
+    if(info.isSymLink()) {
+        return info.symLinkTarget();
+    }
+    return filePath;
+}
+
 QString SFileInfo::dirPath()
 {
     return QFileInfo(filePath).path();
+}
+
+QString SFileInfo::dirPath_red()
+{
+    auto info = QFileInfo(filePath);
+    if(info.isSymLink()) {
+        return QFileInfo(info.symLinkTarget()).path();
+    }
+    return QFileInfo(filePath).path();
+}
+
+bool SFileInfo::isSymLink()
+{
+    return QFileInfo(filePath).isSymLink();
 }
 void SFileInfo::loadFromPath(QString filepath)
 {
@@ -31,16 +54,7 @@ void SFileInfo::loadFromPath(QString filepath)
 void SFileInfo::loadFromMyFI(MyFileInfo info)
 {
     filePath = info.filePath;
-    if(QFileInfo(filePath).isDir()) {
-        isDir = true;
-        nowExitDirs[filePath] = (SDir*)pUnit;
-    }
-
-    if(pUnit) {
-        nowExitFiles[filePath] = pUnit;
-    }
-
-    nowExitInfos[filePath] = this;
+    addInfo();
 }
 
 bool SFileInfo::renameFile(QString newNameWithSuffix)
@@ -59,40 +73,34 @@ bool SFileInfo::renameFile(QString newNameWithSuffix)
 
 bool SFileInfo::moveToDir(QString dirPath)
 {
+    QString oldpath = filePath;
+    if(filePath == "") {
+        qDebug() << "Try to move, But empty";
+        return true;
+    }
     QString newName =  dirPath + "/" + fullName();
     if(newName == filePath) {
+        qDebug() << "The same file! no move";
         return true;
     }
     bool res = renameAbsolute(newName);
     if(!res) {
         SNotice::notice(QStringList() << filePath + ":" + "失败", "移动文件");
     };
-    // qDebug()<<QFileInfo(filePath).isReadable();
+    qDebug() << QString("move %1 to %2 ,").arg(oldpath).arg(newName) << res;
     return res;
 
 }
 
 bool SFileInfo::renameAbsolute(QString newpath)
 {
-    qDebug() << "From" << filePath << "to" << newpath;
+    qDebug() << "Try to rename from" << filePath << "to" << newpath;
     bool renamed = QFile::rename(filePath, newpath);
     if(renamed) {
-        nowExitFiles.remove(filePath);
-        if(pUnit) {
-            nowExitFiles[newpath] = pUnit;
-        }
-
-        if(isDir) {
-            nowExitDirs.remove(filePath);
-            if(pUnit) {
-                nowExitDirs[newpath] = (SDir*)pUnit;
-            }
-        }
-
-        nowExitInfos.remove(filePath);
-        nowExitInfos[newpath] = this;
-
+        removeInfo();
         filePath = newpath;
+        addInfo();
+
         return true;
     } else {
         return false;
@@ -101,7 +109,7 @@ bool SFileInfo::renameAbsolute(QString newpath)
 
 bool SFileInfo::removeFile()
 {
-
+    removeInfo();
 
     bool res = QFile::moveToTrash(filePath);
     if(!res) {
@@ -110,7 +118,6 @@ bool SFileInfo::removeFile()
     } else {
         qDebug() << "Deleted";
     }
-    removeInfo();
     return res;
 }
 
@@ -127,9 +134,27 @@ void SFileInfo::removeInfo()
         nowExitFiles.remove(filePath);
     }
 
-    if(isDir && nowExitDirs.contains(filePath)) {
-        nowExitDirs.remove(filePath);
+    if(isDir && nowExitDirs.contains(filePath_red())) {
+        nowExitDirs.remove(filePath_red());
     }
 
-    nowExitInfos.remove(filePath);
+    if(nowExitInfos.contains(filePath)) {
+        nowExitInfos.remove(filePath);
+    }
+}
+
+void SFileInfo::addInfo()
+{
+    if(QFileInfo(filePath_red()).isDir()) {
+        isDir = true;
+        nowExitDirs[filePath_red()] = (SDir*)pUnit;
+    }
+
+    if(pUnit) {
+        nowExitFiles[filePath] = pUnit;
+    }
+
+    if(!nowExitInfos.contains(filePath)) {
+        nowExitInfos[filePath] = this;
+    }
 }

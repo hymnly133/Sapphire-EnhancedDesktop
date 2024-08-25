@@ -91,9 +91,9 @@ void paintSide(QWidget* aim, QColor color)
 
 QPixmap resizeToRect(QPixmap source)
 {
-    qDebug() << "Resizing from" << source.size();
+    // qDebug() << "Resizing from" << source.size();
     QImage image = source.toImage();
-    qDebug() << "image" << image.size();
+    // qDebug() << "image" << image.size();
     int width = source.width();
     int height = source.height();
 

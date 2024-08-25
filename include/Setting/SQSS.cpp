@@ -39,7 +39,7 @@ QMenu::item:selected{
 }
 QMenu::separator{
 height:1px;
-background:#bbbbbb;
+background:[highlight_color];
 margin:5px;
     margin-left:10px;
     margin-right:10px;

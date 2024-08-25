@@ -1,6 +1,7 @@
 #ifndef PICTUREBOX_H
 #define PICTUREBOX_H
 
+#include "qlabel.h"
 #include <QWidget>
 #include <QImage>
 #include <QPixmap>
@@ -12,12 +13,21 @@ class PictureBox : public QWidget
 public:
     explicit PictureBox(QWidget *parent = 0, double m_scale = 1.0);
     void setScale(double scale);
+    enum picType {
+        pic,
+        gif,
+    };
+
+    picType type = pic;
+
     ~PictureBox();
     bool maxFill = false;
     bool limitInisde = false;
     bool followSource = false;
     bool requireRefresh = true;
     double untransparentRatio = 1;
+    QLabel* movieLabel;
+    QMovie* movie;
     QPixmap* source;
     QPixmap scaled;
     QBrush m_brush;
@@ -48,6 +58,7 @@ protected:
 public slots:
     void setImage(QPixmap &image);
     void follow(QPixmap* pPixmap);
+    void setGIF(QString path);
     void setBackground(QBrush brush);
 };
 #endif

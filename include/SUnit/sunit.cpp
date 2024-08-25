@@ -47,14 +47,14 @@ QPoint SUnit::edpos()
 
 SUnit::SUnit(SLayout *dis, int sizex, int sizey): QWidget(nullptr)
 {
-    qDebug() << QThread::currentThread();
+    // qDebug() << QThread::currentThread();
     setObjectName(metaObject()->className());
     sizeX = sizex;
     sizeY = sizey;
     if(dis != nullptr) {
         layout = dis;
     }
-    qDebug() << QThread::currentThread();
+    // qDebug() << QThread::currentThread();
     if(dis != nullptr) {
         setPMW(dis->pmw);
     }
@@ -121,6 +121,7 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey): QWidget(nullptr)
     //                             })
     connect(this, &SUnit::mainColor_changed, this, &SUnit::onMainColorChange);
     connect(focusAnimations, &QParallelAnimationGroup::finished, this, [ = ]() {
+        // qDebug() << objectName() << "FinishCalled" << nowPadRatio << aim_padRatio();
         nowPadRatio = aim_padRatio();
         scaleFix = aim_scaleFix();
         colorAlpha = aim_colorAlpha();
@@ -148,11 +149,11 @@ void SUnit::single_click_action(QMouseEvent *event)
 
 void SUnit::mouse_enter_action()
 {
-    if(pmw == nullptr) {
-        qDebug() << "null";
-    } else {
-        qDebug() << "have";
-    }
+    // if(pmw == nullptr) {
+    //     qDebug() << "null";
+    // } else {
+    //     qDebug() << "have";
+    // }
 }
 
 void SUnit::mouse_leave_action()
@@ -294,9 +295,10 @@ void SUnit::mouseMoveEvent(QMouseEvent *event)
 
 void SUnit::enterEvent(QEvent *event)
 {
-    qDebug() << objectName() << "enter" << (layout != nullptr);
-    onFocus = true;
-    pFocusedUnit = this;
+    if(isDebug) {
+        // qDebug() << objectName() << "enter" << (layout != nullptr);
+    }
+    setFocus(true);
     mouse_enter_action();
     updateFocusAnimation();
     event->accept();
@@ -313,12 +315,12 @@ void SUnit::enterEvent(QEvent *event)
 
 void SUnit::leaveEvent(QEvent *event)
 {
-    qDebug() << objectName() << "leave";
-    onFocus = false  ;
-    pFocusedUnit = nullptr;
+    if(isDebug) {
+        // qDebug() << objectName() << "leave";
+    }
+    setFocus(false);
     preSetLongFocus(false);
     mouse_leave_action();
-    updateFocusAnimation();
     if(layout != nullptr)
         if(!(layout->isMain)) {
             layout->pContainerS->update();
@@ -421,9 +423,27 @@ void SUnit::setSimpleMode(bool val)
     onSimpleModeChange(val);
 }
 
+void SUnit::setFocus(bool val)
+{
+    if(onFocus == val) {
+        return;
+    }
+
+    onFocus = val  ;
+    if(val) {
+        pFocusedUnit = this;
+    } else {
+
+        pFocusedUnit = nullptr;
+
+    }
+
+    updateFocusAnimation();
+}
+
 void SUnit::setLongFocus(bool val)
 {
-    qDebug() << "Long Focus" << val;
+    // qDebug() << "Long Focus" << val;
     onLongFocus = val;
     if(!val && !onContextMenuShowing) {
         activepmw->pls->clearTooltip();
@@ -512,8 +532,14 @@ void SUnit::setPMW(MainWindow *pmw)
     this->pmw = pmw;
 }
 
+void SUnit::startToLoad()
+{
+
+}
+
 void SUnit::setOpacity(double val)
 {
+    rs->raise();
     rs->setOpacity(val);
     if(val <= 0) {
         setVisible(false);
@@ -594,6 +620,7 @@ void SUnit::remove()
 
 void SUnit::endUpdate()
 {
+    // qDebug() << "endUpdateCalled";
     //当初始化完成之后调用以更新状态
     setSimpleMode(simpleMode);
     colorAlpha = aim_colorAlpha();
@@ -625,7 +652,7 @@ void SUnit::updateFocusAnimation()
     alphaAnimation->setStartValue(colorAlpha);
     alphaAnimation->setDuration(focus_animation_time);
     alphaAnimation->setEndValue(aim_colorAlpha());
-    // qDebug()<<"nowPadRatio Update: now:"<<nowPadRatio<<"aim"<<aim_padRatio();
+    // qDebug() << "nowPadRatio Update: now:" << nowPadRatio << "aim" << aim_padRatio();
     padRatioAnimation->setStartValue(nowPadRatio);
     padRatioAnimation->setDuration(focus_animation_time);
     padRatioAnimation->setEndValue(aim_padRatio());
@@ -789,6 +816,7 @@ void SUnit::leaveParent()
         return;
     }
     outOfParent = true;
+    outOfParent_actual = true;
     auto tem = edpos();
     setParent(pmw);
     edmove(tem);
@@ -797,14 +825,22 @@ void SUnit::leaveParent()
 
 void SUnit::enterParent()
 {
-    if(!outOfParent) {
+    if(!outOfParent_actual) {
         return;
     }
-    outOfParent = false;
+    outOfParent_actual = false;
     auto tem = edpos();
     setParent(layout->pContainerW);
     edmove(tem);
     show();
+}
+
+void SUnit::preEnterParent()
+{
+    if(!outOfParent) {
+        return;
+    }
+    outOfParent = false;
 }
 
 void SUnit::afterResize(QResizeEvent* event)
@@ -829,20 +865,6 @@ void SUnit::whenFocusAnimationChange()
 
 double SUnit::aim_padRatio()
 {
-    // double val = 0.5;
-    // if(layout == nullptr) {
-    //     val = 1.0;
-    // } else {
-    //     if(layout->isMain) {
-    //         val = 1.0;
-    //     } else {
-    //         if(onFocus) {
-    //             val = 1.0;
-    //         } else {
-    //             val =  0.0;
-    //         }
-    //     }
-    // }
     if(layout && !layout->isMain && !outOfParent && !onFocus) {
         return 0.0;
     }

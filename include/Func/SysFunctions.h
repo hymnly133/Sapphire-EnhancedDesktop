@@ -32,11 +32,19 @@ void customMessageHandler(QtMsgType type,
                           const QMessageLogContext &context,
                           const QString &msg);
 
-//写入Json
-void writeJson();
+//写入Content
+void writeContent();
+//写入Menu
+void writeMenu();
 
-//读取Json
-QMap<int, QJsonObject> readJson();
+//写入Jsons
+void writeJsons();
+
+//读取Content
+QMap<int, QJsonObject> readContent();
+
+//读取menu
+void readMenu();
 
 //计算对角距离
 double rectLen(int w, int h);

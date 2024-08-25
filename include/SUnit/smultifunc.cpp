@@ -268,17 +268,26 @@ void SMultiFunc::setupEditMenu()
 {
     SUnit::setupEditMenu();
     SET_ANCTION(act1, tr("选择图标"), editMenu, this, {
-        QString tem =  QFileDialog::getOpenFileName(nullptr, tr("open a file."), "D:/");
+        QString tem =  QFileDialog::getOpenFileName(nullptr, tr("选择一个文件"), "D:/");
         if(!tem.isEmpty())
         {
             setPix(tem, true);
-            writeJson();
+            writeContent();
             gv->updateDispaly();
         }
     })
 
     SET_ANCTION(act2, tr("切换铺满"), editMenu, this, {
         switchFullShowG(this);
+    })
+    SET_ANCTION(actgif, tr("选择gif"), editMenu, this, {
+        QString tem =  QFileDialog::getOpenFileName(nullptr, tr("选择一个文件"), "D:/", "GIF File(*.gif)");
+        if(!tem.isEmpty())
+        {
+            gv->setGIF(tem);
+            writeContent();
+            gv->updateDispaly();
+        }
     })
 }
 

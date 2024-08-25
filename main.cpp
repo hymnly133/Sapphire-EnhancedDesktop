@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
 #ifndef QT_DEBUG
     //安装log重定向
     qInstallMessageHandler(customMessageHandler);
+    isDebug = false;
 #endif
     //环境与系统性设置
     QTextCodec *code = QTextCodec::codecForName("UTF-8");
@@ -57,6 +58,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<RepaintCounterUnit>();
     qRegisterMetaType<SGLShower>();
     qRegisterMetaType<SDir>();
+
 
     //注册容器对象
     initContainerTypes();

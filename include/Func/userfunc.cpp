@@ -73,8 +73,6 @@ void setupG()
     qDebug() << "Setting Up Glabal...";
 
 
-
-
     QString application_name = QApplication::applicationName();//获取应用名称
     QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
     enable_auto_run = !settings->value(application_name).isNull();
@@ -89,7 +87,8 @@ void setupG()
     qDebug() << "Public Desktop:" << PublicDesktopPath;
 
     //菜单
-    SMenu::initSysCommands();
+    readMenu();
+    SMenu::scanSysCommands();
 
     //设置托盘图标
 
@@ -108,6 +107,14 @@ void setupG()
 
     //加载Mainwindow的内容
     loadMainWindows();
+
+    //第一次查找所有文件夹并尝试加载
+    scanForChange();
+    foreach (auto pmw, pmws) {
+        pmw->loadInsideAll();
+    }
+
+
     qDebug() << "Final:";
     for(int i = 0; i < screenNum; i++) {
         qDebug() << "Mainwindow" << i << pmws[i]->mapToGlobal(QPoint(0, 0));
@@ -249,7 +256,7 @@ void SExit()
         // pmw->plsB->close();
     }
     psh->writeStyleIni();
-    writeJson();
+    writeJsons();
     qApp->exit(0);
 }
 
@@ -311,12 +318,11 @@ void scanForChange()
     }
 
 
-    scanForChangeInDir(UserDesktopPath, pmws[0], &newfiles);
-    scanForChangeInDir(PublicDesktopPath, pmws[0], &newfiles);
-    foreach (SDir* sdir, nowExitDirs) {
-        if(sdir->inherits("SDir") && sdir->layout->isMain) {
-            scanForChangeInDir(sdir->filePath, dynamic_cast<SLayoutContainer*>(sdir), &newfiles);
-        }
+    scanForChangeInDir(UserDesktopPath, pmws[0], &newfiles, true);
+    scanForChangeInDir(PublicDesktopPath, pmws[0], &newfiles, true);
+    foreach (QString dirPath, nowExitDirs.keys()) {
+        SDir* sdir = nowExitDirs[dirPath];
+        sdir->scanDir();
     }
     // scanForChangeInDir(UserDesktopPath, pmws[0], &newfiles);
     //提示
@@ -324,13 +330,13 @@ void scanForChange()
         SNotice::notice(newfiles, "新增文件", 5000);
     }
 
-    writeJson();
+    writeContent();
 }
-void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QStringList *newfiles)
+void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QStringList *newfiles, bool add )
 {
-
-    // QString path = fileInfo->filePath;
-    // //Scan For New
+    if(path == "") {
+        return;
+    }
     QDir uPathDir(path);
     qDebug() << "Scanningfor" << path;
     uPathDir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
@@ -341,9 +347,13 @@ void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QString
             if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) {
                 continue;
             }
-            *newfiles << absolute;
+            if(!newfiles->contains(absolute)) {
+                *newfiles << absolute;
+            }
             // newFiles->append(absolute);
-            layoutContainer->addAFile(absolute, false);
+            if(add) {
+                layoutContainer->addAFile(absolute, false);
+            }
         }
     }
 
@@ -353,7 +363,7 @@ bool loadMainWindows()
     foreach (auto pmw, pmws) {
         pmw->setup();
     }
-    QMap<int, QJsonObject> jsons = readJson();
+    QMap<int, QJsonObject> jsons = readContent();
     jsonNum = jsons.size();
     if(jsonNum == 0) {
         //初始化
@@ -386,7 +396,6 @@ bool loadMainWindows()
         }
         //加载
         for(int i = 0; i < screenNum; i++) {
-            //对于加载数据，由于数据确定，使用多线程加载
             if(jsons.contains(i)) {
                 pmws[i]->load_json(jsons[i]);
             } else {
@@ -415,7 +424,7 @@ void SReboot()
         // pmw->plsB->close();
     }
     psh->writeStyleIni();
-    writeJson();
+    writeJsons();
     qApp->exit(733);
 }
 

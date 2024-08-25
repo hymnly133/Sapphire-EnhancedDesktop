@@ -21,7 +21,7 @@ public:
     void mouse_enter_action() override;
 
     void loadFromPath(QString filepath, bool init);
-    void loadFromMyFI(MyFileInfo info, bool init);
+    virtual void loadFromMyFI(MyFileInfo info, bool init);
 
     void double_click_action(QMouseEvent* event) override;
 

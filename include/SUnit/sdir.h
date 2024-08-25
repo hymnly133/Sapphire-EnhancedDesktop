@@ -2,6 +2,7 @@
 #define SDIR_H
 
 #include <QObject>
+#include "qjsonarray.h"
 #include "sblockcontainer.h"
 #include "sfile.h"
 #include"SContainer.h"
@@ -15,10 +16,13 @@ public:
     SFlowlayout* inside_f;
     bool isFold = false;
     bool isExpand = true;
+    bool moveFile = true;
     SAnimationRect* ar_fold;
     SAnimationRect* ar_expand;
     // SAnimationRect ar;
     // SUnit interface
+    QJsonArray waitedToLoad;
+    QStringList newfiles;
     void afterResize(QResizeEvent* event) override;
     void setSimpleMode(bool)override;
     void setScale(double val)override;
@@ -41,6 +45,16 @@ public:
     void updateExpandAnimation();
 
     void preSetLongFocus(bool)override;
+
+    virtual void loadFromMyFI(MyFileInfo info, bool init) override;
+
+    //预加载
+    void scanDir();
+
+    //加载
+    virtual void startToLoad() override;
+
+    QStringList jsonFiles();
 
 
     void single_click_action(QMouseEvent* event) override;
@@ -72,23 +86,11 @@ public:
     QSize MySize() override
     {
         aim_expandSize();
-        // previousSize;
         SUnit::MySize();
         double expandRatio = ar_expand->nowRatio;
-
-        // if(usePreviousSize) {
-        //     if(isExpand) {
-        //         return  previousSize* (1 - expandRatio) +  aim_expandSize() * (ar_expand->nowRatio);
-        //     } else {
-        //         return  SUnit::MySize() * (1 - expandRatio) +  aim_expandSize() * (ar_expand->nowRatio);
-        //     }
-        // } else {
         return  SUnit::MySize() * (1 - expandRatio) +  aim_expandSize() * (ar_expand->nowRatio);
-        // }
     };
     QSize aim_expandSize();
-
-    // SLayoutContainer interface
 
 };
 Q_DECLARE_METATYPE(SDir);

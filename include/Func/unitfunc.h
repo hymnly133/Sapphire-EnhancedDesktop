@@ -47,7 +47,8 @@ QPair<SLayout *, QPoint> deepFind(SUnit* aim);
 
 //从Json数据生成Unit并加载数据
 SUnit* from_json(QJsonObject data, SLayout *layout);
-SFile *from_path(QString path, SLayout* layout = nullptr);
+SFile* from_path(QString path, SLayout* layout = nullptr);
+SUnit* from_class(QString Class);
 
 //获取所有Unit
 QList<SUnit*> units();

@@ -49,11 +49,14 @@ void MainWindow::setupDesktopMenu()
     // 给当前窗口添加QAction对象
     // SET_ANCTION(act01,刷新,desktopMenu,this,
     //             {refresh();})
-    QAction* act01 = new QAction(tr("刷新"));
-    desktopMenu->addAction(act01);
-    connect(act01, &QAction::triggered, this, [ = ]() {
-        refresh();
-    });
+    // SAction* act01 = new SAction(tr("刷新"));
+    // desktopMenu->addAction(act01);
+    // connect(act01, &SAction::triggered, this, [ = ]() {
+    //     refresh();
+    // });
+    SET_ANCTION(act01, tr("刷新"), desktopMenu, this,
+    {         refresh(); });
+
     SET_ANCTION(act1, tr("改变可见"), desktopMenu, this,
     { setShoweredVisibal(!showeredVisibal); })
     act1->setText(tr("改变可见"));
@@ -65,11 +68,15 @@ void MainWindow::setupDesktopMenu()
             addAFile(filePath);
         }
     })
-    QAction *creatNewFileAction = new QAction(desktopMenu);
-    creatNewFileAction->setText(tr("新建"));
-    desktopMenu->addAction(creatNewFileAction);
-    creatNewFileMenu = new SMenu();
-    creatNewFileAction->setMenu(creatNewFileMenu);
+    // SAction *creatNewFileAction = new SAction(desktopMenu);
+    // creatNewFileAction->setText(tr("新建"));
+    // desktopMenu->addAction(creatNewFileAction);
+    // creatNewFileMenu = new SMenu();
+    // creatNewFileAction->setMenu(creatNewFileMenu);
+
+    SET_ANCTION_MENU(creatNewFileAction, tr("新建"), desktopMenu, creatNewFileMenu_);
+    creatNewFileMenu = creatNewFileMenu_;
+
     SET_ANCTION(actNewDir, tr("文件夹"), creatNewFileMenu, this, {
         FileHelper::creatNewDir();
     });
@@ -85,15 +92,10 @@ void MainWindow::setupDesktopMenu()
     SET_ANCTION(act16, tr("空文件"), creatNewFileMenu, this, {
         FileHelper::creatNewFile(FileType::empty);
     });
-    QAction *systemSettingMenuAction = new QAction(desktopMenu);
-    systemSettingMenuAction->setText(tr("系统设置"));
-    desktopMenu->addAction(systemSettingMenuAction);
-    connect(systemSettingMenuAction, &QAction::triggered, this, [ = ]() {
-        qDebug() << "triggered";
-        shellrun("ms-settings:");
-    });
-    SMenu *systemSettingMenu = new SMenu();
-    systemSettingMenuAction->setMenu(systemSettingMenu);
+
+    SET_ANCTION_MENU(systemSettingMenuAction, tr("系统设置"), desktopMenu, systemSettingMenu);
+
+
     SET_ANCTION(act00, tr("主面板"), systemSettingMenu, this, {
         shellrun("ms-settings:");
     });
@@ -117,6 +119,10 @@ void MainWindow::setupDesktopMenu()
     });
     // desktopMenu->addDirCommands();
     desktopMenu->addDirBGCommands();
+    // desktopMenu->addSeparator();
+    desktopMenu->addDesktopCommands();
+
+
     SET_ANCTION(actToEditMode, tr("编辑模式"), desktopMenu, this, {
         toEditMode();
     })
@@ -136,11 +142,15 @@ void MainWindow::setupEditMenu()
             content->changeSimpleMode();
         }
     })
-    QAction *creatNewUnitAction = new QAction(editMenu);
-    creatNewUnitAction->setText("新建组件");
-    editMenu->addAction(creatNewUnitAction);
-    SMenu *creatNewUnitMenu = new SMenu();
-    creatNewUnitAction->setMenu(creatNewUnitMenu);
+    // SAction *creatNewUnitAction = new SAction(editMenu);
+    // creatNewUnitAction->setText("新建组件");
+    // editMenu->addAction(creatNewUnitAction);
+    // SMenu *creatNewUnitMenu = new SMenu();
+    // creatNewUnitAction->setMenu(creatNewUnitMenu);
+
+    SET_ANCTION_MENU(creatNewUnitAction, tr("新建组件"), editMenu, creatNewUnitMenu);
+
+
 #ifdef QT_DEBUG
     SET_ANCTION(act5, tr("获取背景"), editMenu, this, {
         capture();
@@ -411,8 +421,13 @@ void MainWindow::refresh()
         inside->setVisible(false, true);
     }
     endUpdate();
+    // if(!showeredVisibal) {
+    //     changeShower->setFixedSize(1, 1);
+    // }
+    // changeShower->raise();
     repaint();
     scanForChange();
+    loadInsideAll();
     if(enable_refresh_animation) {
         inside->setVisible(true);
     }
@@ -454,7 +469,7 @@ void MainWindow::setup()
     }
     setTransparent(enable_background_transparent);
 
-    connectTo(always_fill_screen, int, int, {
+    connectTo(always_fill_screen, bool, bool, {
         updateSize();
     });
 }
@@ -478,7 +493,14 @@ void MainWindow::setShoweredVisibal(bool val)
 {
     // changeShower->raise();
     if(val) {
+        if(desktopMenu) {
+            desktopMenu->showAction(tr("刷新"));
+        }
     } else {
+        if(desktopMenu) {
+            desktopMenu->hideAction(tr("刷新"));
+        }
+
         foreach (SUnit* content, inside->contents) {
             if(content->alwaysShow) {
                 content->setVisible(false);
@@ -500,7 +522,7 @@ void MainWindow::setShoweredVisibal(bool val)
         }
     }
     showeredVisibal = val;
-    updata_animation();
+    updataShowerAnimation();
 }
 
 void MainWindow::setBackgoundPic(QImage image)
@@ -540,7 +562,7 @@ void MainWindow::setBackgoundPic(QImage image)
     bg = bg.copy(off_x, off_y, actualSize.width(), actualSize.height());
 }
 
-void MainWindow::updata_animation()
+void MainWindow::updataShowerAnimation()
 {
     showerAnimations->stop();
     showerSizeAnimation->setStartValue(showerSize);
@@ -651,7 +673,7 @@ void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事�
     // QMessageBox::about(NULL, "cs", "closeEvent");
 #endif
     event->accept();
-    writeJson();
+    writeContent();
 }
 
 
@@ -755,7 +777,7 @@ void MainWindow::updateAfterPut(SUnit *aim)
         }
 
         //屏蔽原本就在桌面的文件
-        if(sfile->dirPath() == UserDesktopPath || sfile->dirPath() == PublicDesktopPath) {
+        if(inDesktop(sfile->filePath)) {
             return;
         }
         qDebug() << UserDesktopPath + "/" + sfile->fullName();
@@ -798,7 +820,7 @@ void MainWindow::setupDrop()
     DragAcceptFiles((HWND)effectiveWinId(), true);
     qDebug() << GetLastError();
     HRESULT res = RevokeDragDrop((HWND)winId());
-    qDebug() << "res:" << res;
+    // qDebug() << "res:" << res;
 }
 
 void MainWindow::updateSize()
@@ -866,6 +888,7 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
 
 void MainWindow::mousePressEvent(QMouseEvent* event)
 {
+    loadInsideAll();
     cleanCelect();
     foldG();
     if(event->button() == Qt::LeftButton) {

@@ -26,6 +26,7 @@ public:
     void load_json(QJsonObject rootObject) ;
     void setPMW(MainWindow *pmw) ;
     void updateColor();
+    void loadInsideAll();
 
 
     //给容器的各种更新函数

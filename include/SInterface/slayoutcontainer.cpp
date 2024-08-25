@@ -1,4 +1,5 @@
 #include "slayoutcontainer.h"
+#include "sdir.h"
 #include "sfile.h"
 #include "sunit.h"
 #include "slayout.h"
@@ -49,9 +50,18 @@ void SLayoutContainer::updateColor()
     }
 }
 
+void SLayoutContainer::loadInsideAll()
+{
+    foreach (auto content, inside->contents) {
+        content->startToLoad();
+    }
+}
+
 void SLayoutContainer::updateAfterPut(SUnit *aim)
 {
-
+    // if(aim->inherits("SDir")) {
+    //     ((SDir*)aim)->scanDir();
+    // }
 }
 
 void SLayoutContainer::updateBeforePut(SUnit *aim)
@@ -115,7 +125,9 @@ void SLayoutContainer::setScale(double val)
 
 void SLayoutContainer::setOpacity(double val)
 {
+    // qDebug() << val;
     for(SUnit * content : inside->contents) {
+        // qDebug() << "apply to " << content->objectName() << val;
         content->setOpacity(val);
     }
 }
@@ -133,5 +145,5 @@ void SLayoutContainer::setSLayout(SLayout *aim)
         return;
     }
     inside = aim;
-    qDebug() << "Setted inside sLayout";
+    // qDebug() << "Setted inside sLayout";
 }

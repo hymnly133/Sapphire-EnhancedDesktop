@@ -34,7 +34,7 @@ SLayout::SLayout(SLayoutContainer *father)
     if(pContainerS->inherits("SUnit")) {
         if(((SUnit * )pContainerS)->pmw != nullptr) {
             pmw = ((SUnit*)pContainerS)->pmw;
-            qDebug() << "settedpmw" << pmw->objectName();
+            // qDebug() << "settedpmw" << pmw->objectName();
         }
     } else {
         pmw = (MainWindow*)father;
@@ -86,7 +86,7 @@ void SLayout::putUnit(SUnit *aim, int xind, int yind, bool animated)
     aim->indY = yind;
     aim->layout = this;
     aim->setPMW(pmw);
-    qDebug() << "setted pmw" << pmw->objectName();
+    // qDebug() << "setted pmw" << pmw->objectName();
     //setRect
     if(isMain) {
     } else {
@@ -100,7 +100,7 @@ void SLayout::putUnit(SUnit *aim, int xind, int yind, bool animated)
     aim->preSetInLayout(animated);
     updateBeforePutAnimation(aim, xind, yind);
     if(!onLoading) {
-        writeJson();
+        writeContent();
     }
     if(enable_background_blur) {
         UpdateRegion();
@@ -214,7 +214,7 @@ void SLayout::setVisible(bool val, bool force)
     visibal = val;
     pContainerS->update();
     UpdateRegion();
-    qDebug() << "setted" << countt << " " << val;
+    // qDebug() << "setted" << countt << " " << val;
 }
 
 void SLayout::UpdateRegion()

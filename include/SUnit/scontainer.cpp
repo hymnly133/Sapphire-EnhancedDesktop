@@ -1,6 +1,7 @@
 #include "scontainer.h"
 #include "global.h"
 #include"mainwindow.h"
+#include "unitfunc.h"
 SContainer::SContainer(SLayout *dis, int sizex, int sizey): SUnit(dis, sizex, sizey)
 {
     type = Container;
@@ -16,6 +17,14 @@ void SContainer::setScale(double val)
 {
     SUnit::setScale(val);
     SLayoutContainer::setScale(val);
+}
+
+void SContainer::setFocus(bool val)
+{
+    SUnit::setFocus(val);
+    if(val) {
+        loadInsideAll();
+    }
 }
 
 void SContainer::endUpdate()
@@ -74,5 +83,17 @@ void SContainer::remove()
     foreach (auto content, con) {
         activepmw->inside->clearPut(content, true);
     }
+}
+
+void SContainer::preSetLongFocus(bool val)
+{
+    if(val) {
+        loadInsideAll();
+    }
+}
+
+void SContainer::single_click_action(QMouseEvent *event)
+{
+    foldG();
 }
 

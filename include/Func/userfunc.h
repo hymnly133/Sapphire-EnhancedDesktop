@@ -40,7 +40,7 @@ void updateFont();
 void scanForChange();
 
 //扫描一个已经存在的SFileInfo下的改动
-void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QStringList *newfiles);
+void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QStringList *newfiles, bool add = false);
 
 //打开设置面板
 void openSettingWindow();

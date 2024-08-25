@@ -1,6 +1,7 @@
 #ifndef SFILEINFO_H
 #define SFILEINFO_H
 #include"QString"
+#include "filefunc.h"
 #include "qfileinfo.h"
 
 class SFile;
@@ -16,6 +17,8 @@ public:
     //绝对路径
     QString filePath;
 
+    QString filePath_red();
+
     //aaa.bb
     QString fullName();
 
@@ -23,13 +26,16 @@ public:
     QString suffix();
 
     //解析快捷方式后的后缀
-    QString targetSuffix();
+    QString suffix_red();
 
     //aaa.bb 中的aaa
     QString baseName();
 
     QString dirPath();
+
+    QString dirPath_red();
     bool isDir = false;
+    bool isSymLink();
 
     //以下仅针对文件以及全局变量进行操作
 
@@ -44,7 +50,11 @@ public:
     virtual bool removeFile();
     //文件打开(系统性)
     void openFile(bool Admin = false);
+
+    //Info系统删除
     void removeInfo();
+    //Info系统添加
+    void addInfo();
 
     QJsonObject to_json();
     void load_json(QJsonObject rootObject);
@@ -63,7 +73,7 @@ inline QString SFileInfo::suffix()
     return QFileInfo(filePath).suffix();
 }
 
-inline QString SFileInfo::targetSuffix()
+inline QString SFileInfo::suffix_red()
 {
     if(QFileInfo(filePath).isSymLink()) {
         return QFileInfo(QFileInfo(filePath).symLinkTarget()).suffix();
@@ -74,7 +84,7 @@ inline QString SFileInfo::targetSuffix()
 
 inline QString SFileInfo::baseName()
 {
-    return QFileInfo(filePath).baseName();
+    return path2Name(filePath);
 }
 
 #endif // SFILEINFO_H
