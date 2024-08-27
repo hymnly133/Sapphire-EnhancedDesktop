@@ -98,9 +98,10 @@ public:
     bool added = false;
     SMenu* sysComMenu;
     SAction* syscomAct;
+    bool alwaysRequireRefresh = false;
 
 
-
+    void addAction(QAction* act);
 
     // QList<QString> exitsCommands;
     QMap<QString, SAction*> sacts();

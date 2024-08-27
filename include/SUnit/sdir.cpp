@@ -295,7 +295,13 @@ void SDir::startToLoad()
         } else {
             thisFile = new SFile(inside);
         }
-        QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
+        if(!onLoading) {
+            //常态
+            QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
+        } else {
+            //加载时
+            thisFile->loadFromPath(newFile, true);
+        }
     }
     newfiles.clear();
 
@@ -310,7 +316,15 @@ void SDir::startToLoad()
         initAUnit(thisFile, false);
         qDebug() << objectName() << "load Json:" <<  val.toObject().value("path").toString();
 
-        QtConcurrent::run(thisFile, &SUnit::load_json, val.toObject());
+
+        if(!onLoading) {
+            //常态
+            // QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
+            QtConcurrent::run(thisFile, &SUnit::load_json, val.toObject());
+        } else {
+            //加载时
+            thisFile->load_json(val.toObject());
+        }
     }
     waitedToLoad = QJsonArray();
     moveFile = true;

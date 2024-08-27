@@ -44,6 +44,13 @@ SMenu::SMenu(QWidget *parent): QMenu(parent)
 
     });
     init();
+    // adjustSize();
+}
+
+void SMenu::addAction(QAction *act)
+{
+    QMenu::addAction(act);
+    adjustSize();
 }
 
 QMap<QString, SAction *> SMenu::sacts()
@@ -63,6 +70,7 @@ void SMenu::init()
     // setWindowFlags(Qt::Popup | Qt::FramelessWindowHint |Qt::NoDropShadowWindowHint);
     setContentsMargins(0, 0, 0, 0);
     setStyleSheet(QSS_SMenu());
+
     connect(psh, &StyleHelper::colorChanged, this, [ = ]() {
         setStyleSheet(QSS_SMenu());
     });
@@ -138,17 +146,19 @@ void SMenu::showAction(SAction *act)
 
 void SMenu::adjustSize()
 {
+    qDebug() << "adjustsize";
     setMinimumSize(0, 0);
     setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
     QMenu::adjustSize();
     aimSize = size();
+    // setFixedSize(siz)
 }
 
 void SMenu::exec(QPoint pos)
 {
-    foreach (auto act, sacts()) {
-        qDebug() << act->path();
-    }
+    // foreach (auto act, sacts()) {
+    //     qDebug() << act->path();
+    // }
     qDebug() << sacts();
     QMenu::exec(pos);
 }
@@ -542,8 +552,6 @@ void SMenu::closeEvent(QCloseEvent *event)
 void SMenu::showEvent(QShowEvent *event)
 {
 
-    // qDebug() << "ShowSize" << size();
-    // qDebug() << "ShowPos" << pos();
     emit aboutToShow();
 
     if(ismain) {
@@ -555,9 +563,8 @@ void SMenu::showEvent(QShowEvent *event)
         // }
     }
 
-    if(firstShow) {
-        qDebug() << "firstShow" << size();
-        aimSize = size();
+    if(firstShow || alwaysRequireRefresh) {
+        adjustSize();
         firstShow = false;
     }
 

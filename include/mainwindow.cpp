@@ -46,6 +46,7 @@ void MainWindow::setupDesktopMenu()
 {
     desktopMenu = new SMenu(this);
     desktopMenu->path = UserDesktopPath;
+    desktopMenu->alwaysRequireRefresh = true;
     desktopMenu->ismain = true;
 
     SET_ANCTION(act01, tr("刷新"), desktopMenu, this,
@@ -129,6 +130,7 @@ void MainWindow::setupEditMenu()
 {
     editMenu = new SMenu(this);
     editMenu->ismain = true;
+    editMenu->alwaysRequireRefresh = true;
     SET_ANCTION(act2, tr("切换精简"), editMenu, this, {
         for(SUnit * content : inside->contents)
         {

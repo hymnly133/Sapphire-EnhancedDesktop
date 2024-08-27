@@ -199,6 +199,7 @@ void SUnit::setupEditMenu()
 
     editMenu = new SMenu(this);
     editMenu->ismain = true;
+    editMenu->alwaysRequireRefresh = true;
     connect(editMenu, &QMenu::aboutToShow, this, [ = ]() {
         onContextMenuShowing = true;
     });
@@ -240,6 +241,7 @@ void SUnit::setupDesktopMenu()
 
     desktopMenu = new SMenu(this);
     desktopMenu->ismain = true;
+    desktopMenu->alwaysRequireRefresh = true;
     connect(desktopMenu, &QMenu::aboutToShow, this, [ = ]() {
         onContextMenuShowing = true;
     });

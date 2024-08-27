@@ -242,6 +242,8 @@ void SFile::loadFromMyFI(MyFileInfo& info, bool init)
 
 
     gv->limitInisde = true;
+    // qDebug() << lb;
+    // qDebug() << name;
     lb->setText(elidedLineText(lb, 3, name));
     if(init) {
         pixPath = "";

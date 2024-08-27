@@ -147,7 +147,7 @@ void SFileInfo::removeInfo()
 
 void SFileInfo::addInfo()
 {
-    qInfo() << QString("remove info : %1").arg(filePath);
+    qInfo() << QString("add info : %1").arg(filePath);
     if(QFileInfo(filePath_red()).isDir()) {
         isDir = true;
         nowExitDirs[filePath_red()] = (SDir*)pUnit;

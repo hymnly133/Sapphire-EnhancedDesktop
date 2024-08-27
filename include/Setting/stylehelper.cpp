@@ -458,10 +458,15 @@ Icon贡献：L St4r 1207638671
     auto licenseLabel = new QLabel("本软件遵循 GNU General Public License v3.0 许可证.");
     licenseLabel->setWordWrap(true);
     layout->addWidget(licenseLabel);
+
     // 许可证链接
     auto licenseLinkLabel = new QLabel("<a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">查看许可证</a>");
     licenseLinkLabel->setOpenExternalLinks(true);
     layout->addWidget(licenseLinkLabel);
+
+    auto homeLabel = new QLabel("<a href=\"https://space.bilibili.com/176830290\">作者主页</a>");
+    homeLabel->setOpenExternalLinks(true);
+    layout->addWidget(homeLabel);
 
     auto donateLinkLabel = new QLabel("<a href=\"https://ifdian.net/a/Hymnly\">捐赠渠道</a>");
     donateLinkLabel->setOpenExternalLinks(true);

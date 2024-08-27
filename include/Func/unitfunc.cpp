@@ -85,12 +85,12 @@ void moveCelect(SUnit *sender)
                 foreach (SUnit* tem, pCelectedUnits) {
                     tem->onSwitch(pmw);
                 }
-                //清楚原屏幕的长聚焦
+                //清除原屏幕的长聚焦
                 foreach (SUnit* tem, activepmw->inside->contents) {
                     tem->preSetLongFocus(false);
                 }
 
-                if(!processor) {
+                if(processor) {
                     processor->preSetLongFocus(false);
                 }
                 activepmw = pmw;
@@ -161,10 +161,10 @@ SUnit *from_json(QJsonObject data, SLayout *layout)
     QString newname = name.replace("ED_", "S");
     int id = QMetaType::type(name.toStdString().c_str());
     if (id == QMetaType::UnknownType) {
-        qDebug() << "error0";
+        qDebug() << "error0:UnknownType";
         id = QMetaType::type(newname.toStdString().c_str());
         if(id == QMetaType::UnknownType) {
-            qDebug() << "error1";
+            qDebug() << "error1:UnknownType";
             return nullptr;
         }
     }
