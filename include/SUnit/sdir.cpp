@@ -6,7 +6,7 @@
 #include "stylehelper.h"
 #include "unitfunc.h"
 #include "userfunc.h"
-
+#include"stooltip.h"
 SDir::SDir(SLayout *dis, int sizex, int sizey, QString filePath): SFile(dis, sizex, sizey, filePath)
 {
     inside_f = new SFlowlayout(this, 5);
@@ -80,7 +80,9 @@ QJsonObject SDir::to_json()
 void SDir::load_json(QJsonObject rootObject)
 {
     SFile::load_json(rootObject);
-    waitedToLoad = rootObject.value("content").toObject().value("contents").toArray();
+    if(enable_dir_func) {
+        waitedToLoad = rootObject.value("content").toObject().value("contents").toArray();
+    }
 }
 
 void SDir::setPMW(MainWindow *pmw)
@@ -91,6 +93,10 @@ void SDir::setPMW(MainWindow *pmw)
 
 void SDir::setFold(bool val)
 {
+    if(!enable_dir_func) {
+        return;
+    }
+    // qDebug() << "try to set:" << isFold << val;
     if(val == isFold) {
         return;
     }
@@ -147,18 +153,27 @@ void SDir::updateAfterRemove(SUnit *aim)
 
 void SDir::updateFoldAnimation()
 {
+    if(!enable_dir_func) {
+        return;
+    }
     ar_fold->stop();
+
 
     if(isFold) {
         ar_fold->setEndValue(pos(), size(), 0, 0, 1);
     } else {
         ar_fold->setEndValue(pos(), size(), 0, 0, 0);
     }
+    // qDebug() << ar_fold->nowRatio << ar_fold->aimRatio;
     ar_fold->start();
 }
 
 void SDir::setExpand(bool val)
 {
+    if(!enable_dir_func) {
+        return;
+    }
+
     if(isExpand == val) {
         return;
     }
@@ -181,18 +196,21 @@ void SDir::setExpand(bool val)
         setFold(false);
         // startToLoad();
         loadInsideAll();
+        raiseUnderMoving(this);
     } else {
         inside_f->scrollTo(0);
         updateFocusAnimation();
     }
 
 
-    raise();
     updateExpandAnimation();
 }
 
 void SDir::updateExpandAnimation()
 {
+    if(!enable_dir_func) {
+        return;
+    }
     // qDebug() << ar_expand->nowRatio;
     if(isExpand && ar_expand->nowRatio == 1) {
         return;
@@ -203,27 +221,46 @@ void SDir::updateExpandAnimation()
     ar_expand->stop();
 
     ar_expand->nowRatio =  (size().width() - SUnit::MySize().width()) * 1.0 / (aim_expandSize().width() - SUnit::MySize().width());
-    qDebug() << ar_expand->nowRatio;
+    // qDebug() << ar_expand->nowRatio;
     if(isExpand) {
-        // ar_expand->setStartValue(pos(), size(), 0, 0, 0);
         ar_expand->setEndValue(pos(), size(), 0, 0, 1);
 
     } else {
-        // ar_expand->setStartValue(pos(), size(), 0, 0, 1);
         ar_expand->setEndValue(pos(), size(), 0, 0, 0);
     }
     ar_expand->start();
 }
 
-
-
-void SDir::preSetLongFocus(bool val)
+void SDir::setFocus(bool val)
 {
-    SFile::preSetLongFocus(val);
-    setFold(!val);
+    if(onFocus == val) {
+        return;
+    }
+    SFile::setFocus(val);
+    if(enable_dir_preview) {
+        setFold(!val);
+    }
 }
 
-void SDir::loadFromMyFI(MyFileInfo info, bool init)
+
+void SDir::setLongFocus(bool val)
+{
+    SFile::setLongFocus(val);
+}
+
+void SDir::setProcessor(bool val)
+{
+    SFile::setProcessor(val);
+
+    if(enable_dir_func) {
+        if(val) {
+            setExpand(true);
+            // setFold(false);
+        }
+    }
+}
+
+void SDir::loadFromMyFI(MyFileInfo &info, bool init)
 {
     SFile::loadFromMyFI(info, init);
     scanDir();
@@ -231,12 +268,16 @@ void SDir::loadFromMyFI(MyFileInfo info, bool init)
 
 void SDir::scanDir()
 {
+    if(!enable_dir_func) {
+        return;
+    }
     scanForChangeInDir(filePath_red(), this, &newfiles);
     qDebug() << objectName() << "Scaned,newFiles:" << newfiles;
 }
 
 void SDir::startToLoad()
 {
+
     qDebug() << objectName() << "StartToLoad";
     moveFile = false;
     auto jsonfiles_ = jsonFiles();
@@ -303,6 +344,10 @@ void SDir::updateColor()
 
 void SDir::whenFoldAnimationUpdate()
 {
+    if(!enable_dir_func) {
+        return;
+    }
+    // qDebug() << ar_fold->nowRatio;
     gv->untransparentRatio = ar_fold->nowRatio;
     lb->setOpacity(ar_fold->nowRatio);
     SLayoutContainer::setOpacity(1 - ar_fold->nowRatio);
@@ -312,6 +357,9 @@ void SDir::whenFoldAnimationUpdate()
 
 void SDir::whenExpandAnimationUpdate()
 {
+    if(!enable_dir_func) {
+        return;
+    }
     setFixedSize(MySize());
     if(!moving) {
         edmove(MyPos());
@@ -320,7 +368,9 @@ void SDir::whenExpandAnimationUpdate()
 
 void SDir::remove()
 {
+    gv->endGIF();
     QList<SUnit*> con;
+
 
     foreach (SUnit* unit, inside->contents) {
         if(unit->inherits("SFile")) {
@@ -337,6 +387,7 @@ void SDir::remove()
     }
 
 
+
     if(fileExist(filePath) && inDesktop(filePath)) {
         if(SFile::removeFile()) {
             SMultiFunc::remove();
@@ -347,15 +398,22 @@ void SDir::remove()
 
     SFileInfo::removeInfo();
 
+
     foreach (auto content, con) {
         activepmw->inside->clearPut(content, true);
     }
+
+
 }
 
 void SDir::wheelEvent(QWheelEvent *event)
 {
     SFile::wheelEvent(event);
+
     if(event->isAccepted()) {
+        return;
+    }
+    if(!enable_dir_func) {
         return;
     }
     int tem = event->angleDelta().y();
@@ -372,6 +430,33 @@ void SDir::wheelEvent(QWheelEvent *event)
 QSize SDir::aim_expandSize()
 {
     return pmw->blockSize() * inside_f->row();
+}
+
+void SDir::onDragedOut()
+{
+    SFile::onDragedOut();
+    setFold(true);
+}
+
+void SDir::processorTip()
+{
+    if(!enable_dir_func) {
+        SToolTip::tip("移动至“" + name + "”");
+    }
+}
+
+void SDir::processFile(SFileInfo *sfileInfo)
+{
+    if(!enable_dir_func) {
+        return;
+    }
+
+
+    if(filePath_red() == sfileInfo->dirPath()) {
+        return ;
+    }
+    qDebug() << filePath_red() + "/" + sfileInfo->fullName();
+    sfileInfo->moveToDir(filePath_red());
 }
 
 void SDir::updateBeforePut(SUnit *aim)

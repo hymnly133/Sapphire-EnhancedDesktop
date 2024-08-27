@@ -401,7 +401,7 @@ QString shellrun(QString filename, QString para, bool admin)
     ZeroMemory(&sei, sizeof(sei));
     sei.nShow = SW_SHOW; //or path
 
-    if(isAdmin && !admin && para.isEmpty()) {
+    if(isAdmin && !admin && para.isEmpty() && try_run_as_user) {
         //没有参数进行降权
         para = "\"" + filename + "\"";
         filename = "explorer.exe";
@@ -480,7 +480,7 @@ QString shellrun(QString filename, QString para, bool admin)
                 sRet = QString("unknow error.");
                 break;
         }
-        return sRet;
+        return QString("Shellrun ses:") + sRet;
 
     }
 
@@ -709,7 +709,7 @@ void writeJsons()
 
 void writeMenu()
 {
-    SMenu::write_json();
+    pmh->write_json();
 }
 
 void readMenu()
@@ -735,5 +735,5 @@ void readMenu()
         return;
     }
 
-    SMenu::read_json(document.object());
+    pmh->read_json(document.object());
 }

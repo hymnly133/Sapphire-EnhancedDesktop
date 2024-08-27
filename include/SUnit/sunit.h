@@ -31,6 +31,7 @@ class SUnit : public QWidget
     Q_PROPERTY(double nowPadRatio MEMBER nowPadRatio NOTIFY nowPadRatio_changed)
     Q_PROPERTY(double nowMainColorRatio MEMBER nowMainColorRatio NOTIFY nowMainColorRatio_changed)
 public:
+    explicit SUnit(SLayout* dis = nullptr, int sizex = 1, int sizey = 1);
     //用于区分容器（即将弃用）
     enum STYPE {Unit, Container};
     STYPE type = Unit;
@@ -152,7 +153,7 @@ public:
     QGraphicsDropShadowEffect* shadow_main_color;
 
 
-    explicit SUnit(SLayout* dis = nullptr, int sizex = 1, int sizey = 1);
+
 
     SUnit(const SUnit &other);
 
@@ -296,9 +297,9 @@ public:
 public slots:
     //用于接受计时器
     void setInLayoutAniSlot();
-    void longFocusTimeoutSlot();
     virtual void updateColor();
-
+    void longFocusTimeoutSlot();
+    void preSetLongFocusTimerSlot(bool);
 
 
 
@@ -318,6 +319,7 @@ signals:
     void nowSize_changed(QSize);
     void nowPadRatio_changed(double);
     void nowMainColorRatio_changed(double);
+    void preSetLongFocusTimerSignal(bool);
 
 
 

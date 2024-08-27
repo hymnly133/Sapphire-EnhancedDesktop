@@ -15,17 +15,10 @@
 #define REG_Folder "HKEY_CLASSES_ROOT\\Folder"
 #define REG_Files "HKEY_CLASSES_ROOT"
 #define ADD_SEPARATOR(LIST)\
-if(!LIST.empty()&&LIST.last().first!="Separator")\
-    LIST.append(QPair("Separator", SActionInfo::sparetor()));\
+if(!LIST.empty()&&LIST.last().name!="Separator")\
+    LIST.append(SActionInfo::sparetor());\
 
 
-QList<QPair<QString, SActionInfo>> SMenu::dirCommands;
-QList<QPair<QString, SActionInfo>> SMenu::dirBGCommands;
-QList<QPair<QString, SActionInfo>> SMenu::desktopCommands;
-QMap<QString, QList<QPair<QString, SActionInfo>>*> SMenu::filesCommands;
-QMap<QString, QIcon> SMenu::icons;
-QStringList SMenu::ignoreCommands;
-QMap<QString, QString> SMenu::group2name;
 SMenu::SMenu(QWidget *parent): QMenu(parent)
 {
     rs = new roundShower(this);
@@ -39,13 +32,15 @@ SMenu::SMenu(QWidget *parent): QMenu(parent)
         // arect->setFinal(false);
         // setFixedSize(aimSize);
     });
-    connect(arect, &SAnimationRect::animationUpdating, this, [ = ]() {
+    connect(arect, &SAnimationRect::animationUpdating, this, [ = ]()
+    {
         move(previousPos + arect->nowPos);
         setFixedSize(arect->nowSize);
         rs->raise();
         update();
     });
-    connect(this, &QMenu::aboutToHide, this, [ = ]() {
+    connect(this, &QMenu::aboutToHide, this, [ = ]()
+    {
 
     });
     init();
@@ -159,28 +154,28 @@ void SMenu::exec(QPoint pos)
 }
 
 
-void SMenu::addShellCommand(QPair<QString, SActionInfo> command)
+void SMenu::addShellCommand(const SActionInfo& info)
 {
-    if(command.first == "Separator") {
+    if(info.name == "Separator") {
         sysComMenu->addSeparator();
         return;
     }
-    if(sacts().contains(command.first)) {
+    if(sacts().contains(info.name)) {
         return;
     }
 
-    SAction* thisact = SAction::fromInfo(&command.second);
+    SAction* thisact = SAction::fromInfo(&info);
     sysComMenu->addAction(thisact);
     thisact->smenu = this;
 
 
-    thisact->setIcon(icons[command.first]);
+    thisact->setIcon(pmh->icons[info.id]);
 }
 
 void SMenu::addDirCommands()
 {
     checkSysMenu();
-    foreach (auto dircommand, dirCommands) {
+    foreach (auto dircommand, pmh->dirCommands) {
         addShellCommand(dircommand);
     }
     checkSysMenu();
@@ -189,7 +184,7 @@ void SMenu::addDirCommands()
 void SMenu::addDirBGCommands()
 {
     checkSysMenu();
-    foreach (auto dirBGcommand, dirBGCommands) {
+    foreach (auto dirBGcommand, pmh->dirBGCommands) {
         addShellCommand(dirBGcommand);
     }
     checkSysMenu();
@@ -198,7 +193,7 @@ void SMenu::addDirBGCommands()
 void SMenu::addDesktopCommands()
 {
     checkSysMenu();
-    foreach (auto desktopCommand, desktopCommands) {
+    foreach (auto desktopCommand, pmh->desktopCommands) {
         addShellCommand(desktopCommand);
     }
     checkSysMenu();
@@ -207,14 +202,14 @@ void SMenu::addDesktopCommands()
 void SMenu::addFileCommands(QString suffix)
 {
     checkSysMenu();
-    if(filesCommands.contains("*")) {
-        foreach (auto val, (*(filesCommands.value("*")))) {
+    if(pmh->filesCommands.contains("*")) {
+        foreach (auto val, (*(pmh->filesCommands.value("*")))) {
             addShellCommand(val);
         }
     }
     sysComMenu->addSeparator();
-    if(filesCommands.contains(suffix)) {
-        foreach (auto filecommand, *(filesCommands.value(suffix))) {
+    if(pmh->filesCommands.contains(suffix)) {
+        foreach (auto filecommand, *(pmh->filesCommands.value(suffix))) {
             addShellCommand(filecommand);
         }
     }
@@ -254,7 +249,7 @@ void SMenu::checkSysMenu()
 
 }
 
-void SMenu::readDirReg(QString path)
+void MenuHelper::readDirReg(QString path)
 {
     QSettings settingdir(path, QSettings::NativeFormat);
     qDebug() << "start to Read dirRegs" << path;
@@ -262,6 +257,9 @@ void SMenu::readDirReg(QString path)
     if(settingdir.childGroups().contains("Background")) {
         readShellReg(path + "\\Background", dirBG);
     }
+
+
+
     ADD_SEPARATOR(dirCommands)
     ADD_SEPARATOR(dirBGCommands)
     if(settingdir.childGroups().contains("shell")) {
@@ -269,7 +267,7 @@ void SMenu::readDirReg(QString path)
     }
 }
 
-void SMenu::readFileReg(QString group)
+void MenuHelper::readFileReg(QString group)
 {
 
     QSettings settingdir(QString(REG_Files) + "\\" + group, QSettings::NativeFormat);
@@ -281,7 +279,7 @@ void SMenu::readFileReg(QString group)
     }
 }
 
-void SMenu::readFilesReg()
+void MenuHelper::readFilesReg()
 {
     QSettings settingdir(REG_Files, QSettings::NativeFormat);
     foreach(QString group, settingdir.childGroups()) {
@@ -291,7 +289,7 @@ void SMenu::readFilesReg()
     }
 }
 
-void SMenu::readShellReg(QString path, CommandType type)
+void MenuHelper::readShellReg(QString path, CommandType type)
 {
     QSettings settings(path + "\\shell", QSettings::NativeFormat);
     QStringList groupsList = settings.childGroups();
@@ -305,7 +303,7 @@ void SMenu::readShellReg(QString path, CommandType type)
     }
 }
 
-void SMenu::readAReg(QString path, CommandType type)
+void MenuHelper::readAReg(QString path, CommandType type)
 {
     //path : XX/shell/xx
     QSettings settings(path, QSettings::NativeFormat);
@@ -378,7 +376,7 @@ void SMenu::readAReg(QString path, CommandType type)
                     QString suffix = list[1];
                     suffix.remove('.');
                     if(!filesCommands.contains(suffix)) {
-                        filesCommands.insert(suffix, new QList<QPair<QString, SActionInfo>>);
+                        filesCommands.insert(suffix, new QList<SActionInfo>);
                     }
                     addToListFromInfo(*filesCommands[suffix], thisinfo);
                     break;
@@ -388,7 +386,7 @@ void SMenu::readAReg(QString path, CommandType type)
     }
 }
 
-void SMenu::scanSysCommands()
+void MenuHelper::scanSysCommands()
 {
     //此处是各种文件（夹）菜单
     ignoreCommands << "find" << "UpdateEncryptionSettings" << "explore" << "open" << "opennewprocess" << "opennewtab" << "opennewwindow" << "pintohome" << "pintohomefile";
@@ -405,16 +403,16 @@ void SMenu::scanSysCommands()
     // qDebug()<<dirCommands;
 }
 
-QJsonArray SMenu::list2json(const QList<QPair<QString, SActionInfo> >& list)
+QJsonArray MenuHelper::list2json(const QList<SActionInfo >& list)
 {
     QJsonArray arr;
     foreach (auto data, list) {
-        arr.append(data.second.to_json());
+        arr.append(data.to_json());
     }
     return arr;
 }
 
-void SMenu::json2list(QList<QPair<QString, SActionInfo> > &list, QJsonArray arr)
+void MenuHelper::json2list(QList<SActionInfo> &list, QJsonArray arr)
 {
     foreach (auto data, arr) {
         SActionInfo info;
@@ -424,7 +422,7 @@ void SMenu::json2list(QList<QPair<QString, SActionInfo> > &list, QJsonArray arr)
 }
 
 
-void SMenu::write_json()
+void MenuHelper::write_json()
 {
     QJsonObject rootObject;
     rootObject.insert("dir", list2json(dirCommands));
@@ -440,10 +438,6 @@ void SMenu::write_json()
     }
 
     rootObject.insert("files", filesArr);
-
-
-
-
 
     QJsonDocument document;
     document.setObject(rootObject);
@@ -464,7 +458,7 @@ void SMenu::write_json()
     file.close();   // 关闭file
 }
 
-void SMenu::read_json(QJsonObject data)
+void MenuHelper::read_json(QJsonObject data)
 {
     QJsonObject rootObject;
     if(data.contains("dir")) {
@@ -483,7 +477,7 @@ void SMenu::read_json(QJsonObject data)
             QString suffix = thisSufObj.value("suffix").toString();
             if(!filesCommands.contains(suffix)) {
                 {
-                    filesCommands.insert(suffix, new QList<QPair<QString, SActionInfo>>);
+                    filesCommands.insert(suffix, new QList<SActionInfo>);
                 }
                 json2list(*filesCommands[suffix], thisSufObj.value("commands").toArray());
             }
@@ -491,17 +485,17 @@ void SMenu::read_json(QJsonObject data)
     }
 }
 
-void SMenu::addToListFromInfo(QList<QPair<QString, SActionInfo> > &list, SActionInfo &info)
+void MenuHelper::addToListFromInfo(QList<SActionInfo>  &list, SActionInfo &info)
 {
-    foreach (auto pair, list) {
-        if(pair.first == info.id) {
+    foreach (auto thisinfo, list) {
+        if(thisinfo.id == info.id) {
             return;
         }
     }
 
     if((&list == &dirCommands) || (&list == &desktopCommands)) {
-        foreach (auto pair, dirBGCommands) {
-            if(pair.first == info.id) {
+        foreach (auto thisinfo, dirBGCommands) {
+            if(thisinfo.id == info.id) {
                 return;
             }
         }
@@ -509,9 +503,9 @@ void SMenu::addToListFromInfo(QList<QPair<QString, SActionInfo> > &list, SAction
 
 
     if(!info.id.isEmpty()) {
-        list.append(QPair(info.id, info));
+        list.append( info);
     } else {
-        list.append(QPair(info.name, info));
+        list.append( info);
     }
 
 }
@@ -615,4 +609,13 @@ SActionInfo SActionInfo::sparetor()
     SActionInfo info;
     info.name = "Separator";
     return info;
+}
+
+MenuHelper::MenuHelper(QObject *parent): QObject(parent)
+{
+    pmh = this;
+    tray =  new SActionField(tr("托盘"), "tray");
+    setting =  new SActionField(tr("系统设置"), "setting");
+    create = new SActionField(tr("新建"), "create");
+    more = new SActionField(tr("更多"), "more");
 }

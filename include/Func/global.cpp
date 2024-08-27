@@ -32,3 +32,4 @@ SMenu* trayMenu;
 QList<QString> containerTypes;
 bool isAdmin;
 bool isDebug = true;
+MenuHelper* pmh;

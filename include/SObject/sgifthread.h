@@ -12,6 +12,7 @@ public:
     explicit SGifThread(QObject *parent = nullptr);
 public:
     SGifThread(QObject *parent, const QString gifpath, QLabel* plabel);
+    ~SGifThread();
     QString gifPath;
     QLabel *label;
     bool canRun = true;

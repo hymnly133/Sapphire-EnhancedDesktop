@@ -36,8 +36,7 @@ SFile::SFile(SLayout *dis, int sizex, int sizey, QString filePath): SMultiFunc(d
 void SFile::mouse_enter_action()
 {
     SMultiFunc::mouse_enter_action();
-    QFileInfo fileInfo(filePath);
-    qDebug() << "File info: " << fileInfo.filePath() << scale << gv->m_scale << gv->displaySize << gv->actualSize; // 调试信息
+
 }
 
 
@@ -81,11 +80,9 @@ void SFile::load_json(QJsonObject rootObject)
 
 void SFile::processorTip()
 {
-    if(isDir) {
-        // SToolTip::tip("移动至“" + name + "”");
-    } else {
-        SToolTip::tip("用“" + name + "”打开");
-    };
+
+    SToolTip::tip("用“" + name + "”打开");
+
 }
 
 void SFile::onShiftContextMenu(QContextMenuEvent *event)
@@ -97,30 +94,19 @@ void SFile::onShiftContextMenu(QContextMenuEvent *event)
 
 void SFile::processFile(SFileInfo* sfileInfo)
 {
-    QString path = sfileInfo->filePath;
-    qDebug() << path << filePath;
-    if(isDir) {
-        // QString newName =  filePath + "/" + QFileInfo(path).fileName();
-        // if(QFile::rename(path, newName) && sfileInfo->pUnit) {
-        //     sfileInfo->pUnit->remove();
-        // }
-        // qDebug() << "new name" << newName;
-    } else {
-        // QProcess* CalcPro = new QProcess(this);;
-        path = "\"" + path + "\"";
-        qDebug() << shellrun(filePath, path);
-    }
+    // QString path = sfileInfo->filePath;
+    // // qDebug() << path << filePath;
+
+    // path = "\"" + path + "\"";
+    // qDebug() << shellrun(filePath, path);
+
 }
 
-void SFile::loadAimIcon(MyFileInfo info)
+void SFile::loadAimIcon(MyFileInfo& info)
 {
-    SMultiFunc::setPix(info.aimIcon());
+    SMultiFunc::setPix(info.aimIcon);
 }
 
-void SFile::setIconFromPath(QString pixPath, bool save)
-{
-    SMultiFunc::setIconFromPath(pixPath, save);
-}
 
 
 
@@ -216,8 +202,13 @@ void SFile::setupDesktopMenu()
     }
 }
 
+void SFile::single_click_action(QMouseEvent *event)
+{
+    qDebug() << "File info: " << filePath; // 调试信息
+}
 
-void SFile::loadFromMyFI(MyFileInfo info, bool init)
+
+void SFile::loadFromMyFI(MyFileInfo& info, bool init)
 {
     qDebug() << QString("Loading Form MyFI:%1,at thread:").arg(info.filePath) << (QThread::currentThread());
     SFileInfo::loadFromMyFI(info);

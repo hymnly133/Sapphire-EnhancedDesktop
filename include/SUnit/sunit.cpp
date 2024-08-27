@@ -1,4 +1,5 @@
 #include "sunit.h"
+#include "aerowidget.h"
 #include "global.h"
 #include "guifunc.h"
 #include "mainwindow.h"
@@ -48,6 +49,7 @@ QPoint SUnit::edpos()
 SUnit::SUnit(SLayout *dis, int sizex, int sizey): QWidget(nullptr)
 {
     // qDebug() << QThread::currentThread();
+
     setObjectName(metaObject()->className());
     sizeX = sizex;
     sizeY = sizey;
@@ -132,6 +134,8 @@ SUnit::SUnit(SLayout *dis, int sizex, int sizey): QWidget(nullptr)
     if(dis != nullptr) {
         dis->defaultPut(this, false);
     }
+    connect(this, &SUnit::preSetLongFocusTimerSignal, this, &SUnit::preSetLongFocusTimerSlot);
+    // AeroWidget* k = new AeroWidget(this);
 };
 
 
@@ -435,6 +439,9 @@ void SUnit::setFocus(bool val)
     if(onFocus == val) {
         return;
     }
+    if(val && !isEnabled()) {
+        return;
+    }
 
     onFocus = val  ;
     if(val) {
@@ -460,6 +467,11 @@ void SUnit::setLongFocus(bool val)
 
 void SUnit::preSetLongFocus(bool val)
 {
+    emit preSetLongFocusTimerSignal(val);
+
+}
+void SUnit::preSetLongFocusTimerSlot(bool val)
+{
     if(val == onLongFocus) {
         longFocusTimer->stop();
     } else {
@@ -481,7 +493,6 @@ void SUnit::preSetLongFocus(bool val)
     }
     preLongFocus = val;
 }
-
 void SUnit::changeSimpleMode()
 {
     setSimpleMode(!simpleMode);
@@ -746,6 +757,8 @@ void SUnit::longFocusTimeoutSlot()
     setLongFocus(preLongFocus);
 }
 
+
+
 void SUnit::updateColor()
 {
     setMainColor(themeColor());
@@ -837,6 +850,9 @@ void SUnit::leaveParent()
 void SUnit::enterParent()
 {
     if(!outOfParent_actual) {
+        return;
+    }
+    if(!layout) {
         return;
     }
     outOfParent_actual = false;

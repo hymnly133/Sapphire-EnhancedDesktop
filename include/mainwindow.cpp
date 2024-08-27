@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "aerowidget.h"
 #include "global.h"
 #include "qfuture.h"
 #include "qmessagebox.h"
@@ -134,11 +135,6 @@ void MainWindow::setupEditMenu()
             content->changeSimpleMode();
         }
     })
-    // SAction *creatNewUnitAction = new SAction(editMenu);
-    // creatNewUnitAction->setText("新建组件");
-    // editMenu->addAction(creatNewUnitAction);
-    // SMenu *creatNewUnitMenu = new SMenu();
-    // creatNewUnitAction->setMenu(creatNewUnitMenu);
 
     SET_ANCTION_MENU(creatNewUnitAction, tr("新建组件"), editMenu, creatNewUnitMenu);
 
@@ -345,7 +341,7 @@ void MainWindow::load_json(QJsonObject rootObject)
     endUpdate();
 }
 
-QStringList MainWindow::Init(QStringList data)
+QList<MyFileInfo> MainWindow::Init(QList<MyFileInfo> &data)
 {
     qDebug() << "initing Mainwindow" << screenInd;
     Init();
@@ -727,12 +723,12 @@ void MainWindow::focusOutEvent(QFocusEvent *event)
 void MainWindow::enterEvent(QEvent *event)
 {
     activepmw = this;
-    qDebug() << objectName() << "Enter";
+    // qDebug() << objectName() << "Enter";
 }
 
 void MainWindow::leaveEvent(QEvent *event)
 {
-    qDebug() << objectName() << "Leave" << cursor().pos() << rect() << geometry();
+    // qDebug() << objectName() << "Leave" << cursor().pos() << rect() << geometry();
 }
 
 void MainWindow::showEvent(QShowEvent *event)
@@ -791,6 +787,12 @@ void MainWindow::whenDropAFile(QString &fileName)
     } else {
         SNotice::notice("添加失败", "糟糕");
     }
+}
+
+void MainWindow::crash()
+{
+    int* a;
+    *a = 100;
 }
 
 void MainWindow::setupDrop()

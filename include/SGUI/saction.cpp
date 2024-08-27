@@ -14,7 +14,7 @@ void SAction::runInfo()
     shellContextMenuRun(strcommand, path());
 }
 
-void SAction::bindInfo(SActionInfo* info)
+void SAction::bindInfo(const SActionInfo* info)
 {
     // this->info = info;
     strcommand = info->command;
@@ -47,7 +47,7 @@ void SAction::setName(QString name)
 //     setVisible(root.value("name").toBool());
 // }
 
-SAction *SAction::fromInfo(SActionInfo *info)
+SAction *SAction::fromInfo(const SActionInfo *info)
 {
     SAction* act = new SAction();
     act->bindInfo(info);

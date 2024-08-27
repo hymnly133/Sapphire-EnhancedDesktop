@@ -108,6 +108,10 @@ bool SLayoutContainer::addAFile(QString path, bool notice, QPoint globalPos)
 {
     return initAUnit(from_path(path, inside),  notice, globalPos);
 }
+bool SLayoutContainer::addAFile(MyFileInfo& path, bool notice, QPoint globalPos)
+{
+    return initAUnit(from_info(path, inside),  notice, globalPos);
+}
 
 void SLayoutContainer::setSimpleMode(bool val)
 {

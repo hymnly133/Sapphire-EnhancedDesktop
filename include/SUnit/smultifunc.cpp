@@ -121,7 +121,7 @@ void SMultiFunc::afterResize(QResizeEvent* event)
 
 void SMultiFunc::mouse_enter_action()
 {
-    qDebug() << lb->opacity;
+    // qDebug() << lb->opacity;
 }
 
 void SMultiFunc::mouse_leave_action()
@@ -274,7 +274,7 @@ void SMultiFunc::setupEditMenu()
         {
             setIconFromPath(tem, true);
             writeContent();
-            gv->updateDispaly();
+            // gv->updateDispaly();
         }
     })
 

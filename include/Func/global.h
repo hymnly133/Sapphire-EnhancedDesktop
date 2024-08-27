@@ -3,6 +3,7 @@
 
 #include "qapplication.h"
 #include "sfileinfo.h"
+#include "smenu.h"
 #define PROJECT_PATH QString("D:/Github/Sapphire-EnhancedDesktop")
 #define EXE_PATH QCoreApplication::applicationDirPath()
 #define CONTENT_PATH EXE_PATH + "/content.json"
@@ -111,4 +112,6 @@ extern QList<QString> containerTypes;
 
 extern bool isAdmin;
 extern bool isDebug;
+
+extern MenuHelper* pmh;
 #endif // GLOBAL_H

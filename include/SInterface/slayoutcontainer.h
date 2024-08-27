@@ -1,6 +1,7 @@
 #ifndef SLAYOUTCONTAINER_H
 #define SLAYOUTCONTAINER_H
 
+#include "filefunc.h"
 #include "qevent.h"
 class SUnit;
 class MainWindow;
@@ -40,6 +41,7 @@ public:
     virtual bool initAUnit(SUnit* aim, bool notice = true, QPoint globalPos = QPoint(-1, -1));
 
     // 添加SFile的方法(不创建文件）
+    virtual bool addAFile(MyFileInfo &path, bool notice = false, QPoint globalPos = QPoint(-1, -1));
     virtual bool addAFile(QString path, bool notice = false, QPoint globalPos = QPoint(-1, -1));
 };
 

@@ -40,6 +40,8 @@ StyleHelper::StyleHelper()
     ADD(tr("交互") << tr("长聚焦"), long_focus_out_delta_time, tr("长聚焦失焦需时"), 200, 2000);
     ADD(tr("交互") << tr("长聚焦"), long_focus_container_fix_ratio, tr("长聚焦时格子缩放比率"), 1.1, 3.0);
     ADD(tr("交互") << tr("聚焦"), scale_fix_ratio, tr("聚焦时缩放比率"), 1, 2);
+    ADD(tr("交互") << tr("文件夹"), enable_dir_func, tr("文件夹高级交互"), 0, 0);
+    ADD(tr("交互") << tr("文件夹"), enable_dir_preview, tr("聚焦预览（高级交互启用时）"), 0, 0);
     ADD(tr("外观"), unit_radius, tr("组件圆角"), 0, 100);
     ADD(tr("外观"), ShowRect, tr("绘制组件的矩形"), 0, 0);
     ADD(tr("外观"), ShowSide, tr("绘制组件边框"), 0, 0);
@@ -55,6 +57,9 @@ StyleHelper::StyleHelper()
     ADD(tr("偏好"), default_steam_icon_type, tr("封面获取方式"), 0, 2);
     ADD(tr("偏好"), use_pic_as_icon, tr("使用图片作为Icon"), 0, 0);
     ADD(tr("系统"), enable_intime_repaint, tr("即时重绘"), 0, 0);
+    ADD(tr("系统"), try_run_as_user, tr("尝试降权运行"), 0, 0);
+    ADD(tr("系统"), enable_low_memory_mode, tr("低内存模式（更消耗性能）"), 0, 0);
+
     ADD(tr("偏好"), user_font, tr("用户字体"), 0, 0);
     ADD(tr("偏好"), always_simple_mode, tr("新图标默认精简"), 0, 0);
     psh = this;
@@ -432,7 +437,7 @@ void StyleSettingWindow::IniAboutPage()
     titleLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(titleLabel);
     //todo: 修改图片
-    QPixmap pixmap(":/images/background");
+    QPixmap pixmap(":/appIcon/Sapphire.png");
     auto logoLabel = new QLabel;
     logoLabel->setPixmap(pixmap.scaledToWidth(64, Qt::SmoothTransformation));
     layout->addWidget(logoLabel, 0, Qt::AlignHCenter);
@@ -445,7 +450,8 @@ void StyleSettingWindow::IniAboutPage()
 其他制作者：微风中的快乐 2329484200
 Icon贡献：L St4r 1207638671
 
-使用：QXlsx
+
+使用：QXlsx,qBreakpad
     )"));
     layout->addWidget(authorLabel);
     // 添加许可证信息
@@ -456,6 +462,17 @@ Icon贡献：L St4r 1207638671
     auto licenseLinkLabel = new QLabel("<a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">查看许可证</a>");
     licenseLinkLabel->setOpenExternalLinks(true);
     layout->addWidget(licenseLinkLabel);
+
+    auto donateLinkLabel = new QLabel("<a href=\"https://ifdian.net/a/Hymnly\">捐赠渠道</a>");
+    donateLinkLabel->setOpenExternalLinks(true);
+    layout->addWidget(donateLinkLabel);
+
+    auto userHelpLabel = new QLabel("<a href=\"https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#\">使用手册</a>");
+    userHelpLabel->setOpenExternalLinks(true);
+    layout->addWidget(userHelpLabel);
+
+
+
     addContent(QStringList(tr("关于")), aboutWidget);
 }
 

@@ -116,7 +116,7 @@ public:
     void load_json(QJsonObject rootObject);
 
     //初始化并加载data
-    QStringList Init(QStringList data);
+    QList<MyFileInfo> Init(QList<MyFileInfo>& data);
     //初始化
     void Init(bool final = false);
 
@@ -201,6 +201,7 @@ protected:
     void updateAfterPut(SUnit* aim) override;
 
     void whenDropAFile(QString& fileName);
+    void crash();
 
 
     // QWidget interface

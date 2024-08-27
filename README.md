@@ -5,10 +5,10 @@
 # 项目概述
 
 - **项目**： "Sapphire-EnhancedDesktop"，意在提供一个增强的桌面体验。
-- **环境**：使用 Windows API 和 Qt 框架，mingw64 编译，只保证兼容 Windows 11。
+- **环境**：使用 Windows API 和 Qt 框架(5.15.2)，mingw64 编译，只保证兼容 Windows 11。
 - 由原项目`Enhanced-desktop`接续开发，使用`Sapphire`作为新的软件名与原项目进行区别。
 
-- README 文件对应版本：`V1.3.0.0`
+- README 文件对应版本：`V1.3.1.1`
 
 # 使用手册
 
@@ -30,16 +30,16 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 ## 系统和算法
 
 - 接入并覆盖原生 Windows 图标层
-- 获取系统主题色作为默认颜色
 - 扫描用户桌面和公共桌面
 - 转化文件信息为项目组件
 - 调用系统 URL
-- 网络 API 使用
 - Steam 专项优化
 
 ## 全局
 
 - 部分自定义统一风格GUI
+  - 全局支持且可自定义的颜色系统
+  - 全局覆盖的字体系统
   - 标签展示
   - 全局通知
   - 右键菜单
@@ -49,15 +49,16 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
   - 拖动移入回收站
   - Shift双击打开回收站
   - 右键打开系统功能菜单
+  - 可分离，即原生交互体验
 - 整合桌面功能
   - 桌面热更新
   - 基本所有拖拽交互
   - 新建文件与文件夹
   - 重命名
   - Shift右键图标调用原生菜单
-- 整合图标功能
   - 打开与管理员打开
   - 属性
+  - 初步兼容第三方右键菜单
 - 初步兼容 WallpaperEngine（需在设置中设置`当其他程序成为焦点时`为`始终运行`）
 - 用户交互
   - 分离编辑模式与桌面模式及快速切换
@@ -66,11 +67,17 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
   - 组件拖动与定位
   - 双击隐藏（可设置始终显示）
   - Shift滚轮快速改变大小(全局和单个组件)
+  - 文件夹交互
+    - 内容预览
+    - 内容交互
+    - 将文件夹在桌面添加快捷方式既是映射文件夹
 
 - 动画
   - 聚焦动画
   - 位移动画
   - 长聚焦动画
+  - 启动动画
+  
 - 用户可控：
   - 网状布局所有参数的可视化调整
   - 开关文字阴影
@@ -83,6 +90,10 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
   - 控制所有组件的缩放系数
   - 控制所有组件的圆角大小
   - 自选全局字体
+  
+- 设置面板
+  - 拥有软件内几乎所有参数的可视化设置
+  
 - 多屏支持（新增/断开屏幕后请重启！）：
   - 多屏内容独立管理
   - 多屏间无缝拖动
@@ -96,7 +107,7 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 - [ ] 刷新与隐藏可见修复
 - [ ] 微信拖动
 - [ ] 分辨率更改刷新
-- [ ] 网络驱动器lnk修复
+- [X] 网络驱动器lnk修复
 
 ## update
 
@@ -104,7 +115,8 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 
 - [X] 分离系统盒子开关
 - [X] 黑屏第二次修复
-- [ ] 文件夹多层加载
+- [X] 文件夹多层加载
+- [X] GIF动画图标
 
 ### later
 - [ ] 右键菜单自定义

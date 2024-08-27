@@ -1,6 +1,7 @@
 #include "unitfunc.h"
 #include "global.h"
 #include "qmimedata.h"
+#include "qtconcurrentrun.h"
 #include "scontainer.h"
 #include"mainwindow.h"
 #include"qdrag.h"
@@ -15,7 +16,7 @@ void dragOutG(SUnit *sender, QMouseEvent *event)
     //     }
     // }
     if(event != nullptr && event->modifiers() == Qt::ControlModifier) {
-        //应用拖出事件
+        //系统拖出事件
         QList<QUrl> urls;
         foreach (auto k, pCelectedUnits) {
             if(k->inherits("SFile")) {
@@ -72,39 +73,38 @@ void moveCelect(SUnit *sender)
         // k->update();
     }
 
-    //processor
-    if(!pCelectedUnits.empty()) {
-        SUnit* aim = activepmw->inside->SLayout::pos2Unit(activepmw->mapFromGlobal(QCursor::pos()));
-        // SUnit* aim = activepmw->inside->SLayout::ind2Unit(ind);
-        if(aim != nullptr) {
-            aim->preSetLongFocus(true);
-        }
-        foreach (SUnit* tem, activepmw->inside->contents) {
-            if(tem != aim && tem->preLongFocus) {
-                tem->preSetLongFocus(false);
-            }
-        }
+    bool changed = false;
 
-        //尝试切换屏幕
-        if(screenNum > 1) {
-            //多屏切换
-            qDebug() << "try to scan for switch pmw";
-            foreach(auto pmw, pmws) {
-                if(pmw->geometry().contains(QCursor::pos()) && pmw != activepmw) {
-                    qDebug() << "ScreenChange! " << pmw->objectName() << "Should Be The Aim";
-                    foreach (SUnit* tem, pCelectedUnits) {
-                        tem->onSwitch(pmw);
-                    }
-                    //清楚原屏幕的长聚焦
-                    foreach (SUnit* tem, activepmw->inside->contents) {
-                        tem->preSetLongFocus(false);
-                    }
-                    activepmw = pmw;
-                    break;
+    //尝试切换屏幕
+    if(screenNum > 1) {
+        //多屏切换
+        qDebug() << "try to scan for switch pmw";
+        foreach(auto pmw, pmws) {
+            if(pmw->geometry().contains(QCursor::pos()) && pmw != activepmw) {
+                qDebug() << "ScreenChange! " << pmw->objectName() << "Should Be The Aim";
+                foreach (SUnit* tem, pCelectedUnits) {
+                    tem->onSwitch(pmw);
                 }
+                //清楚原屏幕的长聚焦
+                foreach (SUnit* tem, activepmw->inside->contents) {
+                    tem->preSetLongFocus(false);
+                }
+
+                if(!processor) {
+                    processor->preSetLongFocus(false);
+                }
+                activepmw = pmw;
+                changed = true;
+                break;
             }
         }
     }
+
+    if(!changed) {
+        QtConcurrent::run(findProcessor);
+    }
+
+
 }
 
 
@@ -196,6 +196,30 @@ SFile *from_path(QString path, SLayout *layout)
 
     unit = static_cast<SFile*>(QMetaType::create(id));
     unit->loadFromPath(path, true);
+    if(layout) {
+        unit->setPMW(layout->pmw);
+        unit->setParent(layout->pContainerW);
+    }
+
+    return unit;
+}
+SFile *from_info(MyFileInfo& info, SLayout *layout)
+{
+    SFile *unit;
+    int id;
+    if(QFileInfo(info.filePath).isDir()) {
+        id = QMetaType::type("SDir");
+    } else {
+        id = QMetaType::type("SFile");
+    }
+
+
+    if (id == QMetaType::UnknownType) {
+        return nullptr;
+    }
+
+    unit = static_cast<SFile*>(QMetaType::create(id));
+    unit->loadFromMyFI(info, true);
     if(layout) {
         unit->setPMW(layout->pmw);
         unit->setParent(layout->pContainerW);
@@ -304,3 +328,34 @@ void foldG()
 
 
 
+
+void findProcessor()
+{
+    //processor
+    if(!pCelectedUnits.empty() && moving_global) {
+        SUnit* aim = activepmw->inside->SLayout::pos2Unit(activepmw->mapFromGlobal(QCursor::pos()));
+        // SUnit* aim = activepmw->inside->SLayout::ind2Unit(ind);
+        if(aim != nullptr) {
+            aim->preSetLongFocus(true);
+        }
+        foreach (SUnit* tem, activepmw->inside->contents) {
+            if(tem != aim && tem->preLongFocus) {
+                tem->preSetLongFocus(false);
+            }
+        }
+
+    }
+}
+
+void raiseUnderMoving(SUnit* sender)
+{
+    // if(!moving_global) {
+    //     return;
+    // }
+    if(sender) {
+        sender->raise();
+    }
+    eachDoAsUnit({
+        unit->raise();
+    });
+}

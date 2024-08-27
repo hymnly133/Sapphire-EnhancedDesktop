@@ -20,8 +20,9 @@ public:
 
     void mouse_enter_action() override;
 
+
     void loadFromPath(QString filepath, bool init);
-    virtual void loadFromMyFI(MyFileInfo info, bool init);
+    virtual void loadFromMyFI(MyFileInfo &info, bool init);
 
     void double_click_action(QMouseEvent* event) override;
 
@@ -34,12 +35,10 @@ public:
     void onShiftContextMenu(QContextMenuEvent *event) override;
     void processFile(SFileInfo *sfileInfo) override;
 
-    void loadAimIcon(MyFileInfo info);
+    void loadAimIcon( MyFileInfo &info);
 
-    // SMultiFunc interface
-    void setIconFromPath(QString pixPath, bool save) override;
 
-    //呼出是个对话框来进行重命名
+    //呼出一个对话框来进行重命名
     void renameWithDialog();
 
     //设置显示的name名
@@ -60,6 +59,10 @@ public:
     // SUnit interface
 public:
     void setupDesktopMenu() override;
+
+    // SUnit interface
+public:
+    void single_click_action(QMouseEvent *event) override;
 };
 
 inline SFile::SFile(const SFile &other): SFile(other.layout, other.sizeX, other.sizeY) {}

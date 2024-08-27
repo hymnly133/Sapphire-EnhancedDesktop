@@ -23,21 +23,18 @@ MyFileInfo::MyFileInfo(QString path, int size)
     type = TYPE::Default ;
     name = path2Name(path);
     filePath = path;
+    bool res = false;
+    aimIcon = path2Icon(filePath, 512, &res);
+    if(res) {
+        type = Aim;
+    }
+
 }
 
 MyFileInfo::MyFileInfo(QFileInfo qfi, int size): MyFileInfo(qfi.filePath(), size)
 {
 }
 
-QPixmap MyFileInfo::aimIcon()
-{
-    bool res = false;
-    QPixmap map = path2Icon(filePath, 512, &res);
-    if(res) {
-        type = Aim;
-    }
-    return map;
-}
 
 MyFileInfo path2MyFI(QString path, int size)
 {
@@ -93,10 +90,10 @@ QPixmap getWinIcon(QString path, bool isSmall)
 }
 
 
-QStringList scanFilesInDir(const QString &dirPath)
+QList<MyFileInfo> scanFilesInDir(const QString &dirPath)
 {
     //对于指定桌面路径，返还桌面路径中的文件信息的列表
-    QStringList files;
+    QList<MyFileInfo> files;
     QDir dir(dirPath);
     dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
     QStringList fileList = dir.entryList();
@@ -107,10 +104,10 @@ QStringList scanFilesInDir(const QString &dirPath)
     return files;
 }
 
-QStringList scanalldesktopfiles()
+QList<MyFileInfo> scanalldesktopfiles()
 {
     //寻找桌面路径，并返回两个桌面中所有文件信息的列表
-    QStringList files;
+    QList<MyFileInfo> files;
     files.append(scanFilesInDir(PublicDesktopPath));
     files.append(scanFilesInDir(UserDesktopPath));
     std::sort(files.begin(), files.end());
@@ -158,6 +155,7 @@ QPixmap path2Icon(QString path, int size, bool* pres)
                     if(pres) {
                         *pres = true;
                     }
+                    break;
 
                 } else if(default_steam_icon_type == 1) {
                     //长竖图标版本
@@ -168,6 +166,7 @@ QPixmap path2Icon(QString path, int size, bool* pres)
                         if(pres) {
                             *pres = true;
                         }
+                        break;
                         // qDebug() << "Find Verti";
                     }
 
@@ -180,6 +179,7 @@ QPixmap path2Icon(QString path, int size, bool* pres)
                         if(pres) {
                             *pres = true;
                         }
+                        break;
                         // qDebug() << "Find Hori";
                     }
                 }

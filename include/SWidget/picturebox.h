@@ -53,6 +53,7 @@ public:
     double m_scale = 1.0;
     double pre_scale;
     void updateDispaly();
+    // QPixmap culculate();
 protected:
     void paintEvent(QPaintEvent * event);
 

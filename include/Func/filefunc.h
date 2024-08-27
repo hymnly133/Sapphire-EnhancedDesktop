@@ -63,7 +63,7 @@ struct MyFileInfo {
     }
     MyFileInfo(QString path, int size = 512);
     MyFileInfo(QFileInfo qfi, int size = 512);
-    QPixmap aimIcon();
+    QPixmap aimIcon;
 };
 
 
@@ -92,7 +92,7 @@ bool isPic(QString pah);
 
 
 //扫描所有文件
-QStringList scanalldesktopfiles();
+QList<MyFileInfo> scanalldesktopfiles();
 
 //从QFileInfo转化
 QList<MyFileInfo>getFormFileInfo(QFileInfo x);

@@ -1,19 +1,25 @@
 QT += core gui widgets winextras network concurrent qml xml opengl
 
-include($$PWD/QXlsx/QXlsx.pri)
+QMAKE_CFLAGS_RELEASE += -g
+QMAKE_CXXFLAGS_RELEASE += -g
+#禁止优化
+QMAKE_CFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_LFLAGS_RELEASE = -mthreads -W
+# #生成dump文件需要
+# LIBS += -lDbgHelp
+#加上下面两行，否则用vs调试时，提示“未找到xxx.exe"
+QMAKE_CXXFLAGS += -g
+QMAKE_CFLAGS += -g
+
+
+include($$PWD/include/QXlsx/QXlsx.pri)
 INCLUDEPATH += $$PWD/QXlsx
 msvc{
     message("using msvc")
     QMAKE_CXXFLAGS += -execution-charset:utf-8
     QMAKE_CXXFLAGS += -source-charset:utf-8
 
-    # CONFIG(debug, debug|release) {
-    # message("debug");
-    #     LIBS += -L$$PWD/lib/ -lelawidgettoolsd
-    # } else {
-    # message("release");
-    #     LIBS += -L$$PWD/lib/ -lelawidgettools
-    # }
 }
 mingw{
 message("using mingw")
@@ -23,11 +29,19 @@ RC_FILE=Sapphire.rc
 
 }
 
+win32:CONFIG(release, debug|release): {
+LIBS += -L$$PWD/include/qBreakpad/lib/release/ -lqBreakpad
+DEPENDPATH += $$PWD/include/qBreakpad/lib/release
+}
+else:win32:CONFIG(debug, debug|release): {
+LIBS += -L$$PWD/include/qBreakpad/lib/debug/ -lqBreakpad
+DEPENDPATH += $$PWD/include/qBreakpad/lib/debug
+}
+
 
 QMAKE_LIBDIR += $$PWD/lib
 INCLUDEPATH+= $$PWD/include
 INCLUDEPATH+= $$PWD
-# INCLUDEPATH+= $$PWD/include/Ela
 INCLUDEPATH+= $$PWD/include/ContextMenu
 INCLUDEPATH+= $$PWD/include/SGUI
 INCLUDEPATH+= $$PWD/include/SUnit
@@ -39,9 +53,8 @@ INCLUDEPATH+= $$PWD/include/SObject
 INCLUDEPATH+= $$PWD/include/SWidget
 INCLUDEPATH+= $$PWD/include/Setting
 INCLUDEPATH+= $$PWD/include/SInterface
-# INCLUDEPATH+= $$PWD/include/Ela
-# INCLUDEPATH+= $$PWD/include/Ela/Example
-# DEPENDPATH += $$PWD/include/Ela
+INCLUDEPATH += $$PWD/include/qBreakpad
+
 
 LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
@@ -56,7 +69,7 @@ QMAKE_PROJECT_DEPTH = 0
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++17
+CONFIG += c++17 thread exeptions rtti stl
 
 
 SOURCES += \
@@ -94,6 +107,7 @@ SOURCES += \
     include/SLayout/sflowlayout.cpp \
     include/SLayout/slayout.cpp \
     include/SLayout/slinearlayout.cpp \
+    include/SObject/aerowidget.cpp \
     include/SObject/sanimationrect.cpp \
     include/SObject/sfieldswidget.cpp \
     include/SObject/sgifthread.cpp \
@@ -159,6 +173,7 @@ HEADERS += \
     include/SLayout/sflowlayout.h \
     include/SLayout/slayout.h \
     include/SLayout/slinearlayout.h \
+    include/SObject/aerowidget.h \
     include/SObject/sanimationrect.h \
     include/SObject/sfieldswidget.h \
     include/SObject/sgifthread.h \
@@ -214,7 +229,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 
 RESOURCES += \
-    include/Ela/ElaWidgetTools.qrc \
+    # include/Ela/ElaWidgetTools.qrc \
     res.qrc
 
 DISTFILES += \

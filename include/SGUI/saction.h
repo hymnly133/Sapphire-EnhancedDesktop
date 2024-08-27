@@ -17,11 +17,11 @@ public:
 
     // bool multiCallable = false;
     void runInfo();
-    void bindInfo(SActionInfo* info);
+    void bindInfo(const SActionInfo *info);
     void setName(QString name);
 
     // QJsonObject to_json();
     // void load_json(QJsonObject root);
-    static SAction* fromInfo(SActionInfo* info);
+    static SAction* fromInfo(const SActionInfo *info);
 };
 #endif // SACTION_H

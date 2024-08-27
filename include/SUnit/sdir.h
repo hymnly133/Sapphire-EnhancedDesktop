@@ -45,9 +45,14 @@ public:
     void setExpand(bool val);
     void updateExpandAnimation();
 
-    void preSetLongFocus(bool)override;
+    // void preSetLongFocus(bool)override;
+    void setFocus(bool ) override;
+    void setLongFocus(bool)override;
+    void setProcessor(bool) override;
 
-    virtual void loadFromMyFI(MyFileInfo info, bool init) override;
+
+
+    virtual void loadFromMyFI(MyFileInfo& info, bool init) override;
 
     //预加载
     void scanDir();
@@ -56,6 +61,7 @@ public:
     virtual void startToLoad() override;
 
     QStringList jsonFiles();
+
 
 
     void single_click_action(QMouseEvent* event) override;
@@ -80,6 +86,9 @@ protected:
 public:
     QPoint MyPos() override
     {
+        if(!outOfParent_actual) {
+            return SFile::MyPos();
+        }
         QPoint centerPos = layout->unit2CenterPoint(this);
         QSize aimSize = MySize();
         centerPos =  refineRect(layout->pContainerW->mapToGlobal(centerPos), aimSize, pmw);
@@ -90,6 +99,9 @@ public:
     };
     QSize MySize() override
     {
+        if(!outOfParent_actual) {
+            return SFile::MySize();
+        }
         aim_expandSize();
         SUnit::MySize();
         double expandRatio = ar_expand->nowRatio;
@@ -97,6 +109,15 @@ public:
     };
     QSize aim_expandSize();
 
+
+    // SUnit interface
+public:
+    void onDragedOut() override;
+
+    // SMultiFunc interface
+public:
+    void processorTip() override;
+    void processFile(SFileInfo *sfileInfo) override;
 };
 Q_DECLARE_METATYPE(SDir);
 

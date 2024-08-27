@@ -5,32 +5,92 @@
 #include "saction.h"
 #include <QWidget>
 #include <qmenu.h>
+struct SActionField {
+    SActionField(QString name, QString id) {}
+    QList<SActionInfo*> acts;
+    QJsonObject to_json();
+    QString name;
+    QString id;
+    void load_json(QJsonObject root);
+    bool visible = true;
+};
+
 
 struct SActionInfo {
     QString name;
     QString id;
     QString command;
+    SActionField* menu;
     bool visible = true;
     QJsonObject to_json();
     void load_json(QJsonObject root);
     static SActionInfo sparetor();
-
 };
+class MenuHelper: public QObject
+{
+public:
+    enum CommandType {
+        dir = 0,
+        dirBG = 1,
+        file = 2,
+        desktop = 3,
+    };
+    enum Field {
+        edit = 0,
+        normal = 1
+    };
+    MenuHelper(QObject* parent = nullptr);;
+    QMap<QString, QIcon> icons;
+    QStringList ignoreCommands;
+
+    QMap<QString, QString> group2name;
+    void connectToAction();
+    void connectToMenuu();
+    void readDirReg(QString path);
+    void readFileReg(QString group);
+    void readFilesReg( );
+    void readShellReg(QString path, CommandType type);
+    void readAReg(QString path, CommandType type);
+
+    //初始化系统命令的总方法
+    void scanSysCommands();
+
+    //一共有：
+    //tray
+    //new
+    //system
+    //more
+    QList<SActionField*> menus;
+
+    SActionField* tray;
+    SActionField* setting;
+    SActionField* create;
+    SActionField* more;
+
+
+    //Key==S时当作分隔符
+    QList<SActionInfo> dirCommands;
+    QList<SActionInfo> dirBGCommands;
+    QList<SActionInfo> desktopCommands;
+    QMap<QString, QList<SActionInfo>*> filesCommands;
+
+    QJsonArray list2json(const QList<SActionInfo >& list);
+    void json2list(QList<SActionInfo > & list, QJsonArray arr);
+
+    void write_json();
+    void read_json(QJsonObject data);
+
+    //load和scan的最终添加方法
+    void addToListFromInfo(QList<SActionInfo> &list, SActionInfo &info);
+};
+
+
 class SMenu: public QMenu
 {
     Q_OBJECT
 public:
 
-
     //SAct::name统一使用显示名（即text）
-
-    enum CommandType {
-        dir = 0,
-        dirBG = 1,
-        file = 2,
-        desktop = 3
-    };
-
     SMenu(QWidget* parent = nullptr);
     SAnimationRect* arect;
     roundShower* rs;
@@ -40,11 +100,7 @@ public:
     SAction* syscomAct;
 
 
-    static QMap<QString, QIcon> icons;
-    static QStringList ignoreCommands;
 
-    //sname(english):text(local);
-    static QMap<QString, QString> group2name;
 
     // QList<QString> exitsCommands;
     QMap<QString, SAction*> sacts();
@@ -73,7 +129,7 @@ public:
     void exec(QPoint pos);
 
     //从已有列表中添加到菜单对象中的主要方法
-    void addShellCommand(QPair<QString, SActionInfo> command);
+    void addShellCommand(const SActionInfo &info);
 
     void addDirCommands();
     void addDirBGCommands();
@@ -83,33 +139,15 @@ public:
     void checkSysMenu();
 
 
-    static void readDirReg(QString path);
-    static void readFileReg(QString group);
-    static void readFilesReg( );
-    static void readShellReg(QString path, CommandType type);
-    static void readAReg(QString path, CommandType type);
 
-    //初始化系统命令的总方法
-    static void scanSysCommands();
-
-    //Key==S时当作分隔符
-    static QList<QPair<QString, SActionInfo>> dirCommands;
-    static QList<QPair<QString, SActionInfo>> dirBGCommands;
-    static QList<QPair<QString, SActionInfo>> desktopCommands;
-    static QMap<QString, QList<QPair<QString, SActionInfo>>*> filesCommands;
-
-    static QJsonArray list2json(const QList<QPair<QString, SActionInfo> > &list);
-    static void json2list(QList<QPair<QString, SActionInfo> > &list, QJsonArray arr);
 
 
     // QJsonArray to_json();
     // void load_json(QJsonArray root);
 
-    static void write_json();
-    static void read_json(QJsonObject data);
 
-    //load和scan的最终添加方法
-    static void addToListFromInfo(QList<QPair<QString, SActionInfo>>& list, SActionInfo& info);
+
+
 
 
     // QWidget interface

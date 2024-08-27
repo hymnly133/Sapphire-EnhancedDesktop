@@ -109,14 +109,15 @@ bool SFileInfo::renameAbsolute(QString newpath)
 
 bool SFileInfo::removeFile()
 {
-    removeInfo();
 
+    qInfo() << QString("try to remove file : %1").arg(filePath);
     bool res = QFile::moveToTrash(filePath);
     if(!res) {
         qDebug() << "Unable to delete local file";
         SNotice::notice(QStringList() << filePath + ":" + ((res) ? "成功" : "失败"), "删除文件");
     } else {
         qDebug() << "Deleted";
+        removeInfo();
     }
     return res;
 }
@@ -130,6 +131,7 @@ void SFileInfo::openFile(bool Admin)
 
 void SFileInfo::removeInfo()
 {
+    qInfo() << QString("remove info : %1").arg(filePath);
     if(nowExitFiles.contains(filePath)) {
         nowExitFiles.remove(filePath);
     }
@@ -145,6 +147,7 @@ void SFileInfo::removeInfo()
 
 void SFileInfo::addInfo()
 {
+    qInfo() << QString("remove info : %1").arg(filePath);
     if(QFileInfo(filePath_red()).isDir()) {
         isDir = true;
         nowExitDirs[filePath_red()] = (SDir*)pUnit;

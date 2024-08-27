@@ -128,6 +128,10 @@ extern bool enable_notice;
 extern bool enable_tooltip;
 
 extern bool always_fill_screen;
+extern bool try_run_as_user;
+extern bool enable_dir_func;
+extern bool enable_dir_preview;
+extern bool enable_low_memory_mode;
 
 // 供外部调用的方法
 QColor themeColor();

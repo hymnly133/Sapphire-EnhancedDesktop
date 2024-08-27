@@ -87,8 +87,9 @@ void setupG()
     qDebug() << "Public Desktop:" << PublicDesktopPath;
 
     //菜单
+    pmh = new MenuHelper();
     readMenu();
-    SMenu::scanSysCommands();
+    pmh->scanSysCommands();
 
     //设置托盘图标
 
@@ -374,7 +375,7 @@ bool loadMainWindows()
         } else {
             QMessageBox::about(NULL, "提示", "没有布局文件，即将初始化~\n请注意弹出窗口！");
         }
-        QStringList iconns = scanalldesktopfiles();
+        QList<MyFileInfo> iconns = scanalldesktopfiles();
         for(int i = 0; i < screenNum; i++) {
             //对于第一次初始化，由于是顺序加载，所以直接单线程加载
             iconns = pmws[i]->Init(iconns);

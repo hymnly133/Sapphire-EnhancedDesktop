@@ -1,6 +1,5 @@
 #include "SysFunctions.h"
 #include "global.h"
-#include "iconfunc.h"
 #include "qtextcodec.h"
 #include "sdir.h"
 #include "sfile.h"
@@ -23,8 +22,7 @@
 #include "sshellfuncunit.h"
 #include"QProcess"
 #include "userfunc.h"
-#include"stylehelper.h"
-#include <QtOpenGL>
+#include "QBreakpadHandler.h"
 int main(int argc, char *argv[])
 {
 #ifndef QT_DEBUG
@@ -37,6 +35,7 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForLocale(code);
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication a(argc, argv);
+    QBreakpadInstance.setDumpPath("crashes");
     qDebug() << "Sapphire Startup";
 
 

@@ -11,24 +11,6 @@ ANIMATION = new QPropertyAnimation(this,#NAME);\
 SAnimationRect::SAnimationRect(QWidget *parent)
     : QObject{parent}
 {
-    // animations = new QParallelAnimationGroup(this);
-    // int animationTime = 200;
-    // SET_ANIMATION(radiusAnimation, nowRadius, animationTime);
-    // SET_ANIMATION(alphaAnimation, nowAlpha, animationTime);
-    // SET_ANIMATION(sizeAnimation, nowSize, animationTime);
-    // SET_ANIMATION(posAnimation, nowPos, animationTime);
-    // connect(this, &SAnimationRect::nowAlpha_changed, this, [ = ](int val) {
-    //     emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
-    // });
-    // connect(this, &SAnimationRect::nowRadius_changed, this, [ = ](int val) {
-    //     emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
-    // });
-    // connect(this, &SAnimationRect::nowSize_changed, this, [ = ](QSize val) {
-    //     emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
-    // });
-    // connect(this, &SAnimationRect::nowPos_changed, this, [ = ](QPoint val) {
-    //     emit animationUpdating(nowPos, nowSize, nowAlpha, nowRadius);
-    // });
     ani = new SLinerAnimation(this);
     connect(ani, &SLinerAnimation::finished, this, [this]() {
         if(onEnd) {

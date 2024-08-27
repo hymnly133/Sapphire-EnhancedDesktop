@@ -16,6 +16,15 @@ SGifThread::SGifThread(QObject *parent, const QString gifpath, QLabel *plabel): 
 
 }
 
+SGifThread::~SGifThread()
+{
+    requestInterruption();
+    gif->stop();
+    delete gif;
+    quit();
+    wait();
+}
+
 void SGifThread::run()
 {
     gif = new QMovie(gifPath);
@@ -23,10 +32,7 @@ void SGifThread::run()
     // gif->setScaledSize(QSize(400, 300));
     // gif->setSpeed(500);
     gif->start();
-    while(1) {
-        if(!canRun) { //在每次循环判断是否可以运行，如果不行就退出循环
-            return;
-        }
+    while(!isInterruptionRequested()) {
         qApp->processEvents();
     }
 }

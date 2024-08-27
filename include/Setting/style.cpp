@@ -71,6 +71,7 @@ bool enable_refresh_animation = 0;
 bool enable_background_transparent = 1;
 
 bool always_fill_screen = 0;
+bool enable_dir_func = 0;
 QString user_font = "Microsoft YaHei";
 
 
@@ -83,6 +84,9 @@ bool always_simple_mode = false;
 int font_size = 9;
 bool enable_notice = true;
 bool enable_tooltip = true;
+bool try_run_as_user = true;
+bool enable_dir_preview = true;
+bool enable_low_memory_mode = false;
 QColor themeColor()
 {
     if(use_syscolor_as_themecolor) {

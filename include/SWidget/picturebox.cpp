@@ -27,8 +27,9 @@ void PictureBox::setBackground(QBrush brush)
 void PictureBox::endGIF()
 {
     if(gifThread) {
-        gifThread->endPlay();
-        gifThread->exit();
+        qInfo() << "end display gif file";
+        gifThread->requestInterruption();
+        // gifThread->exit();
         gifThread = nullptr;
     }
     movieLabel->setVisible(false);
@@ -72,6 +73,7 @@ void PictureBox::follow(QPixmap *pPixmap)
 
 void PictureBox::setGIF(QString path)
 {
+    qInfo() << "Set gif file" << path;
     gifThread = new SGifThread(this, path, movieLabel);
     // movieLabel->setMovie(movie);
     connect(gifThread, &QThread::started, this, [ = ]() {
@@ -174,5 +176,5 @@ void PictureBox::updateDispaly()
 
 PictureBox::~PictureBox()
 {
-
+    endGIF();
 }
