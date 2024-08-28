@@ -452,7 +452,7 @@ void StyleSettingWindow::IniAboutPage()
 Icon贡献：L St4r 1207638671
 
 
-使用：QXlsx,qBreakpad
+使用：QXlsx,qBreakpad,OpenSSl
     )"));
     layout->addWidget(authorLabel);
     // 添加许可证信息

@@ -242,9 +242,9 @@ void SFile::loadFromMyFI(const MyFileInfo& info, bool init)
 
 
     gv->limitInisde = true;
-    qDebug() << &info;
-    qDebug() << lb;
-    qDebug() << name;
+    // qDebug() << &info;
+    // qDebug() << lb;
+    // qDebug() << name;
     if(init) {
         pixPath = "";
     }

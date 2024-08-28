@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     bool bSupp = QSslSocket::supportsSsl();
     QString buildVersion = QSslSocket::sslLibraryBuildVersionString();
     QString version = QSslSocket::sslLibraryVersionString();
-    qDebug() << bSupp << buildVersion << version << endl;
+    qDebug() << bSupp << buildVersion << version;
 
 
     static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块

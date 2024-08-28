@@ -805,7 +805,7 @@ void SUnit::load_json(QJsonObject rootObject)
     indX = rootObject.value("indX").toInt();
     indY = rootObject.value("indY").toInt();
     alwaysShow = rootObject.value("alwaysShow").toBool();
-    simpleMode = rootObject.value("simpleMode").toBool();
+    setSimpleMode(rootObject.value("simpleMode").toBool());
     deepColor = rootObject.value("dark").toBool();
     showRect = rootObject.value("showRect").toBool();
     showLight = rootObject.value("showLight").toBool();
