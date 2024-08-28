@@ -7,6 +7,7 @@ SLabel::SLabel(QWidget* parent): QLabel(parent)
     linkToStyle(this, Label);
     // setStyleSheet(QSS_Label());
     // connectTo(text_color,color,QColor,{setStyleSheet(QSS_Label());});
+    setFont(qApp->font());
     connect(psh, &StyleHelper::fontChanged, this, [ = ]() {
         setFont(qApp->font());
     });

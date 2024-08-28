@@ -65,7 +65,7 @@ SMultiFunc::SMultiFunc(SLayout *dis, int sizex, int sizey): SUnit(dis, sizex, si
     // 显示名字
     lb->setAlignment(Qt::AlignCenter);
     lb->setFixedWidth(width() - 5);
-    lb->setText(elidedLineText(lb, 3, name));
+
 
 
 
@@ -115,7 +115,7 @@ void SMultiFunc::afterResize(QResizeEvent* event)
 {
     SUnit::afterResize(event);
     lb->setFixedWidth(qBound(10, width() - 5, 9999));
-    lb->setText(elidedLineText(lb, 4, name));
+    setName(name);
     gv->updateDispaly();
 }
 
@@ -434,7 +434,7 @@ void SMultiFunc::setName(QString sname)
     }
     name = sname;
     setObjectName("SMultiFunc-" + name);
-    lb->setText(sname);
+    lb->setText(elidedLineText(lb, 3, name));
 }
 
 

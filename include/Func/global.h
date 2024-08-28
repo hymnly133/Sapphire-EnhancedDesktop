@@ -2,6 +2,7 @@
 #define GLOBAL_H
 
 #include "qapplication.h"
+#include "qversionnumber.h"
 #include "sfileinfo.h"
 #include "smenu.h"
 #define PROJECT_PATH QString("D:/Github/Sapphire-EnhancedDesktop")
@@ -114,4 +115,5 @@ extern bool isAdmin;
 extern bool isDebug;
 
 extern MenuHelper* pmh;
+extern QVersionNumber version;
 #endif // GLOBAL_H

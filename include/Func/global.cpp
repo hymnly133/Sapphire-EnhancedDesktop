@@ -1,6 +1,7 @@
 #include "global.h"
 #include"QMap"
 #include "qicon.h"
+#include "qversionnumber.h"
 #include "sdir.h"
 #include<QJsonObject>
 bool firstNotice = true;
@@ -33,3 +34,4 @@ QList<QString> containerTypes;
 bool isAdmin;
 bool isDebug = true;
 MenuHelper* pmh;
+QVersionNumber version;

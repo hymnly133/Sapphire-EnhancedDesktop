@@ -11,6 +11,7 @@
 #include "global.h"
 #include "mainwindow.h"
 #include "qbitmap.h"
+#include"snotice.h"
 #include "sinputdialog.h"
 #include "stooltip.h"
 #include "qapplication.h"
@@ -43,6 +44,10 @@ LayerShower::LayerShower(MainWindow *parent, int screenId)
 
     connectTo(always_fill_screen, int, int, {
         updateSize();
+    });
+    if(screenInd == 0)
+        connect(this, &LayerShower::bootAnimationOutEnd, this, [ = ]() {
+        startScanForUpdate();
     });
 }
 
@@ -222,4 +227,54 @@ void LayerShower::updateSize()
 }
 
 
+void LayerShower::startScanForUpdate()
+{
+    // return;
+    QNetworkAccessManager networkManager;
+
+
+    QUrl url("https://api.github.com/repos/hymnly133/Sapphire-EnhancedDesktop/releases/latest");
+    QNetworkRequest request;
+    request.setUrl(url);
+
+    updateReply = networkManager.get(request);  // GET
+    connect(&networkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultUpdate(QNetworkReply*)));
+    QEventLoop eventLoop;
+    QObject::connect(&networkManager, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
+    // pls->raise();
+    eventLoop.exec();
+    // pls->raise();
+}
+
+void LayerShower::onResultUpdate(QNetworkReply * reply)
+{
+    // return;
+    if (updateReply->error() != QNetworkReply::NoError) {
+        //qDebug()<<"ERROR!";
+        return;  // ...only in a blog post
+    }
+
+    QString data = (QString) reply->readAll();
+    // qDebug() << data;
+    QJsonDocument d = QJsonDocument::fromJson(data.toUtf8());
+    QJsonObject sett2 = d.object();
+    QJsonValue value = sett2.value(QString("tag_name"));
+    QVersionNumber latest =  QVersionNumber::fromString(value.toString());
+    qDebug() << "Latest version:" << latest;
+    if(latest > version || isDebug) {
+        SNotice::notice(QStringList() << tr("请及时前往下载新版本:") << latest.toString() << tr("当前版本") << version.toString(), tr("检查到新版本"), 3000, true);
+        // QMessageBox::StandardButton button;
+        // button = QMessageBox::question(this, tr("有新的版本"),
+        //                                QString(tr("是否下载新的版本？")),
+        //                                QMessageBox::Yes | QMessageBox::No);
+
+        // if (button == QMessageBox::Yes) {
+
+        // }
+        // SNotice::notice(QStringList() << tr("请及时前往下载新版本:") << latest.toString(), tr("检查到新版本"), 3000, true);
+    } else {
+        // QMessageBox::information(0, "更新检查", "此版本已经是最新发布版本", QMessageBox::Yes);
+    }
+
+}
 

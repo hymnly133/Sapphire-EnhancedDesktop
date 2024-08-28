@@ -102,7 +102,7 @@ void SFile::processFile(SFileInfo* sfileInfo)
 
 }
 
-void SFile::loadAimIcon(MyFileInfo& info)
+void SFile::loadAimIcon(const MyFileInfo& info)
 {
     SMultiFunc::setPix(info.aimIcon);
 }
@@ -208,7 +208,7 @@ void SFile::single_click_action(QMouseEvent *event)
 }
 
 
-void SFile::loadFromMyFI(MyFileInfo& info, bool init)
+void SFile::loadFromMyFI(const MyFileInfo& info, bool init)
 {
     qDebug() << QString("Loading Form MyFI:%1,at thread:").arg(info.filePath) << (QThread::currentThread());
     SFileInfo::loadFromMyFI(info);
@@ -242,9 +242,9 @@ void SFile::loadFromMyFI(MyFileInfo& info, bool init)
 
 
     gv->limitInisde = true;
-    // qDebug() << lb;
-    // qDebug() << name;
-    lb->setText(elidedLineText(lb, 3, name));
+    qDebug() << &info;
+    qDebug() << lb;
+    qDebug() << name;
     if(init) {
         pixPath = "";
     }

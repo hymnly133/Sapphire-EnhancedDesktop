@@ -83,9 +83,9 @@ void SNotice::setStayTime(int time)
 
 void SNotice::comeout()
 {
-    if(onLoading) {
-        return;
-    }
+    // if(onLoading) {
+    //     return;
+    // }
     if(nowOKPosY(this) >= activepmw->height() * 0.4) {
         endOne();
     }
@@ -108,6 +108,9 @@ void SNotice::comeout()
     setEnabled(true);
     setVisible(true);
     raise();
+    if(parentWidget()) {
+        parentWidget()->raise();
+    }
 }
 
 void SNotice::end()
@@ -148,9 +151,9 @@ void SNotice::endOne()
 
 
 
-void SNotice::notice(QStringList info, QString title, int time)
+void SNotice::notice(QStringList info, QString title, int time, bool force)
 {
-    if(!enable_notice) {
+    if(!enable_notice && (!force || !show_important_notice)) {
         return;
     }
     SNotice* notice;
@@ -166,9 +169,9 @@ void SNotice::notice(QStringList info, QString title, int time)
     notice->comeout();
 }
 
-void SNotice::notice(QString info, QString title, int time)
+void SNotice::notice(QString info, QString title, int time, bool force)
 {
-    notice(QStringList() << info, title, time);
+    notice(QStringList() << info, title, time, force);
 }
 
 //从MainWindow顶端到将要显示通知的顶端的距离

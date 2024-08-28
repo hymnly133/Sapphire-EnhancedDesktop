@@ -47,6 +47,7 @@ StyleHelper::StyleHelper()
     ADD(tr("外观"), ShowSide, tr("绘制组件边框"), 0, 0);
     ADD(tr("外观"), ShowLight, tr("绘制组件光效"), 0, 0);
     ADD(tr("外观") << tr("界面"), enable_notice, tr("启用通知"), 0, 0);
+    ADD(tr("外观") << tr("界面"), show_important_notice, tr("关闭通知时仍然显示重要通知（如更新检测）"), 0, 0);
     ADD(tr("外观") << tr("界面"), enable_tooltip, tr("启用标签"), 0, 0);
     ADD(tr("外观"), enable_background_transparent, tr("背景透视"), 0, 0);
     ADD(tr("外观"), enable_background_blur, tr("背景模糊-未完工"), 0, 0);

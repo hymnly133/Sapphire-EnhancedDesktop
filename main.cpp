@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
     qInstallMessageHandler(customMessageHandler);
     isDebug = false;
 #endif
+
     //环境与系统性设置
     QTextCodec *code = QTextCodec::codecForName("UTF-8");
     QTextCodec::setCodecForLocale(code);
@@ -37,6 +38,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QBreakpadInstance.setDumpPath("crashes");
     qDebug() << "Sapphire Startup";
+
+    bool bSupp = QSslSocket::supportsSsl();
+    QString buildVersion = QSslSocket::sslLibraryBuildVersionString();
+    QString version = QSslSocket::sslLibraryVersionString();
+    qDebug() << bSupp << buildVersion << version << endl;
 
 
     static QSharedMemory *shareMem = new QSharedMemory("Sapphire"); //创建“SingleApp”的共享内存块

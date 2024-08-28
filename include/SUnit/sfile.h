@@ -22,7 +22,7 @@ public:
 
 
     void loadFromPath(QString filepath, bool init);
-    virtual void loadFromMyFI(MyFileInfo &info, bool init);
+    virtual void loadFromMyFI(const MyFileInfo &info, bool init);
 
     void double_click_action(QMouseEvent* event) override;
 
@@ -35,7 +35,7 @@ public:
     void onShiftContextMenu(QContextMenuEvent *event) override;
     void processFile(SFileInfo *sfileInfo) override;
 
-    void loadAimIcon( MyFileInfo &info);
+    void loadAimIcon(const MyFileInfo &info);
 
 
     //呼出一个对话框来进行重命名
@@ -63,6 +63,11 @@ public:
     // SUnit interface
 public:
     void single_click_action(QMouseEvent *event) override;
+
+signals:
+    void setPixSignal(QString pixPath);
+    void setPSignal(QString pixPath);
+
 };
 
 inline SFile::SFile(const SFile &other): SFile(other.layout, other.sizeX, other.sizeY) {}

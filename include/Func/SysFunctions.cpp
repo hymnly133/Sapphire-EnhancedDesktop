@@ -219,6 +219,7 @@ QString elidedLineText(QWidget *pWidget, int nLine, QString strText)
     }
     QString strResult = strListLine.join("\n");
 
+    // qDebug() << strResult;
     return strResult;
 }
 

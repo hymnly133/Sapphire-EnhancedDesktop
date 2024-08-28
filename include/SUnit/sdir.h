@@ -52,7 +52,7 @@ public:
 
 
 
-    virtual void loadFromMyFI(MyFileInfo& info, bool init) override;
+    virtual void loadFromMyFI(const MyFileInfo& info, bool init) override;
 
     //预加载
     void scanDir();

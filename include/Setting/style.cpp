@@ -72,6 +72,8 @@ bool enable_background_transparent = 1;
 
 bool always_fill_screen = 0;
 bool enable_dir_func = 0;
+
+bool show_important_notice = true;
 QString user_font = "Microsoft YaHei";
 
 

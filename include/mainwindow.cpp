@@ -462,6 +462,8 @@ void MainWindow::setup()
     connectTo(always_fill_screen, bool, bool, {
         updateSize();
     });
+
+
 }
 
 QSize MainWindow::blockSize()

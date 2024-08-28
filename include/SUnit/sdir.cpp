@@ -260,7 +260,7 @@ void SDir::setProcessor(bool val)
     }
 }
 
-void SDir::loadFromMyFI(MyFileInfo &info, bool init)
+void SDir::loadFromMyFI(const MyFileInfo &info, bool init)
 {
     SFile::loadFromMyFI(info, init);
     scanDir();
@@ -295,17 +295,18 @@ void SDir::startToLoad()
         } else {
             thisFile = new SFile(inside);
         }
-        if(!onLoading) {
-            //常态
-            QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
-        } else {
-            //加载时
-            thisFile->loadFromPath(newFile, true);
-        }
+        // if(!onLoading) {
+        //     //常态
+        //     QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
+        // } else {
+        //加载时
+        thisFile->loadFromPath(newFile, true);
+        // }
     }
     newfiles.clear();
 
-    foreach (QJsonValue val, waitedToLoad) {
+    foreach (QJsonValue val_, waitedToLoad) {
+        QJsonValue val = val_;
         if(val.toObject().contains("path")) {
             if(nowExitFiles.contains(val.toObject().value("path").toString())) {
                 continue;
@@ -313,18 +314,21 @@ void SDir::startToLoad()
         }
 
         SUnit* thisFile = from_class(val.toObject().value("Class").toString());
+        if(!thisFile) {
+            continue;
+        }
         initAUnit(thisFile, false);
         qDebug() << objectName() << "load Json:" <<  val.toObject().value("path").toString();
 
 
-        if(!onLoading) {
-            //常态
-            // QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
-            QtConcurrent::run(thisFile, &SUnit::load_json, val.toObject());
-        } else {
-            //加载时
-            thisFile->load_json(val.toObject());
-        }
+        // if(!onLoading) {
+        //     //常态
+        //     // QtConcurrent::run(thisFile, &SFile::loadFromPath, newFile, true);
+        //     QtConcurrent::run(thisFile, &SUnit::load_json, val.toObject());
+        // } else {
+        //加载时
+        thisFile->load_json(val.toObject());
+        // }
     }
     waitedToLoad = QJsonArray();
     moveFile = true;

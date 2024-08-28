@@ -21,6 +21,7 @@
 #include"snotice.h"
 #include "stylehelper.h"
 #include "unitfunc.h"
+#include "version.h"
 #include <shlobj.h>
 
 void preSetupG()
@@ -71,7 +72,9 @@ void setupG()
 {
 
     qDebug() << "Setting Up Glabal...";
-
+    QString versions = QString(FILE_VERSION_STR).replace(',', '.');
+    version = QVersionNumber::fromString(versions);
+    qDebug() << "Now version:" << version;
 
     QString application_name = QApplication::applicationName();//获取应用名称
     QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
@@ -92,7 +95,6 @@ void setupG()
     pmh->scanSysCommands();
 
     //设置托盘图标
-
     QSystemTrayIcon* pSystemTray = new QSystemTrayIcon();
     if (NULL != pSystemTray) {
         pSystemTray->setIcon(QIcon(":/appIcon/Sapphire.ico"));
@@ -121,8 +123,8 @@ void setupG()
         qDebug() << "Mainwindow" << i << pmws[i]->mapToGlobal(QPoint(0, 0));
     }
 
-    if(init) {
-        SNotice::notice(QStringList() << "为了您拥有更好的体验，Sapphire编写了使用手册" << "您可以在软件目录内找到", "欢迎使用Sapphire！", 15000);
+    if(init || isDebug) {
+        SNotice::notice(QStringList() << "为了您拥有更好的体验，Sapphire编写了使用手册" << "您可以在软件目录内找到", "欢迎使用Sapphire！", 6000);
     }
     onLoading  = false;
     foreach (auto pmw, pmws) {
@@ -343,6 +345,9 @@ void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QString
     uPathDir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::System);
     QStringList files = uPathDir.entryList();
     foreach (QString name, files) {
+        if(name == "") {
+            continue;
+        }
         QString absolute = uPathDir.absoluteFilePath(name);
         if(!nowExitFiles.contains(absolute)) {
             if(ExcludeFiles.contains(QFileInfo(absolute).fileName())) {

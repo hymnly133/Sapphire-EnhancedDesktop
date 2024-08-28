@@ -137,6 +137,7 @@ QPair<SLayout*, QPoint > deepFind(SUnit *aim)
 
 SUnit *from_class(QString Class)
 {
+    qDebug() << "from class:" << Class;
     QString newname = Class.replace("ED_", "S");
     int id = QMetaType::type(Class.toStdString().c_str());
     if (id == QMetaType::UnknownType) {
@@ -147,7 +148,11 @@ SUnit *from_class(QString Class)
             return nullptr;
         }
     }
-    qDebug() << Class;
+
+    if(id == QMetaType::type("SUnit")) {
+        qWarning() << "Ignore generating SUnit  from Class!";
+        return nullptr;
+    }
     // auto k = QMetaType::create(id);
     SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
     return unit;

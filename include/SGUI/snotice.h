@@ -19,8 +19,8 @@ public:
     QFont* titleFont;
     QFont* infoFont;
     SAnimationRect* arect;
-    QSize titleSize = QSize(0,0);
-    QSize infoSize=QSize(0,0);
+    QSize titleSize = QSize(0, 0);
+    QSize infoSize = QSize(0, 0);
     QSize aimSize;
     QPoint previousPos;
     QPoint aimPos;
@@ -43,8 +43,8 @@ public:
     static QList<SNotice*> noticeList;
     static void endOne();
 
-    static void notice(QStringList info, QString title ="", int time =3000);
-    static void notice(QString info, QString title ="", int time =3000);
+    static void notice(QStringList info, QString title = "", int time = 3000, bool force = false);
+    static void notice(QString info, QString title = "", int time = 3000, bool force = false);
     static int nowOKPosY(SNotice* aim);
     static void updateAllNoticeAnimation();
 

@@ -2,6 +2,7 @@
 #define LAYERSHOWER_H
 
 #include "SAnimationRect.h"
+#include "qnetworkreply.h"
 #include <QWidget>
 
 class MainWindow;
@@ -11,6 +12,7 @@ class LayerShower : public QWidget
 public:
     explicit LayerShower(MainWindow *parent, int screenId);
     MainWindow* pmw;
+    QNetworkReply* updateReply;
     QPixmap* iconMap;
     enum Layer {
         Bottom = 0,
@@ -32,6 +34,7 @@ public:
 
     void clearTooltip();
     void clearInputDialog();
+    void startScanForUpdate();
 signals:
     void bootAnimationInStart();
     void bootAnimationInEnd();
@@ -52,6 +55,7 @@ public slots:
     void startBootAnimationOut();
     void whenBootAnimationUpdation();
     void updateSize();
+    void onResultUpdate(QNetworkReply * reply);
 };
 
 #endif // LAYERSHOWER_H

@@ -4,7 +4,7 @@
 #include "layermousegetter.h"
 #include "layertoppainter.h"
 #include "sbgshower.h"
-
+#include <QtNetwork>
 #include "sblocklayout.h"
 #include <QMainWindow>
 #include <QPushButton>  // 添加QPushButton头文件
@@ -202,6 +202,9 @@ protected:
 
     void whenDropAFile(QString& fileName);
     void crash();
+
+
+
 
 
     // QWidget interface
