@@ -4,7 +4,7 @@
 LayerBackground::LayerBackground(QWidget *parent, int screenInd)
     : QWidget{parent}
 {
-    setObjectName("MainWindow"+QString::number(screenInd));
+    setObjectName("MainWindow" + QString::number(screenInd));
 
     this->screenInd = screenInd;
     setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -13,7 +13,7 @@ LayerBackground::LayerBackground(QWidget *parent, int screenInd)
 
     setAcceptDrops(true);
     inplace(this);
-    positionToScreen(this,screenInd);
+    // positionToScreen(this,screenInd);
     setVisible(true);
     show();
 }

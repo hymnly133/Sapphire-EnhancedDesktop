@@ -14,6 +14,7 @@ public:
     MainWindow* pmw;
     QNetworkReply* updateReply;
     QPixmap* iconMap;
+    bool inside = false;
     enum Layer {
         Bottom = 0,
         Upper = 2
@@ -35,6 +36,7 @@ public:
     void clearTooltip();
     void clearInputDialog();
     void startScanForUpdate();
+    void setFlags();
 signals:
     void bootAnimationInStart();
     void bootAnimationInEnd();
@@ -50,12 +52,18 @@ protected:
     // QWidget interface
 protected:
     void focusInEvent(QFocusEvent *event) override;
+
 public slots:
     void startBootAnimationIn();
     void startBootAnimationOut();
     void whenBootAnimationUpdation();
     void updateSize();
+    void insideToPmw();
     void onResultUpdate(QNetworkReply * reply);
+
+    // QWidget interface
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
 };
 
 #endif // LAYERSHOWER_H

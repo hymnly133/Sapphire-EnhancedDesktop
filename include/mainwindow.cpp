@@ -5,6 +5,7 @@
 #include "qmessagebox.h"
 #include "qtconcurrentrun.h"
 #include "sbgshower.h"
+#include "screenfunc.h"
 #include "sdir.h"
 #include "sglshower.h"
 #include "snotice.h"
@@ -119,6 +120,12 @@ void MainWindow::setupDesktopMenu()
 
     SET_ANCTION(actToEditMode, tr("编辑模式"), desktopMenu, this, {
         toEditMode();
+    })
+    SET_ANCTION(actRun, tr("自启动"), desktopMenu, this, {
+        setTaskAutoRun(true);
+    })
+    SET_ANCTION(actRunFalse, tr("自启动关闭"), desktopMenu, this, {
+        setTaskAutoRun(false);
     })
     SET_ANCTION(act4, tr("退出程序"), desktopMenu, this, {
         SExit();
@@ -269,6 +276,7 @@ void MainWindow::setupLayout(int x, int y)
 {
     inside = new SBlockLayout(this, x, y);
     inside->isMain = true;
+    // inside->pContainerW = putWidget;
     updateSize();
 }
 
@@ -279,18 +287,19 @@ MainWindow::MainWindow(MainWindow *parent, int screenInd)
     setWindowIcon(appIcon);
     this->screenInd = screenInd;
     qDebug() << "MainWindow Thread" << QThread::currentThread();
-    setObjectName("MainWindow" + QString::number(screenInd));
+    setObjectName(QString("MainWindow(%1)").arg(screenInd));
+    // putWidget = new QWidget(this);
 
 
     setFocusPolicy( Qt::StrongFocus );
     setWindowState(Qt::WindowFullScreen);
     setAttribute(Qt::WA_TranslucentBackground);
-    // setAcceptDrops(true);
-    // qDebug() << ChangeWindowMessageFilterEx((HWND)winId(), WM_DROPFILES, MSGFLT_ALLOW, NULL);
-    // qDebug() << ChangeWindowMessageFilterEx((HWND)winId(), 0x0049, MSGFLT_ALLOW, NULL);
-    // qDebug() << ChangeWindowMessageFilterEx((HWND)winId(), WM_COPYDATA, MSGFLT_ALLOW, NULL);
-    inplace(this);
-    positionToScreen(this, screenInd);
+
+    connect(pscs[screenInd], &QScreen::availableGeometryChanged, this, [ = ]() {
+        qInfo() << "Recieve change signals";
+        updateSize();
+    });
+    tryToInplace(true);
 
     qDebug() << "MainWindow" << screenInd << "Information Fixed:" << rect() << pos() << geometry() << mapToGlobal(QPoint(0, 0)) << mapFromGlobal(QPoint(0, 0));
 
@@ -308,7 +317,9 @@ void MainWindow::raiseLayers()
 {
     // plsB->raise();
     raise();
-    pls->raise();
+    if(pls) {
+        pls->raise();
+    }
 }
 
 void MainWindow::setScale(double scale)
@@ -331,6 +342,10 @@ QJsonObject MainWindow::to_json()
     QJsonObject rootObject;
     rootObject.insert("ind", screenInd);
     rootObject.insert("content", inside->to_json());
+    if(inside->useStandaloneRect) {
+        rootObject.insert("sizeW", inside->standaloneRect.width());
+        rootObject.insert("sizeH", inside->standaloneRect.height());
+    }
     return rootObject;
 }
 
@@ -339,6 +354,20 @@ void MainWindow::load_json(QJsonObject rootObject)
     screenInd = rootObject.value("ind").toInt();
     qDebug() << "loading Mainwindow" << screenInd;
     setupLayout(10, 10);
+    if(isAutoStart && inside) {
+        int sizew = inside->W_Container();
+        int sizeh = inside->H_Container();
+        if(rootObject.contains("sizeW")) {
+            sizew = rootObject.value("sizeW").toInt();
+        }
+        if(rootObject.contains("sizeH")) {
+            sizeh = rootObject.value("sizeH").toInt();
+        }
+        temSize = QSize(sizew, sizeh);
+        // inside->setStandalongRect(QRect(0, 0, sizew, sizeh));
+        updateSize();
+        qInfo() << QString("Use Previous Size: %1,%2").arg(sizew).arg(sizeh);
+    }
     SLayoutContainer::load_json(rootObject.value("content").toObject());
     endUpdate();
 }
@@ -462,8 +491,6 @@ void MainWindow::setup()
     connectTo(always_fill_screen, bool, bool, {
         updateSize();
     });
-
-
 }
 
 QSize MainWindow::blockSize()
@@ -711,6 +738,7 @@ void MainWindow::wheelEvent(QWheelEvent *event)
 
 void MainWindow::focusInEvent(QFocusEvent *event)
 {
+    tryToInplace();
     pls->raise();
     qDebug() << objectName() << "FoucusIn";
     scanForChange();
@@ -745,7 +773,7 @@ void MainWindow::paintEvent(QPaintEvent *ev)
     if((!showeredVisibal) || (showeredVisibal && showerAnimations->state() == QAnimationGroup::Running)) {
         QPainter painter(this);
         painter.drawPixmap(rect(), buffer);
-        qDebug() << "paintBuffer";
+        // qDebug() << "paintBuffer";
     } else if (!transparent) {
         QPainter painter(this);
         painter.drawPixmap(rect(), bg);
@@ -793,6 +821,30 @@ void MainWindow::whenDropAFile(QString &fileName)
     }
 }
 
+void MainWindow::tryToInplace(bool force)
+{
+    if(shelltem && shellValid() && shelltem == shelldlldefview && !force) {
+        qDebug() << "Everything is fine";
+        return;
+    }
+    qDebug() << "try to inplace";
+
+    initiateDesktop();
+    if(inplace(this)) {
+        qDebug() << "Inplace succeed!";
+        updateSize();
+        if(pls) {
+            // if(!pls->inside) {
+            //     pls->insideToPmw();
+            // }
+            pls->insideToPmw();
+            pls->updateSize();
+        }
+        shelltem = shelldlldefview;
+    };
+
+}
+
 void MainWindow::crash()
 {
     int* a;
@@ -830,15 +882,26 @@ void MainWindow::updateSize()
         aim = pscs[screenInd]->size();
     }
     setFixedSize(aim);
+    // putWidget->setFixedSize(size());
+
 
     if(inside) {
         QSize aim_inside = pscs[screenInd]->availableSize();
 
-        if(always_fill_screen) {
-            aim_inside = pscs[screenInd]->size();
+        if(isAutoStart && !temSize.isEmpty()) {
+            aim_inside = temSize;
+        } else {
+            if(always_fill_screen) {
+                aim_inside = pscs[screenInd]->size();
+            }
         }
+
         inside->setStandalongRect(QRect(QPoint(0, 0), aim_inside));
     }
+
+    move(pscs[screenInd]->geometry().topLeft() + Shift_Global);
+    move(2 * pos() - geometry().topLeft());
+
     endUpdate();
 }
 
@@ -846,6 +909,9 @@ bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, long *r
 {
     MSG *msg = (MSG *)message;
     // qDebug() << eventType;
+    // qDebug() << msg->message;
+    // qDebug() << msg->message;
+    // qDebug() << msg->wParam << msg->lParam;
     if(msg->message == WM_QUERYENDSESSION ) { //Win下的关机消息
         //TODO...
         qDebug() << "User Shutdown";
@@ -886,6 +952,12 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
 
 void MainWindow::mousePressEvent(QMouseEvent* event)
 {
+    qDebug() << objectName() << "Press";
+    qDebug() << geometry() << pls->geometry();
+    // qDebug() << pscs[screenInd]->availableGeometry() << pscs[screenInd]->availableSize() << pscs[screenInd]->availableVirtualSize();
+    // QList<QScreen*> sc = QGuiApplication::screens();
+    // qDebug() << sc[screenInd]->availableSize();
+
     loadInsideAll();
     cleanCelect();
     foldG();

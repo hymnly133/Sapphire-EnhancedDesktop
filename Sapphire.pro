@@ -58,7 +58,10 @@ INCLUDEPATH += $$PWD/include/qBreakpad
 
 LIBS+= -luser32    # 使用WindowsAPI需要链接库
 LIBS+= -ldwmapi
-LIBS += -lOle32  -luuid -lshlwapi -luser32 -lshell32 -lsetupapi -lcomctl32 -lopengl32 -lglu32
+LIBS += -lOle32  -luuid -lshlwapi -lshell32 -lsetupapi -lcomctl32 -lopengl32 -lglu32
+LIBS += -ltaskschd
+LIBS += -loleaut32
+LIBS += -lws2_32 -lwbemuuid
 
 
 
@@ -86,6 +89,7 @@ SOURCES += \
     include/Func/guifunc.cpp \
     include/Func/iconfunc.cpp \
     include/Func/screenfunc.cpp \
+    include/Func/smytaskschedule.cpp \
     include/Func/unitfunc.cpp \
     include/Func/userfunc.cpp \
     include/SGUI/saction.cpp \
@@ -132,7 +136,9 @@ SOURCES += \
     include/Setting/sblocklayoutsettingwindow.cpp \
     include/Setting/style.cpp \
     include/Setting/stylehelper.cpp \
+    include/Setting/stylesettingwindow.cpp \
     include/Setting/stylesettotal.cpp \
+    include/Setting/sval.cpp \
     include/mainwindow.cpp \
     main.cpp
 
@@ -152,6 +158,7 @@ HEADERS += \
     include/Func/guifunc.h \
     include/Func/iconfunc.h \
     include/Func/screenfunc.h \
+    include/Func/smytaskschedule.h \
     include/Func/unitfunc.h \
     include/Func/userfunc.h \
     include/SGUI/saction.h \
@@ -198,7 +205,9 @@ HEADERS += \
     include/Setting/sblocklayoutsettingwindow.h \
     include/Setting/style.h \
     include/Setting/stylehelper.h \
+    include/Setting/stylesettingwindow.h \
     include/Setting/stylesettotal.h \
+    include/Setting/sval.h \
     include/mainwindow.h \
     version.h
 

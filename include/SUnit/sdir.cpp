@@ -139,7 +139,7 @@ void SDir::updateAfterPut(SUnit *aim)
             if(filePath_red() == sfile->dirPath()) {
                 return ;
             }
-            qDebug() << filePath_red() + "/" + sfile->fullName();
+            // qDebug() << filePath_red() + "/" + sfile->fullName();
             sfile->moveToDir(filePath_red());
         }
     }
@@ -233,7 +233,7 @@ void SDir::updateExpandAnimation()
 
 void SDir::setFocus(bool val)
 {
-    if(onFocus == val) {
+    if(isFocus == val) {
         return;
     }
     SFile::setFocus(val);
@@ -272,13 +272,13 @@ void SDir::scanDir()
         return;
     }
     scanForChangeInDir(filePath_red(), this, &newfiles);
-    qDebug() << objectName() << "Scaned,newFiles:" << newfiles;
+    qInfo() << objectName() << "Scaned,newFiles:" << newfiles;
 }
 
 void SDir::startToLoad()
 {
 
-    qDebug() << objectName() << "StartToLoad";
+    qInfo() << objectName() << "StartToLoad";
     moveFile = false;
     auto jsonfiles_ = jsonFiles();
     foreach (QString newFile, newfiles) {
@@ -288,7 +288,7 @@ void SDir::startToLoad()
         if(nowExitFiles.contains(newFile)) {
             continue;
         }
-        qDebug() << objectName() << "load path:" << newFile;
+        qInfo() << "In" << objectName() << "load new file:" << newFile;
         SFile* thisFile;
         if(QFileInfo(newFile).isDir()) {
             thisFile = new SDir(inside);
@@ -308,7 +308,12 @@ void SDir::startToLoad()
     foreach (QJsonValue val_, waitedToLoad) {
         QJsonValue val = val_;
         if(val.toObject().contains("path")) {
-            if(nowExitFiles.contains(val.toObject().value("path").toString())) {
+            QString path = val.toObject().value("path").toString();
+            if(nowExitFiles.contains(path)) {
+                continue;
+            }
+            if(!fileExist(path)) {
+                qInfo() << path << "Not found ! scape.";
                 continue;
             }
         }
@@ -318,7 +323,7 @@ void SDir::startToLoad()
             continue;
         }
         initAUnit(thisFile, false);
-        qDebug() << objectName() << "load Json:" <<  val.toObject().value("path").toString();
+        qDebug() << "in " << objectName() << "load json file:" <<  val.toObject().value("path").toString();
 
 
         // if(!onLoading) {
@@ -473,7 +478,7 @@ void SDir::processFile(SFileInfo *sfileInfo)
     if(filePath_red() == sfileInfo->dirPath()) {
         return ;
     }
-    qDebug() << filePath_red() + "/" + sfileInfo->fullName();
+    // qDebug() << filePath_red() + "/" + sfileInfo->fullName();
     sfileInfo->moveToDir(filePath_red());
 }
 

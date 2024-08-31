@@ -12,7 +12,7 @@ LayerMouseGetter::LayerMouseGetter(MainWindow *parent, int screenId): QWidget(nu
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowFlags(Qt::FramelessWindowHint );
     inplace(this);
-    positionToScreen(this, screenId);
+    // positionToScreen(this, screenId);
     myMenu = new QMenu(this);
     // SET_ANCTION(act1, pls, myMenu, {
     //     pmw->pls->raise();
@@ -54,8 +54,8 @@ void LayerMouseGetter::contextMenuEvent(QContextMenuEvent *event)
 {
     if(event->modifiers() == Qt::ShiftModifier) {
         // SettingWindow* k = new SettingWindow();
-        StyleSettingWindow* k = new StyleSettingWindow;
-        k->show();
+        // StyleSettingWindow* k = new StyleSettingWindow;
+        // k->show();
     } else {
         myMenu->exec(event->globalPos());
     }

@@ -48,6 +48,8 @@ public:
     static int nowOKPosY(SNotice* aim);
     static void updateAllNoticeAnimation();
 
+    static QList<SNotice*> waiting;
+
 protected:
     void paintEvent(QPaintEvent *event) override;
 

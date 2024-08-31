@@ -136,11 +136,12 @@ SEditBox::SEditBox(SLayout *dis, int sizex, int sizey)
 #endif
 
     QCheckBox *checkAutoRun = new SCheckBox("开机自启", this);
+    checkForAutoRun();
     checkAutoRun->setChecked(enable_auto_run);
     overall->addWidget(checkAutoRun);
     connect(checkAutoRun, &QCheckBox::clicked, this, [](bool checked) {
         enable_auto_run = checked;
-        setMyAppAutoRun(checked);
+        setTaskAutoRun(checked);
     });
 
 

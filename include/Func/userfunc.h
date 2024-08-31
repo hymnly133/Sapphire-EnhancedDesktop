@@ -49,4 +49,9 @@ void openSettingWindow();
 void SExit();
 // 重启
 void SReboot();
+
+void processArguments();
+
+//检测自启动并更新启动方法,反映在全局变量
+void checkForAutoRun();
 #endif // USERFUNC_H

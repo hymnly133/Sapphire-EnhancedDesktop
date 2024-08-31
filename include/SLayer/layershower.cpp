@@ -23,13 +23,12 @@ LayerShower::LayerShower(MainWindow *parent, int screenId)
     : QWidget{nullptr}
 {
     qDebug() << "Layer Thread" << QThread::currentThread();
-    setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::FramelessWindowHint);
-    setAttribute(Qt::WA_TransparentForMouseEvents);
+    setFlags();
     pmw = parent;
     this->screenInd = screenId;
+    setObjectName(QString("LayerShower(%1)").arg(screenId));
     inplace(this);
-    positionToScreen(this, screenId);
+    updateSize();
 
     qDebug() << "Layer Shower Information:" << rect() << pos() << geometry() << mapToGlobal(QPoint(0, 0));
     finalPos = pos();
@@ -49,6 +48,10 @@ LayerShower::LayerShower(MainWindow *parent, int screenId)
         connect(this, &LayerShower::bootAnimationOutEnd, this, [ = ]() {
         startScanForUpdate();
     });
+
+
+    // connect(this, &::LayerShower::bootAnimationOutEnd, this, &LayerShower::insideToPmw);
+
 }
 
 void LayerShower::clearTooltip()
@@ -70,6 +73,16 @@ void LayerShower::clearInputDialog()
 
 void LayerShower::paintEvent(QPaintEvent *event)
 {
+    auto tem = themeColor();
+    tem.setAlpha(100);
+
+    // if(isAutoStart) {
+    //     QPainter painter(this);
+    //     // QPainter painter(this);
+    //     // painter.setClipRegion(celectedRegion);
+    //     painter.setBrush(tem);
+    //     painter.drawRect(rect());
+    // }
 
     if(state != normal) {
         //启动动画
@@ -90,8 +103,7 @@ void LayerShower::paintEvent(QPaintEvent *event)
 
         return;
     }
-    auto tem = themeColor();
-    tem.setAlpha(100);
+
     switch (layer) {
         case Bottom:
             //绘制
@@ -162,6 +174,7 @@ bool LayerShower::nativeEvent(const QByteArray &eventType, void *message, long *
 
 void LayerShower::focusInEvent(QFocusEvent *event)
 {
+    qDebug() << objectName() << "focus";
     // pmws[0]->setFocus();
 }
 
@@ -212,18 +225,39 @@ void LayerShower::whenBootAnimationUpdation()
 
 void LayerShower::updateSize()
 {
-    QSize aim = pscs[screenInd]->availableSize();
-    if(!MultiScreen) {
-        aim = pscs[screenInd]->size();
-    }
+    if(!inside) {
+        QSize aim = pscs[screenInd]->availableSize();
+        if(!MultiScreen) {
+            aim = pscs[screenInd]->size();
+        }
 
-    if(MultiScreen) {
-        setFixedSize(aim * 2.5);
+        if(MultiScreen || isAutoStart) {
+            setFixedSize(aim * 2.5);
+        } else {
+            setFixedSize(aim);
+        }
+
+        move(pscs[screenInd]->geometry().topLeft() + Shift_Global);
+        move(2 * pos() - geometry().topLeft());
+        update();
     } else {
-        setFixedSize(aim);
+        insideToPmw();
     }
     update();
+}
 
+void LayerShower::insideToPmw()
+{
+    inplace(this);
+    // inplace(pls);
+    show();
+    setVisible(true);
+    setEnabled(true);
+    setUpdatesEnabled(true);
+    // setFlags();
+    raise();
+    // raise();
+    // update();
 }
 
 
@@ -244,6 +278,13 @@ void LayerShower::startScanForUpdate()
     // pls->raise();
     eventLoop.exec();
     // pls->raise();
+}
+
+void LayerShower::setFlags()
+{
+    setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_TransparentForMouseEvents);
+    setWindowFlags(Qt::FramelessWindowHint);
 }
 
 void LayerShower::onResultUpdate(QNetworkReply * reply)
@@ -276,5 +317,10 @@ void LayerShower::onResultUpdate(QNetworkReply * reply)
         // QMessageBox::information(0, "更新检查", "此版本已经是最新发布版本", QMessageBox::Yes);
     }
 
+}
+
+void LayerShower::mousePressEvent(QMouseEvent *event)
+{
+    qDebug() << objectName() << "Press";
 }
 

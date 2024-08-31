@@ -10,6 +10,7 @@ ANIMATION = new QPropertyAnimation(this,#NAME);\
     animations->addAnimation(ANIMATION);
 
 QList<SNotice*> SNotice::noticeList;
+QList<SNotice*> waiting;
 int SNotice::spaceBetweenNotice  = 10;
 int SNotice::borad  = 5;
 int SNotice::boradTitle  = 10;
@@ -86,6 +87,7 @@ void SNotice::comeout()
     // if(onLoading) {
     //     return;
     // }
+    qDebug() << "notice comeout" << info;
     if(nowOKPosY(this) >= activepmw->height() * 0.4) {
         endOne();
     }

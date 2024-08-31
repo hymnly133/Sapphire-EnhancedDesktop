@@ -4,6 +4,9 @@
 #include "qversionnumber.h"
 #include "sdir.h"
 #include<QJsonObject>
+HWND shelldlldefview = NULL;
+HWND progrmman = NULL;
+
 bool firstNotice = true;
 bool init = false;
 bool isQuit = false;
@@ -35,3 +38,4 @@ bool isAdmin;
 bool isDebug = true;
 MenuHelper* pmh;
 QVersionNumber version;
+bool isAutoStart = false;

@@ -260,7 +260,7 @@ void SUnit::mousePressEvent(QMouseEvent *event)
         if(!pCelectedUnits.contains(this)) {
             cleanCelect(this);
         }
-        setCelect(true);
+        setSelect(true);
         event->accept();
     } else if(event->button() == Qt::MiddleButton) {
         tryToSetupMenu();
@@ -438,14 +438,14 @@ void SUnit::setSimpleMode(bool val)
 
 void SUnit::setFocus(bool val)
 {
-    if(onFocus == val) {
+    if(isFocus == val) {
         return;
     }
     if(val && !isEnabled()) {
         return;
     }
 
-    onFocus = val  ;
+    isFocus = val  ;
     if(val) {
         pFocusedUnit = this;
     } else {
@@ -709,7 +709,7 @@ void SUnit::updatePositionAnimation()
 void SUnit::onDragedOut()
 {
     if(!movable) {
-        setCelect(false, true);
+        setSelect(false, true);
         return;
     }
     if(!premove) {
@@ -894,15 +894,15 @@ void SUnit::whenFocusAnimationChange()
 
 double SUnit::aim_padRatio()
 {
-    if(layout && !layout->isMain && !outOfParent && !onFocus) {
+    if(layout && !layout->isMain && !outOfParent && !isFocus && !isSelect) {
         return 0.0;
     }
     return 1.0;
 }
 
-void SUnit::setCelect(bool newOnCelected, bool disableAnimation )
+void SUnit::setSelect(bool newOnSelect, bool disableAnimation )
 {
-    if(newOnCelected) {
+    if(newOnSelect) {
         if(!pCelectedUnits.contains(this)) {
             pCelectedUnits.append(this);
         }
@@ -912,7 +912,7 @@ void SUnit::setCelect(bool newOnCelected, bool disableAnimation )
         }
         premove = false;
     }
-    onCelect = newOnCelected;
+    isSelect = newOnSelect;
     if(pCelectedUnits.size() > 4 || disableAnimation) {
         endUpdate();
     } else {

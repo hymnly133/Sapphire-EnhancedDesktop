@@ -25,6 +25,14 @@
 #include "QBreakpadHandler.h"
 int main(int argc, char *argv[])
 {
+
+    qSetMessagePattern("[%{type}] "
+                       "%{if-debug}%{function}(%{line})%{endif}"
+                       "%{if-info}%{function}(%{line}) qthreadptr:%{qthreadptr} time:%{time [yyyy-MM-dd hh:mm:ss.zzz]}%{endif}"
+                       "%{if-warning}%{function}(%{line})%{endif}"
+                       "%{if-critical}%{function}(%{line})%{endif}"
+                       "%{if-fatal}%{function}(%{line})%{endif}"
+                       ":\n%{message}");
 #ifndef QT_DEBUG
     //安装log重定向
     qInstallMessageHandler(customMessageHandler);
@@ -35,9 +43,31 @@ int main(int argc, char *argv[])
     QTextCodec *code = QTextCodec::codecForName("UTF-8");
     QTextCodec::setCodecForLocale(code);
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+    //启动程序
     QApplication a(argc, argv);
     QBreakpadInstance.setDumpPath("crashes");
     qDebug() << "Sapphire Startup";
+
+    processArguments();
+    if(isAutoStart) {
+        //自启动时等待一秒
+        QThread::msleep(1000);
+    }
+
+    // QCommandLineParser parser;                        // 定义解析实例
+    // parser.setApplicationDescription("Sapphire");  // 描述可执行程序的属性
+
+    // QCommandLineOption  CommandExe("autoStart", QGuiApplication::translate("main", "Take  the  first  argument  as a command to execute, "
+    //                                "rather than reading commands from a script or standard input.  "
+    //                                "If  any  fur‐\ther  arguments  are  given,  "
+    //                                "the  first  one is assigned to $0,"
+    //                                " rather than being used as a positional parameter."));
+
+    // parser.addOption(CommandExe);
+    // parser.process(a);                                // 把用户的命令行的放入解析实例
+
+
 
     bool bSupp = QSslSocket::supportsSsl();
     QString buildVersion = QSslSocket::sslLibraryBuildVersionString();
@@ -83,12 +113,12 @@ int main(int argc, char *argv[])
 
     preSetupG();
 
-    // if(isQuit) {
-    //     qApp->quit();
-    //     return -1;
-    // }
-    int ret = a.exec();
 
+    int ret = a.exec();
+    if(isQuit) {
+        qApp->quit();
+        return -1;
+    }
     if(ret == 733) {
         shareMem->detach();
         QProcess::startDetached(qApp->applicationFilePath(), QStringList());

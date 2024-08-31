@@ -50,6 +50,7 @@ void SToolTip::setInfo(QString info)
 void SToolTip::comeout()
 {
     QPoint tem = previousPos;
+    qDebug() << "tip comeout" << info;
     if(tem.x() + aimSize.width() > pmws[0]->width()) {
         //左侧显示
         left = true;

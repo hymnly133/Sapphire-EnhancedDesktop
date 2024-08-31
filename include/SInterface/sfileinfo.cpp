@@ -75,19 +75,19 @@ bool SFileInfo::moveToDir(QString dirPath)
 {
     QString oldpath = filePath;
     if(filePath == "") {
-        qDebug() << "Try to move, But empty";
+        qInfo() << "Try to move, But empty";
         return true;
     }
     QString newName =  dirPath + "/" + fullName();
     if(newName == filePath) {
-        qDebug() << "The same file! no move";
+        qInfo() << "The same file! no move";
         return true;
     }
     bool res = renameAbsolute(newName);
     if(!res) {
         SNotice::notice(QStringList() << filePath + ":" + "失败", "移动文件");
     };
-    qDebug() << QString("move %1 to %2 ,").arg(oldpath).arg(newName) << res;
+    qInfo() << QString("move %1 to %2 ,").arg(oldpath).arg(newName) << res;
     return res;
 
 }
@@ -111,13 +111,13 @@ bool SFileInfo::removeFile()
 {
 
     qInfo() << QString("try to remove file : %1").arg(filePath);
+    removeInfo();
     bool res = QFile::moveToTrash(filePath);
     if(!res) {
         qDebug() << "Unable to delete local file";
         SNotice::notice(QStringList() << filePath + ":" + ((res) ? "成功" : "失败"), "删除文件");
     } else {
         qDebug() << "Deleted";
-        removeInfo();
     }
     return res;
 }
@@ -129,13 +129,18 @@ void SFileInfo::openFile(bool Admin)
 
 }
 
+void SFileInfo::openTargetDirAndCelect()
+{
+    shellrun("explorer.exe", QString("/n, /select, \"%1\"").arg(toWindowsPath(filePath_red())));
+}
+
 void SFileInfo::removeInfo()
 {
     qInfo() << QString("remove info : %1").arg(filePath);
     if(nowExitFiles.contains(filePath)) {
         nowExitFiles.remove(filePath);
     }
-
+    qDebug() << filePath_red() << isDir;
     if(isDir && nowExitDirs.contains(filePath_red())) {
         nowExitDirs.remove(filePath_red());
     }

@@ -29,6 +29,9 @@ class MainWindow : public QMainWindow, public SLayoutContainer
     Q_PROPERTY(int showerRadius MEMBER showerRadius NOTIFY showerRadius_changed)
 public:
     MainWindow(MainWindow *parent = nullptr, int screenInd = 0);
+    HWND shelltem = NULL;
+    QSize temSize;
+    // QWidget* putWidget;
     ~MainWindow();
 
     QString bgPicPath;
@@ -38,7 +41,7 @@ public:
     bool focusin = false;
     LayerBackground* plsBG = nullptr;
     //顶层，用于绘制顶层特效
-    LayerShower* pls;
+    LayerShower* pls = nullptr;
     //中间层，用于放置图标
     // LayerMouseGetter* plsM;
     //底层，用于绘制底层特效
@@ -201,6 +204,8 @@ protected:
     void updateAfterPut(SUnit* aim) override;
 
     void whenDropAFile(QString& fileName);
+
+    void tryToInplace(bool force = false);
     void crash();
 
 

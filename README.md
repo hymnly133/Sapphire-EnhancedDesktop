@@ -8,7 +8,7 @@
 - **环境**：使用 Windows API 和 Qt 框架(5.15.2)，mingw64 编译，只保证兼容 Windows 11。
 - 由原项目`Enhanced-desktop`接续开发，使用`Sapphire`作为新的软件名与原项目进行区别。
 
-- README 文件对应版本：`V1.3.2.0`
+- README 文件对应版本：`V1.3.2.3`
 
 # 使用手册
 
@@ -113,13 +113,14 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 
 ### next release
 
-- [ ] 更新检测
+- [ ] 图片优化和缓存
+- [ ] 第三方软件注册的菜单支持Part2
 
 ### later
 
 - [ ] 文件夹多层加载
 - [ ] 右键菜单自定义
-- [ ] 滚动容器
+
 - [ ] 单独的scale设置
 - [ ] 全局深色模式
 - [ ] 备份
@@ -132,11 +133,11 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
     - [ ] 撤回
 
 
-- [ ] 第三方软件注册的菜单支持Part2
 - [ ] WallpaperEngine鼠标点击交互解决方案
 - [ ] 关机检测
 
-
+- [X] 滚动容器
+- [X] 更新检测
 - [X] 设置面板项目补全
 - [X] 设置面板
 - [X] 容器缩放

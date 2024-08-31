@@ -20,6 +20,7 @@
 #include "sfile.h"
 #include"snotice.h"
 #include "stylehelper.h"
+#include "stylesettingwindow.h"
 #include "unitfunc.h"
 #include "version.h"
 #include <shlobj.h>
@@ -76,9 +77,10 @@ void setupG()
     version = QVersionNumber::fromString(versions);
     qDebug() << "Now version:" << version;
 
-    QString application_name = QApplication::applicationName();//获取应用名称
-    QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
-    enable_auto_run = !settings->value(application_name).isNull();
+
+
+    checkForAutoRun();
+
 
     //排除文件
     ExcludeFiles.append("desktop.ini");
@@ -125,6 +127,10 @@ void setupG()
 
     if(init || isDebug) {
         SNotice::notice(QStringList() << "为了您拥有更好的体验，Sapphire编写了使用手册" << "您可以在软件目录内找到", "欢迎使用Sapphire！", 6000);
+    }
+
+    if(isAutoStart) {
+        SNotice::notice("自启动", "自启动");
     }
     onLoading  = false;
     foreach (auto pmw, pmws) {
@@ -281,10 +287,12 @@ void resizeForWithDialog(SBlockLayout *aimlayout)
 
 void updateFont()
 {
+    qInfo() << QString("UpdatingFont: %1,%2").arg(user_font).arg(font_size);
     QFont font = qApp->font();
     font.setFamily(user_font);
     font.setPointSize(font_size);
     font.setHintingPreference(QFont::PreferNoHinting);
+    qInfo() << font;
     qApp->setFont(font);
 }
 
@@ -442,3 +450,58 @@ void openSettingWindow()
 
 
 
+
+void processArguments()
+{
+    // QCommandLineParser parser;                        // 定义解析实例
+    // parser.setApplicationDescription("TestCommandLine");  // 描述可执行程序的属性
+    // parser.addHelpOption();                           // 添加帮助命令
+    // parser.addVersionOption();                        // 添加版本选择命令
+
+    // QCommandLineOption  CommandExe("c", QGuiApplication::translate("main", "Take  the  first  argument  as a command to execute, "
+    //                                "rather than reading commands from a script or standard input.  "
+    //                                "If  any  fur‐\ther  arguments  are  given,  "
+    //                                "the  first  one is assigned to $0,"
+    //                                " rather than being used as a positional parameter."));
+
+    // parser.addOption(CommandExe);
+    // parser.process(a);                                // 把用户的命令行的放入解析实例
+    QStringList arguments = QCoreApplication::arguments();
+
+    //以第一个参数是程序路径，第二个参数才是min,所以我们取第二个参数。
+    if(arguments.size() > 1) {
+        QString para2 = arguments.at(1);
+        if(para2 == "-autoStart") {
+            qInfo() << "This is an auto start process";
+            isAutoStart = true;
+        }
+    }
+}
+
+void checkForAutoRun()
+{
+    // bool old = false;
+    if(psh->styleVersion <= LAST_REG_AUTORUN_VERSION) {
+        qInfo() << "Old autorun version";
+        QString application_name = QApplication::applicationName();    //获取应用名称
+        QSettings *settings = new QSettings(AUTO_RUN_KEY, QSettings::NativeFormat);//创建QSetting, 需要添加QSetting头文件
+        enable_auto_run = !settings->value(application_name).isNull();
+        if(enable_auto_run) {
+            qInfo() << "is old autorun, try to update setting";
+            //取消旧注册表
+            setMyAppAutoRun(false);
+            //使用新启动方法
+            setTaskAutoRun(true);
+        }
+    } else {
+        qInfo() << "New autorun version";
+        if(haveTaskAutoRun()) {
+            enable_auto_run = true;
+            qInfo() << "New autorun detected";
+        } else {
+            enable_auto_run = false;
+            qInfo() << "New autorun undetected";
+        }
+    }
+    // return true;
+}

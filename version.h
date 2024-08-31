@@ -1,11 +1,11 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define PRODUCT_ICON "" // 图标
+// #define PRODUCT_ICON "" // 图标
 
 
-#define FILE_VERSION 1,3,2,2 // 文件版本
-#define FILE_VERSION_STR "1,3,2,2"
+#define FILE_VERSION 1,3,2,4 // 文件版本
+#define FILE_VERSION_STR "1,3,2,4"
 // #define PRODUCT_VERSION 1,3,1,4 // 产品版本
 // #define PRODUCT_VERSION_STR "1,3,1,4"
 #define COMPANY_NAME "Hymnly"

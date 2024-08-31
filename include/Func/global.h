@@ -61,6 +61,11 @@ class SMenu;
 class StyleHelper;
 class IconReader;
 class SDir;
+
+extern HWND shelldlldefview;
+extern HWND progrmman;
+
+
 //标识初始化
 extern bool init;
 
@@ -116,4 +121,5 @@ extern bool isDebug;
 
 extern MenuHelper* pmh;
 extern QVersionNumber version;
+extern bool isAutoStart;
 #endif // GLOBAL_H

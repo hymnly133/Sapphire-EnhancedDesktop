@@ -50,6 +50,9 @@ public:
     virtual bool removeFile();
     //文件打开(系统性)
     void openFile(bool Admin = false);
+    //文件打开(系统性)
+    void openTargetDirAndCelect();
+
 
     //Info系统删除
     void removeInfo();

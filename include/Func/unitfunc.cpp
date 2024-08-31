@@ -42,7 +42,7 @@ void cleanCelect(SUnit *sender)
 {
     bool animation = numCelected > 4;
     foreach (auto k, pCelectedUnits) {
-        k->setCelect(false, animation);
+        k->setSelect(false, animation);
     }
     pCelectedUnits.clear();
     moving_global = false;
@@ -159,10 +159,20 @@ SUnit *from_class(QString Class)
 }
 SUnit *from_json(QJsonObject data, SLayout *layout)
 {
+
+    if(data.contains("path")) {
+        QString path = data.value("path").toString();
+        if(!fileExist(path )) {
+            qDebug() << path << "path in json not found!,stop Loading";
+            return nullptr;
+        }
+    }
+
     QString name = data.value("Class").toString();
     if(name == "SFile" && QFileInfo(data.value("path").toString()).isDir()) {
         name = "SDir";
     }
+
     QString newname = name.replace("ED_", "S");
     int id = QMetaType::type(name.toStdString().c_str());
     if (id == QMetaType::UnknownType) {
@@ -174,9 +184,13 @@ SUnit *from_json(QJsonObject data, SLayout *layout)
         }
     }
     qDebug() << name;
+
     // auto k = QMetaType::create(id);
     SUnit *unit = static_cast<SUnit*>(QMetaType::create(id));
+    // if(unit->inherits("SFile")) {
+    //     SFile* sfile = (SFile*)unit;
 
+    // }
 
     data.value("Class").toString();
     unit->setPMW(layout->pmw);
@@ -186,6 +200,12 @@ SUnit *from_json(QJsonObject data, SLayout *layout)
 }
 SFile *from_path(QString path, SLayout *layout)
 {
+
+    if(!fileExist(path )) {
+        qDebug() << path << "path not found!,stop Loading";
+        return nullptr;
+    }
+
     SFile *unit;
     int id;
     if(QFileInfo(path).isDir()) {
@@ -210,6 +230,10 @@ SFile *from_path(QString path, SLayout *layout)
 }
 SFile *from_info(MyFileInfo& info, SLayout *layout)
 {
+    if(!fileExist(info.filePath )) {
+        qDebug() << info.filePath << "path in info not found!,stop Loading";
+        return nullptr;
+    }
     SFile *unit;
     int id;
     if(QFileInfo(info.filePath).isDir()) {
@@ -276,7 +300,7 @@ void requireContexMenu(QContextMenuEvent *event, SUnit *sender)
 {
     sender->tryToSetupMenu();
     if(!pCelectedUnits.empty()) {
-        if(!sender->onCelect) {
+        if(!sender->isSelect) {
             cleanCelect();
             if(editMode) {
                 sender->editMenu->exec(event->globalPos());
@@ -305,12 +329,12 @@ void updateCelect(SUnit *sender)
                 if(aimRect.contains( k->geometry().center())) {
                     qDebug() << "CONTAIN";
                     pCelectedUnits.append(k);
-                    k->setCelect(true);
+                    k->setSelect(true);
                 }
             } else {
                 if(!aimRect.contains( k->geometry().center())) {
                     qDebug() << "RELEASE";
-                    k->setCelect(false);
+                    k->setSelect(false);
 
                 }
             }

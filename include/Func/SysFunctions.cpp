@@ -39,8 +39,8 @@
 #include <QStandardPaths>
 #include"QWindowStateChangeEvent"
 #include"QInputDialog"
-
-
+#include"snotice.h"
+#include"sMyTaskSchedule.h"
 
 
 static QMutex mutex;
@@ -49,8 +49,6 @@ static QMutex mutex;
 QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
 
-HWND shelldlldefview = NULL;
-HWND progrmman = NULL;
 
 void customMessageHandler(QtMsgType type,
                           const QMessageLogContext &context,
@@ -126,7 +124,7 @@ QString toLinuxPath(QString const& windowsPath)
     return linuxPath;
 }
 
-void inplace(QWidget* aim)
+bool inplace(QWidget* aim)
 {
     // 接入到图标层
     qDebug() << "try to inplace";
@@ -136,21 +134,12 @@ void inplace(QWidget* aim)
         SetWindowPos((HWND)aim->winId(), HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         SetWindowPos((HWND)aim->winId(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         SetFocus((HWND)aim->winId());
+        aim->setVisible(true);
+        return true;
     } else {
         qDebug() << "no Valid shell";
+        return false;
     }
-}
-
-void positionToScreen(QWidget* aim, int screenInd)
-{
-    if(aim->inherits("MainWindow")) {
-        ((MainWindow*)aim)->updateSize();
-    } else if(aim->inherits("LayerShower")) {
-        ((LayerShower*)aim)->updateSize();
-    }
-    aim->move(pscs[screenInd]->geometry().topLeft() + Shift_Global);
-    aim->move(2 * aim->pos() - aim->geometry().topLeft());
-
 }
 
 
@@ -390,9 +379,16 @@ QString shellrun(QString filename, QString para, bool admin)
     std::wstring lpFile;
     std::wstring lpPara;
 
-
+    //
     para.replace('\'', '\"');
-    para.replace('/', '\\');
+    if(para.contains('\"')) {
+        int ind0 = para.indexOf("\"");
+        int ind1 = para.lastIndexOf("\"");
+        QString inside = para.mid(ind0 + 1, ind1 - ind0 - 1);
+        QString refine = inside;
+        refine.replace('/', '\\');
+        para.replace(inside, refine);
+    }
     filename.replace('\'', '\"');
     filename.replace('/', '\\');
     qDebug() << QString("ShellRun: file:%1,para:%2").arg(filename).arg(para);
@@ -522,6 +518,7 @@ void initiateDesktop()
 
     qDebug() << "Entering Loop";
 
+
     aim_shell = findProperShell();
     if(aim_shell) {
         qDebug() << "find proper shell,it works fine";
@@ -551,8 +548,10 @@ void initiateDesktop()
 
 HWND findProperShell()
 {
-    if(shelldlldefview) {
+    if(shellValid()) {
         return shelldlldefview;
+    } else {
+        shelldlldefview = NULL;
     }
     progrmman = FindWindowA("Progman", "Program Manager");
 
@@ -737,4 +736,36 @@ void readMenu()
     }
 
     pmh->read_json(document.object());
+}
+
+bool shellValid()
+{
+    return shelldlldefview && IsWindow(shelldlldefview);
+}
+
+void ShowError(char *lpszText, DWORD dwErrCode)
+{
+    char szErr[MAX_PATH] = {0};
+
+    // ::wsprintf(szErr, "%s Error!\nError Code Is:0x%08x\n", lpszText, dwErrCode);
+    // ::MessageBox(NULL, szErr, "ERROR", MB_OK | MB_ICONERROR);
+    SNotice::notice(QStringList() << lpszText << QString(int(dwErrCode)), "执行结果");
+}
+
+void setTaskAutoRun(bool val)
+{
+    SMyTaskSchedule t;
+    if(val) {
+        qDebug() << "Set task auto run";
+        qDebug() << "Result:" << t.NewTask(QObject::tr("Sapphire"), QCoreApplication::applicationFilePath(), "-autoStart", "Sapphire");
+    } else {
+        qDebug() << "Delete task auto run";
+        qDebug() << "Result:" << t.Delete(QObject::tr("Sapphire"));
+    }
+}
+
+bool haveTaskAutoRun()
+{
+    SMyTaskSchedule t;
+    return t.Have("Sapphire");
 }

@@ -75,8 +75,8 @@ public:
     //各种当前属性
     bool alwaysShow = false;
     bool simpleMode = always_simple_mode;
-    bool onFocus = false;
-    bool onCelect = false;
+    bool isFocus = false;
+    bool isSelect = false;
     bool onContextMenuShowing = false;
     bool onLongFocus = false;
     bool preLongFocus = false;
@@ -253,7 +253,7 @@ public:
     virtual void setSimpleMode(bool);
     virtual void setFocus(bool);
     virtual void setLongFocus(bool);
-    virtual void setCelect(bool, bool animaion = false);
+    virtual void setSelect(bool, bool animaion = false);
     virtual void preSetLongFocus(bool);
     virtual void setScale(double val);
     virtual void setScaleFix(double val);
@@ -326,7 +326,7 @@ signals:
 };
 inline  double SUnit:: aim_mainColorRatio()
 {
-    if(onFocus || onCelect) {
+    if(isFocus || isSelect) {
         return focused_color_ratio;
     } else {
         return unfocused_color_ratio;
@@ -345,7 +345,7 @@ inline bool SUnit::resizable()
 
 inline int SUnit::aim_colorAlpha()
 {
-    if(onFocus || onCelect) {
+    if(isFocus || isSelect) {
         if(deepColor) {
             return focused_alpha_deep;
         } else {
@@ -365,7 +365,7 @@ inline double SUnit::aim_scaleFix()
     if(!enableFocusScaleAnimation) {
         return 1.0;
     }
-    if(onFocus) {
+    if(isFocus) {
         return scale_fix_ratio;
     } else {
         return 1.0;

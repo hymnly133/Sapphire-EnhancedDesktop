@@ -17,9 +17,9 @@ HWND findProperShell();
 void initiateDesktop();
 
 //接入图标层
-void inplace(QWidget* aim);
+bool inplace(QWidget* aim);
 
-void positionToScreen(QWidget* aim, int screenInd);
+bool shellValid();
 
 //向Wallpaper发送鼠标点击信号（待修复
 void sentToWallpaper(QPoint winpos);
@@ -73,4 +73,8 @@ void initDrop();
 
 bool isContainer(QWidget* aim);
 
+void setTaskAutoRun(bool val);
+
+bool haveTaskAutoRun();
+void ShowError(char *lpszText, DWORD dwErrCode);
 #endif // SYSFUNCTIONS_H

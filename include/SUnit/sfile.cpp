@@ -175,6 +175,12 @@ void SFile::setupDesktopMenu()
         });
     }
 
+    if(isSymLink()) {
+        SET_ANCTION(actOpenDir, tr("打开文件所在路径"), desktopMenu, this, {
+            openTargetDirAndCelect();
+        });
+    }
+
 
     SET_ANCTION(actRename, tr("重命名"), desktopMenu, this, {
         renameWithDialog();
