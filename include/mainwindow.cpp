@@ -1,12 +1,9 @@
+﻿
 #include "mainwindow.h"
-#include "aerowidget.h"
 #include "global.h"
-#include "qfuture.h"
-#include "qmessagebox.h"
-#include "qtconcurrentrun.h"
+#include "repaintcounterunit.h"
 #include "sbgshower.h"
 #include "screenfunc.h"
-#include "sdir.h"
 #include "sglshower.h"
 #include "snotice.h"
 #include "sshellfuncunit.h"
@@ -17,9 +14,7 @@
 #include "seditbox.h"
 #include "filefunc.h"
 #include "qgraphicseffect.h"
-#include "qmimedata.h"
 #include "qpainter.h"
-#include "repaintcounterunit.h"
 #include "roundshower.h"
 #include "ui_mainwindow.h"
 #include "SysFunctions.h"
@@ -121,12 +116,12 @@ void MainWindow::setupDesktopMenu()
     SET_ANCTION(actToEditMode, tr("编辑模式"), desktopMenu, this, {
         toEditMode();
     })
-    SET_ANCTION(actRun, tr("自启动"), desktopMenu, this, {
-        setTaskAutoRun(true);
-    })
-    SET_ANCTION(actRunFalse, tr("自启动关闭"), desktopMenu, this, {
-        setTaskAutoRun(false);
-    })
+    // SET_ANCTION(actRun, tr("自启动"), desktopMenu, this, {
+    //     setTaskAutoRun(true);
+    // })
+    // SET_ANCTION(actRunFalse, tr("自启动关闭"), desktopMenu, this, {
+    //     setTaskAutoRun(false);
+    // })
     SET_ANCTION(act4, tr("退出程序"), desktopMenu, this, {
         SExit();
     })
@@ -202,9 +197,6 @@ void MainWindow::setupEditMenu()
 #ifdef QT_DEBUG
     SET_ANCTION(actgl, tr("gl"), editMenu, this, {
         auto gl = new SGLShower(inside);
-    })
-    SET_ANCTION(actdir, tr("文件夹"), editMenu, this, {
-        auto gl = new SDir(inside, 3, 3, "D:/Github/dirTest");
     })
 #endif
     SET_ANCTION(act4, tr("退出程序"), editMenu, this, {
@@ -594,39 +586,6 @@ void MainWindow::updataShowerAnimation()
 
 
 
-// bool MainWindow::addAIcon(QFileInfo qinfo, bool notice, QPoint globalPos)
-// {
-//     return addAIcon(MyFileInfo(qinfo), notice, globalPos);
-// }
-
-// bool MainWindow::addAIcon(MyFileInfo info, bool notice, QPoint globalPos)
-// {
-//     qDebug() << "Mainwindow try to add a info" << info.filePath;
-//     if(!inside->OKForDefaultPut(new SFile())) {
-//         SNotice::notice("布局无法容纳目标，请调整布局", "布局错误");
-//         return false;
-//     };
-//     SFile *tem = nullptr;
-//     tem = new SFile();
-//     tem->loadFromMyFI(info, true);
-//     // qDebug()<<tem->colorAlpha;
-//     if (tem) {
-//         if(globalPos == QPoint(-1, -1)) {
-//             inside->defaultPut(tem, false);
-//         } else {
-//             tem->setParent(this);
-//             tem->move(mapFromGlobal(globalPos));
-//             inside->clearPut(tem, false);
-//         }
-//         tem->raise();
-//         if(notice) {
-//             SNotice::notice(QStringList() << tem->filePath, "增添文件", 3000);
-//         }
-//         return true;
-//     }
-//     return false;
-// }
-
 
 void MainWindow::appendPoints(QPoint p)
 {
@@ -648,40 +607,6 @@ void MainWindow::finishBootAnimation()
 {
     qDebug() << objectName() << "Finish Animation";
 }
-
-
-
-// void MainWindow::dropEvent(QDropEvent *e)
-// {
-//     if(e->mimeData()->hasUrls()) { //处理期望数据类型
-//         // if()
-//         foreach(QString format, e->mimeData()->formats()) {
-//             // Retrieving data
-//             QByteArray data = e->mimeData()->data(format);
-//             qDebug() << format << data;
-//         }
-
-//         // return;
-//         qDebug() << e->dropAction();
-//         QList<QUrl> list = e->mimeData()->urls();//获取数据并保存到链表中
-//         for(int i = 0; i < list.count(); i++) {
-//             QString path = list[i].toLocalFile();
-//             whenDropAFile(path);
-//         }
-//     } else {
-//         e->ignore();
-//     }
-// }
-
-// void MainWindow::dragEnterEvent(QDragEnterEvent *e)
-// {
-//     if(e->mimeData()->hasUrls()) { //判断数据类型
-//         e->acceptProposedAction();//接收该数据类型拖拽事件
-//     } else {
-//         e->ignore();//忽略
-//     }
-// }
-
 
 
 void MainWindow::closeEvent(QCloseEvent *event)//关闭窗口会先处理该事件函数
@@ -743,11 +668,13 @@ void MainWindow::focusInEvent(QFocusEvent *event)
     qDebug() << objectName() << "FoucusIn";
     scanForChange();
     focusin = true;
+    emit focus_Changed(true);
 }
 
 void MainWindow::focusOutEvent(QFocusEvent *event)
 {
     qDebug() << objectName() << "FoucusOut";
+    emit focus_Changed(false);
 }
 
 
@@ -788,7 +715,9 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::updateAfterPut(SUnit *aim)
 {
-
+    if(onLoading) {
+        return;
+    }
     if(aim->inherits("SFile")) {
         SFile* sfile = (SFile*)aim;
         //为了避免bug，不移动文件夹
@@ -845,11 +774,11 @@ void MainWindow::tryToInplace(bool force)
 
 }
 
-void MainWindow::crash()
-{
-    int* a;
-    *a = 100;
-}
+// void MainWindow::crash()
+// {
+//     int* a;
+//     *a = 100;
+// }
 
 void MainWindow::setupDrop()
 {

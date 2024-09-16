@@ -1,4 +1,4 @@
-#include "slayout.h"
+﻿#include "slayout.h"
 #include "SysFunctions.h"
 #include "global.h"
 #include "mainwindow.h"
@@ -152,6 +152,10 @@ bool SLayout::OKForClearPut(SUnit *aim)
         return false;
     }
 
+    if(!pContainer->checkType(aim)) {
+        return false;
+    }
+
     if(clearPutableInd(aim) == QPoint(-1, -1)) {
         return false;
     } else {
@@ -165,6 +169,11 @@ bool SLayout::OKForDefaultPut(SUnit *aim, bool force)
         if(!enable) {
             return false;
         }
+
+
+    if(!pContainer->checkType(aim)) {
+        return false;
+    }
 
     if(defaultPutableInd(aim) == QPoint(-1, -1)) {
         return false;
@@ -264,23 +273,7 @@ void SLayout::load_json(QJsonObject rootObject)
     insideLayouts.clear();
     QJsonArray contentsArray = rootObject.value("contents").toArray();
     QVector<SUnit*> tem;
-    // if(rootObject.contains("useStandaloneRect")) {
-    //     useStandaloneRect = rootObject.value("useStandaloneRect").toBool();
-    // }
-    // if(useStandaloneRect) {
-    //     if(rootObject.contains("x")) {
-    //         standaloneRect.setX(rootObject.value("x").toInt());
-    //     }
-    //     if(rootObject.contains("y")) {
-    //         standaloneRect.setY(rootObject.value("y").toInt());
-    //     }
-    //     if(rootObject.contains("w")) {
-    //         standaloneRect.setWidth(rootObject.value("w").toInt());
-    //     }
-    //     if(rootObject.contains("h")) {
-    //         standaloneRect.setHeight(rootObject.value("h").toInt());
-    //     }
-    // }
+
     foreach (QJsonValue contentValue, (contentsArray)) {
         QJsonObject contentObject = contentValue.toObject();
         SUnit* unit = from_json(contentObject, this);

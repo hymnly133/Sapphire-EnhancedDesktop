@@ -1,4 +1,4 @@
-#ifndef SDIR_H
+﻿#ifndef SDIR_H
 #define SDIR_H
 
 #include <QObject>
@@ -62,9 +62,18 @@ public:
 
     QStringList jsonFiles();
 
-
-
     void single_click_action(QMouseEvent* event) override;
+    void remove() override;
+    QPoint MyPos() override;;
+    QSize MySize() override;;
+    QSize aim_expandSize();
+    void onDragedOut() override;
+    void processorTip() override;
+    void processFile(SFileInfo *sfileInfo) override;
+
+
+
+
 signals:
 
     // SUnit interface
@@ -73,52 +82,44 @@ public slots:
     void whenFoldAnimationUpdate();
     void whenExpandAnimationUpdate();
 
-    // SUnit interface
-public:
-    void remove() override;
 
-
-    // QWidget interface
 protected:
     void wheelEvent(QWheelEvent *event) override;
 
-    // SUnit interface
+
+
+    // SLayoutContainer interface
 public:
-    QPoint MyPos() override
-    {
-        if(!outOfParent_actual) {
-            return SFile::MyPos();
-        }
-        QPoint centerPos = layout->unit2CenterPoint(this);
-        QSize aimSize = MySize();
-        centerPos =  refineRect(layout->pContainerW->mapToGlobal(centerPos), aimSize, pmw);
-        centerPos = layout->pContainerW->mapFromGlobal(centerPos);
+    bool checkType(SUnit *unit) override;
 
-        return QPoint(centerPos.x() - aimSize.width() / 2, centerPos.y() - aimSize.height() / 2);
-        // return refine(tem, MySize());
-    };
-    QSize MySize() override
-    {
-        if(!outOfParent_actual) {
-            return SFile::MySize();
-        }
-        aim_expandSize();
-        SUnit::MySize();
-        double expandRatio = ar_expand->nowRatio;
-        return  SUnit::MySize() * (1 - expandRatio) +  aim_expandSize() * (ar_expand->nowRatio);
-    };
-    QSize aim_expandSize();
-
-
-    // SUnit interface
-public:
-    void onDragedOut() override;
-
-    // SMultiFunc interface
-public:
-    void processorTip() override;
-    void processFile(SFileInfo *sfileInfo) override;
+private:
+    void setInsideUnexpand();
 };
+
+inline QPoint SDir::MyPos()
+{
+    if(!outOfParent_actual) {
+        return SFile::MyPos();
+    }
+    QPoint centerPos = layout->unit2CenterPoint(this);
+    QSize aimSize = MySize();
+    centerPos =  refineRect(layout->pContainerW->mapToGlobal(centerPos), aimSize, pmw);
+    centerPos = layout->pContainerW->mapFromGlobal(centerPos);
+
+    return QPoint(centerPos.x() - aimSize.width() / 2, centerPos.y() - aimSize.height() / 2);
+    // return refine(tem, MySize());
+}
+
+inline QSize SDir::MySize()
+{
+    if(!outOfParent_actual) {
+        return SFile::MySize();
+    }
+    aim_expandSize();
+    SUnit::MySize();
+    double expandRatio = ar_expand->nowRatio;
+    return  SUnit::MySize() * (1 - expandRatio) +  aim_expandSize() * (ar_expand->nowRatio);
+}
 Q_DECLARE_METATYPE(SDir);
 
 

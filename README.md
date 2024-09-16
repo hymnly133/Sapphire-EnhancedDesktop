@@ -114,7 +114,7 @@ https://www.yuque.com/hymnly/ux6umv/ce3cqy419av769fk?singleDoc#
 ### next release
 
 - [ ] 图片优化和缓存
-- [ ] 第三方软件注册的菜单支持Part2
+
 
 ### later
 

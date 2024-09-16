@@ -1,4 +1,4 @@
-#include "SysFunctions.h"
+﻿#include "SysFunctions.h"
 #include "global.h"
 #include "qtextcodec.h"
 #include "sdir.h"
@@ -21,12 +21,13 @@
 #include "sglshower.h"
 #include "sshellfuncunit.h"
 #include"QProcess"
+#include "swebviewer.h"
 #include "userfunc.h"
 #include "QBreakpadHandler.h"
 int main(int argc, char *argv[])
 {
 
-    qSetMessagePattern("[%{type}] "
+    qSetMessagePattern("%{time [hh:mm:ss]} [%{type}] "
                        "%{if-debug}%{function}(%{line})%{endif}"
                        "%{if-info}%{function}(%{line}) qthreadptr:%{qthreadptr} time:%{time [yyyy-MM-dd hh:mm:ss.zzz]}%{endif}"
                        "%{if-warning}%{function}(%{line})%{endif}"
@@ -55,18 +56,6 @@ int main(int argc, char *argv[])
         QThread::msleep(1000);
     }
 
-    // QCommandLineParser parser;                        // 定义解析实例
-    // parser.setApplicationDescription("Sapphire");  // 描述可执行程序的属性
-
-    // QCommandLineOption  CommandExe("autoStart", QGuiApplication::translate("main", "Take  the  first  argument  as a command to execute, "
-    //                                "rather than reading commands from a script or standard input.  "
-    //                                "If  any  fur‐\ther  arguments  are  given,  "
-    //                                "the  first  one is assigned to $0,"
-    //                                " rather than being used as a positional parameter."));
-
-    // parser.addOption(CommandExe);
-    // parser.process(a);                                // 把用户的命令行的放入解析实例
-
 
 
     bool bSupp = QSslSocket::supportsSsl();
@@ -93,6 +82,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<RepaintCounterUnit>();
     qRegisterMetaType<SGLShower>();
     qRegisterMetaType<SDir>();
+    qRegisterMetaType<SWebViewer>();
 
 
     //注册容器对象

@@ -1,4 +1,4 @@
-#ifndef SDOCK_H
+﻿#ifndef SDOCK_H
 #define SDOCK_H
 
 #include "sblockcontainer.h"
@@ -9,7 +9,7 @@ class SDock : public SContainer
 {
     Q_OBJECT
 public:
-    explicit SDock(SLayout *dis = nullptr, int outSizeX=5, int outSizeY=1);
+    explicit SDock(SLayout *dis = nullptr, int outSizeX = 5, int outSizeY = 1);
     void paintEvent(QPaintEvent *event);
     void mouse_enter_action();
 
@@ -19,9 +19,9 @@ public:
 
     //尝试改变方向
     bool switchDirection();
-    bool onSwitch  =false;
+    bool onSwitch  = false;
     bool useContentColor = true;
-    QMap<SUnit*,int> map;
+    QMap<SUnit*, int> map;
 
 
 
@@ -38,9 +38,6 @@ public slots:
     // SUnit interface
 public:
     void setupEditMenu() override;
-
-    // SUnit interface
-public:
     QJsonObject to_json() override;
     void load_json(QJsonObject rootObject) override;
 };

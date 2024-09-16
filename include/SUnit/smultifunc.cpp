@@ -114,7 +114,7 @@ void SMultiFunc::updateDefaultScale()
 void SMultiFunc::afterResize(QResizeEvent* event)
 {
     SUnit::afterResize(event);
-    lb->setFixedWidth(qBound(10, width() - 5, 9999));
+    lb->setFixedWidth(qBound(10, event->size().width() - 5, 9999));
     setName(name);
     gv->updateDispaly();
 }
@@ -361,6 +361,12 @@ void SMultiFunc::whenFocusAnimationChange()
     pix_shadow->setColor(applyAlpha(displayColor(), icon_shadow_alpha));
     pix_shadow->update();
     SUnit::whenFocusAnimationChange();
+}
+
+void SMultiFunc::setInLayout(bool animated)
+{
+    SUnit::setInLayout(animated);
+    gv->setPMW(pmw);
 }
 
 void SMultiFunc::onSimpleModeChange(bool val)

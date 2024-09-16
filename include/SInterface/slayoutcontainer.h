@@ -1,4 +1,4 @@
-#ifndef SLAYOUTCONTAINER_H
+﻿#ifndef SLAYOUTCONTAINER_H
 #define SLAYOUTCONTAINER_H
 
 #include "filefunc.h"
@@ -28,6 +28,9 @@ public:
     void setPMW(MainWindow *pmw) ;
     void updateColor();
     void loadInsideAll();
+
+    //用于给容器检测时调用，用于过滤不想要的Unit类型
+    virtual bool checkType(SUnit* unit);
 
 
     //给容器的各种更新函数

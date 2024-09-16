@@ -1,8 +1,9 @@
-#include "sdir.h"
+﻿#include "sdir.h"
 #include "mainwindow.h"
 #include "qjsonarray.h"
 #include "qtconcurrentrun.h"
 #include "sflowlayout.h"
+#include "snotice.h"
 #include "stylehelper.h"
 #include "unitfunc.h"
 #include "userfunc.h"
@@ -196,9 +197,10 @@ void SDir::setExpand(bool val)
         setFold(false);
         // startToLoad();
         loadInsideAll();
-        raiseUnderMoving(this);
+        // raiseUnderMoving(this);
     } else {
         inside_f->scrollTo(0);
+        setInsideUnexpand();
         updateFocusAnimation();
     }
 
@@ -356,6 +358,8 @@ void SDir::single_click_action(QMouseEvent *event)
     if(!isExpand) {
         setExpand(true);
         event->accept();
+    } else {
+        setInsideUnexpand();
     }
 }
 
@@ -448,6 +452,25 @@ void SDir::wheelEvent(QWheelEvent *event)
         event->accept();
     }
 
+}
+
+bool SDir::checkType(SUnit *unit)
+{
+    if(unit->inherits("SContainer")) {
+        SNotice::notice("格子无法放置进入文件夹哦！", "(⊙o⊙)", 3000, true);
+        return false;
+    }
+    return true;
+}
+
+void SDir::setInsideUnexpand()
+{
+    foreach (SUnit* unit, inside->contents) {
+        if(unit->inherits("SDir")) {
+            ((SDir*)unit)->setExpand(false);
+            ((SDir*)unit)->setFold(true);
+        }
+    }
 }
 
 QSize SDir::aim_expandSize()

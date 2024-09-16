@@ -108,6 +108,12 @@ public slots:
     // SUnit interface
 public:
     void whenFocusAnimationChange() override;
+
+
+
+    // SUnit interface
+public:
+    void setInLayout(bool animated) override;
 };
 
 

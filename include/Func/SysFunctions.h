@@ -1,4 +1,4 @@
-#ifndef SYSFUNCTIONS_H
+﻿#ifndef SYSFUNCTIONS_H
 #define SYSFUNCTIONS_H
 #include<windows.h>
 #include <QIcon>
@@ -63,18 +63,25 @@ QRect Point2Rect(QPoint point0, QPoint point1);
 QColor mixColor(QColor source, QColor add, double ratio);
 QColor winThemeColor();
 
+//通过资源字符串获得资源
 QString extractString(QString res);
 
+//运行Shell风格的命令
 void shellContextMenuRun(QString command, QString path);
 
+//初始化一些容器类型
 void initContainerTypes();
 
+//初始化拖拽
 void initDrop();
 
+//判断是否为容器
 bool isContainer(QWidget* aim);
 
+//设置计划任务自动运行
 void setTaskAutoRun(bool val);
 
+//判断是否有计划任务自动运行
 bool haveTaskAutoRun();
 void ShowError(char *lpszText, DWORD dwErrCode);
 #endif // SYSFUNCTIONS_H

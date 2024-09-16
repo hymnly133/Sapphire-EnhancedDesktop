@@ -63,5 +63,6 @@ public slots:
     void setGIF(QString path);
     void setBackground(QBrush brush);
     void endGIF();
+    void setPMW(MainWindow* mw);
 };
 #endif

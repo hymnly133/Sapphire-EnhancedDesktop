@@ -1,4 +1,4 @@
-#include <shlwapi.h>
+﻿#include <shlwapi.h>
 #include<windows.h>
 #include "global.h"
 #ifndef _WIN32_WINNT
@@ -370,7 +370,7 @@ QMap<int, QJsonObject> readContent()
 
 
 
-
+//调用WindowsAPI启动
 QString shellrun(QString filename, QString para, bool admin)
 {
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -379,8 +379,7 @@ QString shellrun(QString filename, QString para, bool admin)
     std::wstring lpFile;
     std::wstring lpPara;
 
-    //
-    para.replace('\'', '\"');
+
     if(para.contains('\"')) {
         int ind0 = para.indexOf("\"");
         int ind1 = para.lastIndexOf("\"");
@@ -389,7 +388,6 @@ QString shellrun(QString filename, QString para, bool admin)
         refine.replace('/', '\\');
         para.replace(inside, refine);
     }
-    filename.replace('\'', '\"');
     filename.replace('/', '\\');
     qDebug() << QString("ShellRun: file:%1,para:%2").arg(filename).arg(para);
 
@@ -398,7 +396,7 @@ QString shellrun(QString filename, QString para, bool admin)
     ZeroMemory(&sei, sizeof(sei));
     sei.nShow = SW_SHOW; //or path
 
-    if(isAdmin && !admin && para.isEmpty() && try_run_as_user) {
+    if(isAdmin && !admin && para.isEmpty() && try_run_as_user && !isCompressedFile(filename) && QFileInfo(filename).isFile()) {
         //没有参数进行降权
         para = "\"" + filename + "\"";
         filename = "explorer.exe";

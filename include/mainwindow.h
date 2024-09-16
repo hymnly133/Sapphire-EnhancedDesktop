@@ -168,6 +168,7 @@ public:
 signals:
     void showerSize_changed(QSize);
     void showerRadius_changed(int);
+    void focus_Changed(bool);
 
 
 
@@ -179,10 +180,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent* ev) override;
-
-
-    // void dropEvent(QDropEvent *event) override;
-    // void dragEnterEvent(QDragEnterEvent *event) override;
 
     void closeEvent( QCloseEvent * event ) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -206,10 +203,6 @@ protected:
     void whenDropAFile(QString& fileName);
 
     void tryToInplace(bool force = false);
-    void crash();
-
-
-
 
 
     // QWidget interface

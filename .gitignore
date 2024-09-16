@@ -36,6 +36,8 @@ Thumbs.db
 /.qmake.stash
 
 build/*
+debug/*
+Release/*
 win11 icons/*
 unused/*
 .vs/*

@@ -1,4 +1,4 @@
-#include "global.h"
+﻿#include "global.h"
 #include "qthread.h"
 #include "sinputdialog.h"
 #include"sunit.h"
@@ -57,11 +57,11 @@ QJsonObject SFile::to_json()
 void SFile::load_json(QJsonObject rootObject)
 {
     SUnit::load_json(rootObject);
-    if(rootObject.contains("name")) {
-        setName(rootObject.value("name").toString());
-    }
+    // if(rootObject.contains("name")) {
+    //     setName(rootObject.value("name").toString());
+    // }
     setFullShow(rootObject.value("fullShow").toBool());
-    filePath = (rootObject.value("path").toString());
+    loadFromPath(rootObject.value("path").toString(), false);
 
 
     pixPath = rootObject.value("pixPath").toString();
@@ -74,7 +74,7 @@ void SFile::load_json(QJsonObject rootObject)
             //图片丢失处理
         }
     }
-    loadFromPath(filePath, false);
+    // loadFromPath(filePath, false);
 }
 
 
@@ -176,7 +176,7 @@ void SFile::setupDesktopMenu()
     }
 
     if(isSymLink()) {
-        SET_ANCTION(actOpenDir, tr("打开文件所在路径"), desktopMenu, this, {
+        SET_ANCTION(actOpenDir, tr("打开文件所在位置"), desktopMenu, this, {
             openTargetDirAndCelect();
         });
     }
@@ -216,15 +216,11 @@ void SFile::single_click_action(QMouseEvent *event)
 
 void SFile::loadFromMyFI(const MyFileInfo& info, bool init)
 {
+    filePath = info.filePath;
     qDebug() << QString("Loading Form MyFI:%1,at thread:").arg(info.filePath) << (QThread::currentThread());
     SFileInfo::loadFromMyFI(info);
 
-
-    if(init) {
-        setName(info.name);
-    }
-
-
+    setName(info.name);
 
     if(pixPath == "") {
         loadAimIcon(info);

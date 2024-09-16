@@ -1,4 +1,4 @@
-#include "unitfunc.h"
+﻿#include "unitfunc.h"
 #include "global.h"
 #include "qmimedata.h"
 #include "qtconcurrentrun.h"
@@ -121,10 +121,14 @@ QPair<SLayout*, QPoint > deepFind(SUnit *aim)
 {
     auto k =  activepmw->inside->insideLayouts;
     foreach(SLayout* layout, k) {
-        qDebug() << (layout == nullptr);
-        auto p = layout;
+        // qDebug() << (layout == nullptr);
+        // auto p = layout;
+
         qDebug() << layout->pContainerS->objectName();
         if(layout->pContainerS->geometry().contains(aim->geometry().center())) {
+            if(!layout->OKForClearPut(aim)) {
+                continue;
+            }
             QPoint ind = layout->clearPutableInd(aim);
             if(ind != QPoint(-1, -1)) {
                 return QPair<SLayout*, QPoint>(layout, ind);
@@ -299,18 +303,21 @@ void removeG(SUnit *sender)
 void requireContexMenu(QContextMenuEvent *event, SUnit *sender)
 {
     sender->tryToSetupMenu();
-    if(!pCelectedUnits.empty()) {
-        if(!sender->isSelect) {
-            cleanCelect();
-            if(editMode) {
-                sender->editMenu->exec(event->globalPos());
-            } else {
-                sender->desktopMenu->exec(event->globalPos());
-            }
+    if(!sender->isSelect) {
+        cleanCelect();
+        sender->setSelect(true, true);
+    }
+    if(sender->isSelect && pCelectedUnits.size() > 1) {
+        activepmw->multiMenu->exec(event->globalPos());
+        // if() {
 
-        } else {
-            activepmw->multiMenu->exec(event->globalPos());
-        }
+        // } else {
+        //     if(editMode) {
+        //         sender->editMenu->exec(event->globalPos());
+        //     } else {
+        //         sender->desktopMenu->exec(event->globalPos());
+        //     }
+        // }
     } else {
         if(editMode) {
             sender->editMenu->exec(event->globalPos());

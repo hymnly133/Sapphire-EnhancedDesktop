@@ -1,4 +1,4 @@
-#ifndef FILEFUNC_H
+﻿#ifndef FILEFUNC_H
 #define FILEFUNC_H
 #include "qfileinfo.h"
 #include "qpixmap.h"
@@ -100,6 +100,8 @@ QList<MyFileInfo>getFormFileInfo(QFileInfo x);
 //优化后的判断文件存在方法
 bool fileExist(const QString& path);
 
+//判断是否为压缩包文件
+bool isCompressedFile(const QString& path);
 //合并json
 QJsonObject mergeJsonObject(QJsonObject obj1, QJsonObject obj2);
 QString path2Name(QString path);

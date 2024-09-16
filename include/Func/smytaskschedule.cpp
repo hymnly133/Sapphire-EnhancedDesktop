@@ -217,9 +217,9 @@ BOOL SMyTaskSchedule::Delete(QString taskName)
         return FALSE;
     }
     return TRUE;
-}
+};
 
-WINBOOL SMyTaskSchedule::Have(QString taskName)
+BOOL SMyTaskSchedule::Have(QString taskName)
 {
     IRegisteredTask* task = NULL;
     taskName = "\\" + taskName;

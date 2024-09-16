@@ -1,4 +1,4 @@
-#ifndef SCONTAINER_H
+﻿#ifndef SCONTAINER_H
 #define SCONTAINER_H
 
 #include "slayoutcontainer.h"
@@ -6,6 +6,7 @@
 #include <QWidget>
 class SUnit;
 
+//放置在桌面（理应只出现在桌面上）的格子
 class SContainer : public SUnit, public SLayoutContainer
 {
     Q_OBJECT
@@ -48,6 +49,10 @@ public:
     // SUnit interface
 public:
     void single_click_action(QMouseEvent *event) override;
+
+    // SLayoutContainer interface
+public:
+    void updateAfterPut(SUnit *aim) override;
 };
 
 

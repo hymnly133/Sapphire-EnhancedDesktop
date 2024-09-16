@@ -1,4 +1,4 @@
-#include "slayoutcontainer.h"
+﻿#include "slayoutcontainer.h"
 #include "sdir.h"
 #include "sfile.h"
 #include "sunit.h"
@@ -55,6 +55,11 @@ void SLayoutContainer::loadInsideAll()
     foreach (auto content, inside->contents) {
         content->startToLoad();
     }
+}
+
+bool SLayoutContainer::checkType(SUnit *unit)
+{
+    return true;
 }
 
 void SLayoutContainer::updateAfterPut(SUnit *aim)

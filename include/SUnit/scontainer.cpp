@@ -1,4 +1,4 @@
-#include "scontainer.h"
+﻿#include "scontainer.h"
 #include "global.h"
 #include"mainwindow.h"
 #include "unitfunc.h"
@@ -95,5 +95,12 @@ void SContainer::preSetLongFocus(bool val)
 void SContainer::single_click_action(QMouseEvent *event)
 {
     foldG();
+}
+
+void SContainer::updateAfterPut(SUnit *aim)
+{
+    if(layout) {
+        layout->pContainer->updateAfterPut(aim);
+    }
 }
 

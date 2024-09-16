@@ -17,8 +17,12 @@ include($$PWD/include/QXlsx/QXlsx.pri)
 INCLUDEPATH += $$PWD/QXlsx
 msvc{
     message("using msvc")
-    QMAKE_CXXFLAGS += -execution-charset:utf-8
-    QMAKE_CXXFLAGS += -source-charset:utf-8
+    # QMAKE_CXXFLAGS += -execution-charset:utf-8
+    # QMAKE_CXXFLAGS += -source-charset:utf-8
+
+    QMAKE_CFLAGS *= /utf-8
+    QMAKE_CXXFLAGS *= /utf-8
+QMAKE_CXXFLAGS_WARN_ON += -wd4819
 
 }
 mingw{
@@ -127,6 +131,7 @@ SOURCES += \
     include/SUnit/smultifunc.cpp \
     include/SUnit/sshellfuncunit.cpp \
     include/SUnit/sunit.cpp \
+    include/SUnit/swebviewer.cpp \
     include/SWidget/glpicturebox.cpp \
     include/SWidget/picturebox.cpp \
     include/SWidget/roundshower.cpp \
@@ -196,6 +201,7 @@ HEADERS += \
     include/SUnit/smultifunc.h \
     include/SUnit/sshellfuncunit.h \
     include/SUnit/sunit.h \
+    include/SUnit/swebviewer.h \
     include/SWidget/glpicturebox.h \
     include/SWidget/picturebox.h \
     include/SWidget/roundshower.h \
@@ -219,7 +225,6 @@ FORMS += \
     include/colorvalwidgettest.ui \
     include/fieldWidget.ui \
     include/mainwindow.ui \
-    include/scollTest.ui \
     include/widgeTest.ui
 
 TRANSLATIONS += \

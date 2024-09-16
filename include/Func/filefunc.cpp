@@ -1,4 +1,4 @@
-#include "filefunc.h"
+﻿#include "filefunc.h"
 #include "SysFunctions.h"
 #include "global.h"
 #include "guifunc.h"
@@ -51,7 +51,7 @@ QString path2Name(QString path)
             return info.fileName();
         }
     } else {
-        return QFileInfo(path).baseName();
+        return QFileInfo(path).completeBaseName();
     }
 }
 
@@ -540,4 +540,17 @@ bool inDesktop(QString path)
 {
     return
         QFileInfo(path).path() == UserDesktopPath || QFileInfo(path).path() == PublicDesktopPath;
+}
+
+bool isCompressedFile(const QString &path)
+{
+    if(!QFileInfo(path).isFile()) {
+        return false;
+    }
+
+    QString suf = QFileInfo(path).suffix();
+    if((QStringList() << "zip" << "rar" << "7z").contains(suf)) {
+        return true;
+    }
+    return false;
 }

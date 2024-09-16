@@ -35,6 +35,13 @@ void PictureBox::endGIF()
     movieLabel->setVisible(false);
 }
 
+void PictureBox::setPMW(MainWindow *mw)
+{
+    if(gifThread) {
+        gifThread->connectToPmw(mw);
+    }
+}
+
 
 void PictureBox::setScale(double scale)
 {
@@ -80,6 +87,9 @@ void PictureBox::setGIF(QString path)
         type = gif;
         movieLabel->setVisible(true);
         requireRefresh = true;
+        updateDispaly();
+    });
+    connect(gifThread, &SGifThread::gifUpdated, this, [ = ]() {
         updateDispaly();
     });
 

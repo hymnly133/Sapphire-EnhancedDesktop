@@ -1,4 +1,4 @@
-#include "sblockcontainer.h"
+﻿#include "sblockcontainer.h"
 #include "sblocklayout.h"
 #include "qdebug.h"
 #include"QJsonObject"

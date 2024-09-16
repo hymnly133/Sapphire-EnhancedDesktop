@@ -1,4 +1,4 @@
-#ifndef SBLOCKCONTAINER_H
+﻿#ifndef SBLOCKCONTAINER_H
 #define SBLOCKCONTAINER_H
 
 #include <QWidget>
@@ -87,6 +87,9 @@ public:
     // SUnit interface
 public:
     void setupEditMenu() override;
+
+
+
 };
 
 Q_DECLARE_METATYPE(SBlockContainer)

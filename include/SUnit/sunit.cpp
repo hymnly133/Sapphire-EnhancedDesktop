@@ -1,4 +1,4 @@
-#include "sunit.h"
+﻿#include "sunit.h"
 #include "aerowidget.h"
 #include "global.h"
 #include "guifunc.h"
@@ -846,6 +846,7 @@ void SUnit::leaveParent()
     auto tem = edpos();
     setParent(pmw);
     edmove(tem);
+    raise();
     show();
 }
 
