@@ -682,6 +682,7 @@ void MainWindow::focusOutEvent(QFocusEvent *event)
 void MainWindow::enterEvent(QEvent *event)
 {
     activepmw = this;
+    emit focus_Changed(true);
     // qDebug() << objectName() << "Enter";
 }
 

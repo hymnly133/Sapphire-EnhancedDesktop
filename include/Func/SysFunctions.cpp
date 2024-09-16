@@ -50,6 +50,7 @@ QTextCodec* utf8 = QTextCodec::codecForName("utf-8");
 QTextCodec* gbk = QTextCodec::codecForName("GBK");
 
 
+//自定义消息处理函数
 void customMessageHandler(QtMsgType type,
                           const QMessageLogContext &context,
                           const QString &msg)
@@ -741,9 +742,11 @@ bool shellValid()
     return shelldlldefview && IsWindow(shelldlldefview);
 }
 
+//显示错误信息
 void ShowError(char *lpszText, DWORD dwErrCode)
 {
-    char szErr[MAX_PATH] = {0};
+
+    // char szErr[MAX_PATH] = {0};
 
     // ::wsprintf(szErr, "%s Error!\nError Code Is:0x%08x\n", lpszText, dwErrCode);
     // ::MessageBox(NULL, szErr, "ERROR", MB_OK | MB_ICONERROR);
@@ -767,3 +770,6 @@ bool haveTaskAutoRun()
     SMyTaskSchedule t;
     return t.Have("Sapphire");
 }
+
+
+

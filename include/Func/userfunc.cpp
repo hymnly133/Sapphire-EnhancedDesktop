@@ -1,4 +1,4 @@
-#include "userfunc.h"
+﻿#include "userfunc.h"
 #include "SysFunctions.h"
 #include "filefunc.h"
 #include "global.h"
@@ -453,19 +453,6 @@ void openSettingWindow()
 
 void processArguments()
 {
-    // QCommandLineParser parser;                        // 定义解析实例
-    // parser.setApplicationDescription("TestCommandLine");  // 描述可执行程序的属性
-    // parser.addHelpOption();                           // 添加帮助命令
-    // parser.addVersionOption();                        // 添加版本选择命令
-
-    // QCommandLineOption  CommandExe("c", QGuiApplication::translate("main", "Take  the  first  argument  as a command to execute, "
-    //                                "rather than reading commands from a script or standard input.  "
-    //                                "If  any  fur‐\ther  arguments  are  given,  "
-    //                                "the  first  one is assigned to $0,"
-    //                                " rather than being used as a positional parameter."));
-
-    // parser.addOption(CommandExe);
-    // parser.process(a);                                // 把用户的命令行的放入解析实例
     QStringList arguments = QCoreApplication::arguments();
 
     //以第一个参数是程序路径，第二个参数才是min,所以我们取第二个参数。
@@ -473,6 +460,7 @@ void processArguments()
         QString para2 = arguments.at(1);
         if(para2 == "-autoStart") {
             qInfo() << "This is an auto start process";
+            //标记自启动
             isAutoStart = true;
         }
     }

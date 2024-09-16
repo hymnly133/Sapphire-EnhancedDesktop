@@ -39,7 +39,7 @@
          <item>
           <widget class="QSlider" name="colSlider">
            <property name="minimum">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>40</number>
@@ -121,7 +121,7 @@
          <item>
           <widget class="QSlider" name="rowSlider">
            <property name="minimum">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>40</number>

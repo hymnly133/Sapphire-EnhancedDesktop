@@ -27,7 +27,7 @@ void sentToWallpaper(QPoint winpos);
 //获取主题颜色
 QColor pixmapMainColor(QPixmap p, double bright  = 1);
 
-//处理qDebug
+//自定义消息处理函数
 void customMessageHandler(QtMsgType type,
                           const QMessageLogContext &context,
                           const QString &msg);
@@ -83,5 +83,8 @@ void setTaskAutoRun(bool val);
 
 //判断是否有计划任务自动运行
 bool haveTaskAutoRun();
+
+//显示错误信息
 void ShowError(char *lpszText, DWORD dwErrCode);
+
 #endif // SYSFUNCTIONS_H

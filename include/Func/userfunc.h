@@ -1,4 +1,4 @@
-#ifndef USERFUNC_H
+﻿#ifndef USERFUNC_H
 #define USERFUNC_H
 #include "mainwindow.h"
 #include "qevent.h"
@@ -13,11 +13,8 @@ void setupG();
 //加载主窗口数据
 bool loadMainWindows();
 
-
-//设置自启
+//设置自启动
 void setMyAppAutoRun(bool isStart);
-
-
 
 //设置创建注册表数据
 void setSapphireRegDate(bool isSet);
@@ -28,9 +25,13 @@ void checkForKey(QKeyEvent* event);
 //重新调整对应的BlockLayout
 void resizeForWithDialog(SBlockLayout* aimlayout);
 
-//模式切换
+//切换到桌面模式
 void toDesktopMode();
+//切换到编辑模式
 void toEditMode();
+
+
+//切换模式
 void switchMode();
 
 //更新字体
@@ -39,7 +40,7 @@ void updateFont();
 //扫描文件改动
 void scanForChange();
 
-//扫描一个已经存在的SFileInfo下的改动
+//扫描一个已经存在的SFileInfo（Dir）下的改动
 void scanForChangeInDir(QString path, SLayoutContainer* layoutContainer, QStringList *newfiles, bool add = false);
 
 //打开设置面板
@@ -50,6 +51,7 @@ void SExit();
 // 重启
 void SReboot();
 
+//处理参数
 void processArguments();
 
 //检测自启动并更新启动方法,反映在全局变量

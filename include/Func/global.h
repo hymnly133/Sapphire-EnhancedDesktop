@@ -1,4 +1,4 @@
-#ifndef GLOBAL_H
+﻿#ifndef GLOBAL_H
 #define GLOBAL_H
 
 #include "qapplication.h"
@@ -116,10 +116,15 @@ extern SMenu* trayMenu;
 //用于标记所有含有容器的class
 extern QList<QString> containerTypes;
 
+//标记是否为管理员
 extern bool isAdmin;
+//标记是否为调试模式
 extern bool isDebug;
 
+//全局MenuHelper
 extern MenuHelper* pmh;
+//当前版本号
 extern QVersionNumber version;
+//标记是否为自启动
 extern bool isAutoStart;
 #endif // GLOBAL_H
