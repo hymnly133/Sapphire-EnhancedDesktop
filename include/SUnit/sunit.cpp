@@ -365,6 +365,16 @@ void SUnit::moveto(QPoint edpos, QSize size)
     // updataFocusAnimation();
 }
 
+QPoint SUnit::insidePos()
+{
+    QPoint centerPos = layout->unit2CenterPoint(this);
+    QSize aimSize = MySize();
+    centerPos =  refineRect(layout->pContainerW->mapToGlobal(centerPos), aimSize, pmw);
+    centerPos = layout->pContainerW->mapFromGlobal(centerPos);
+
+    return QPoint(centerPos.x() - aimSize.width() / 2, centerPos.y() - aimSize.height() / 2);
+}
+
 void SUnit::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);

@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "global.h"
+#include "guifunc.h"
 #include "sblocklayout.h"
 #include "scontainer.h"
 
@@ -67,8 +68,10 @@ public:
     }
     QPoint MyPos() override
     {
-        QPoint tem = QPoint(SUnit::MyPos().x() - (1.0 * SUnit::MySize().width() * (outSizeFix - 1) / 2), SUnit::MyPos().y() - (1.0 * SUnit::MySize().height() * (outSizeFix - 1) / 2));
-        return refine(tem, MySize());
+        return insidePos();
+
+        // QPoint tem = QPoint(SUnit::MyPos().x() - (1.0 * SUnit::MySize().width() * (outSizeFix - 1) / 2), SUnit::MyPos().y() - (1.0 * SUnit::MySize().height() * (outSizeFix - 1) / 2));
+        // return refine(tem, MySize());
     };
     QSize MySize() override
     {

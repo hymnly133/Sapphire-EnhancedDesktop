@@ -1,4 +1,4 @@
-#ifndef SUNIT_H
+﻿#ifndef SUNIT_H
 #define SUNIT_H
 #include "SysFunctions.h"
 #include "qgraphicseffect.h"
@@ -291,6 +291,10 @@ public:
 
     //动画move
     virtual void moveto(QPoint edpos, QSize size);
+
+protected:
+    //限制在Pmw中的pos
+    QPoint insidePos();
 
 
 

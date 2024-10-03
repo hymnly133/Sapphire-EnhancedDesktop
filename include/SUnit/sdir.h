@@ -101,12 +101,7 @@ inline QPoint SDir::MyPos()
     if(!outOfParent_actual) {
         return SFile::MyPos();
     }
-    QPoint centerPos = layout->unit2CenterPoint(this);
-    QSize aimSize = MySize();
-    centerPos =  refineRect(layout->pContainerW->mapToGlobal(centerPos), aimSize, pmw);
-    centerPos = layout->pContainerW->mapFromGlobal(centerPos);
-
-    return QPoint(centerPos.x() - aimSize.width() / 2, centerPos.y() - aimSize.height() / 2);
+    return insidePos();
     // return refine(tem, MySize());
 }
 
