@@ -1,4 +1,4 @@
-#include "stooltip.h"
+﻿#include "stooltip.h"
 #include "SysFunctions.h"
 #include "global.h"
 #include "mainwindow.h"
@@ -29,7 +29,7 @@ SToolTip::SToolTip(QWidget *parent)
         deleteLater();
     });
     connect(arect, &SAnimationRect::animationUpdating, this, [ = ]() {
-        move(previousPos + arect->nowPos);
+        move(relaPos + arect->nowPos);
         setFixedSize(arect->nowSize);
         update();
     });
@@ -49,9 +49,13 @@ void SToolTip::setInfo(QString info)
 
 void SToolTip::comeout()
 {
-    QPoint tem = previousPos;
+    QPoint tem = relaPos;
+    //相对于pmw的坐标
+    tem = activepmw->mapFromGlobal(activepmw->pls->mapToGlobal(tem));
+
+
     qDebug() << "tip comeout" << info;
-    if(tem.x() + aimSize.width() > pmws[0]->width()) {
+    if(tem.x() + aimSize.width() > activepmw->width()) {
         //左侧显示
         left = true;
     }
@@ -120,13 +124,17 @@ SToolTip* SToolTip::tip(QString info, QPoint pos, bool shift, bool up)
     }
     SToolTip* Tip = new SToolTip(activepmw->pls);
     if(pos == NO_POS) {
-        Tip->previousPos = activepmw->pls->mapFromGlobal(QCursor::pos());
+        qDebug() << QCursor::pos();
+        // qDebug() << QCursor::pos();
+
+        Tip->relaPos = activepmw->pls->mapFromGlobal(QCursor::pos());
     } else {
-        Tip->previousPos = activepmw->pls->mapFromGlobal(pos);
+        Tip->relaPos = activepmw->pls->mapFromGlobal(pos);
     }
     Tip->shift = shift;
     Tip->up = up;
-    Tip->move(Tip->previousPos);
+    qDebug() << Tip->relaPos;
+    Tip->move(Tip->relaPos);
     Tip->setInfo(info);
     Tip->comeout();
     return Tip;
@@ -153,9 +161,9 @@ void SToolTip::paintEvent(QPaintEvent *event)
     if(left) {
 
         int delta = -arect->nowPos.x() - arect->nowSize.width();
-        QPoint globalstill = (previousPos + aimPos);
-        temsize.setX(mapFromGlobal(globalstill).x());
-        temsize = QRect(mapFromGlobal(globalstill).x() + 13 - delta, 0, aimSize.width(), aimSize.height());
+        QPoint plsstill = (relaPos + aimPos);
+        // temsize.setX(mapFromParent(plsstill).x());
+        temsize = QRect(mapFromParent(plsstill).x() + 13 - delta, 0, aimSize.width(), aimSize.height());
         // temsize.setX(0);
     }
     // qDebug()<<temsize;

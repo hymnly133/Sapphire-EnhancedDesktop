@@ -308,8 +308,10 @@ void writeContent()
         rootArrar.append(rootObj);
     }
     for(int i = screenNum; i < jsonNum; i++) {
-        qDebug() << "Writing Unused Json" << i;
-        rootArrar.append(UnusedJsons[i]);
+        if(UnusedJsons.contains(i)) {
+            qDebug() << "Writing Unused Json" << i;
+            rootArrar.append(UnusedJsons[i]);
+        }
     }
 
     QJsonDocument document;

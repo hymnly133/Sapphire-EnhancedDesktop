@@ -1,4 +1,4 @@
-#ifndef STOOLTIP_H
+﻿#ifndef STOOLTIP_H
 #define STOOLTIP_H
 
 #include "SAnimationRect.h"
@@ -22,7 +22,7 @@ public:
     //是否在上方显示
     bool up = false;
     QSize aimSize;
-    QPoint previousPos;
+    QPoint relaPos;
     QPoint aimPos;
     explicit SToolTip(QWidget *parent = nullptr);
     void setInfo(QString info);

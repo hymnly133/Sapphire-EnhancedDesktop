@@ -403,10 +403,17 @@ bool loadMainWindows()
             QMessageBox::about(nullptr, "注意！", QString("存在%1个布局数据，检测到%2个屏幕，将开始初始化\n请注意弹出窗口！").arg(jsonNum).arg(screenNum));
         }
         if(jsonNum > screenNum) {
-            QMessageBox::about(nullptr, "注意！", QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！多余的桌面数据不会被清理").arg(jsonNum).arg(screenNum));
-            for(int i = screenNum; i < jsonNum; i++) {
-                UnusedJsons[i] = jsons[i];
+            // QMessageBox::about(nullptr, "注意！", QString("存在%1个桌面数据，检测到%2个屏幕，将按顺序加载！多余的桌面数据不会被清理").arg(jsonNum).arg(screenNum));
+            QMessageBox* box = new QMessageBox(QMessageBox::Question, "注意！", QString("存在%1个桌面数据，检测到%2个屏幕\n是否清理数据？").arg(jsonNum).arg(screenNum), QMessageBox::Yes | QMessageBox::No);
+            box->button(QMessageBox::Yes)->setText("清理（推荐）");
+            box->button(QMessageBox::No)->setText("保留");
+            int res = box->exec();
+            if(res == QMessageBox::No) {
+                for(int i = screenNum; i < jsonNum; i++) {
+                    UnusedJsons[i] = jsons[i];
+                }
             }
+            // return;
         }
         //加载
         for(int i = 0; i < screenNum; i++) {

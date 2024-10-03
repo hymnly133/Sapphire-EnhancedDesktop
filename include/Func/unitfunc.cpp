@@ -5,6 +5,7 @@
 #include "scontainer.h"
 #include"mainwindow.h"
 #include"qdrag.h"
+#include "screenfunc.h"
 #include"sfile.h"
 #include"QWinMime"
 #include"sdir.h"
@@ -78,9 +79,10 @@ void moveCelect(SUnit *sender)
     //尝试切换屏幕
     if(screenNum > 1) {
         //多屏切换
-        qDebug() << "try to scan for switch pmw";
+        // qDebug() << "try to scan for switch pmw";
         foreach(auto pmw, pmws) {
-            if(pmw->geometry().contains(QCursor::pos()) && pmw != activepmw) {
+            qDebug() << pmw->screenInd << pmw->geometry() << QCursor::pos();
+            if(pmw->geometry().contains(QCursor::pos() + Shift_Global) && pmw != activepmw) {
                 qDebug() << "ScreenChange! " << pmw->objectName() << "Should Be The Aim";
                 foreach (SUnit* tem, pCelectedUnits) {
                     tem->onSwitch(pmw);

@@ -4,8 +4,8 @@
 // #define PRODUCT_ICON "" // 图标
 
 
-#define FILE_VERSION 1,3,2,5 // 文件版本
-#define FILE_VERSION_STR "1,3,2,5"
+#define FILE_VERSION 1,3,2,6 // 文件版本
+#define FILE_VERSION_STR "1,3,2,6"
 // #define PRODUCT_VERSION 1,3,1,4 // 产品版本
 // #define PRODUCT_VERSION_STR "1,3,1,4"
 #define COMPANY_NAME "Hymnly"
